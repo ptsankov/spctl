@@ -1,0 +1,93 @@
+MODULE main
+DOMAINNAME example_domain
+PROBLEMNAME example_problem
+PROBLEMDOMAIN example_domain
+
+IVAR
+action: {grant_out_lob, grant_out_cor, grant_lob_out, grant_lob_cor, grant_cor_lob, grant_cor_out, grant_cor_off, grant_cor_mr, grant_off_cor, grant_mr_cor, deny};
+
+VAR
+req: {out_lob, out_cor, lob_out, lob_cor, cor_lob, cor_out, cor_off, cor_mr, off_cor, mr_cor};
+state: {out, lob, cor, off, mr};
+visitor: boolean;
+owner: boolean;
+
+DEFINE
+prec_grant_out_lob := (state = out & req = out_lob); 
+prec_grant_out_cor := (state = out & req = out_cor);
+prec_grant_lob_out := (state = lob & req = lob_out);
+prec_grant_lob_cor := (state = lob & req = lob_cor);
+prec_grant_cor_lob := (state = cor & req = cor_lob);
+prec_grant_cor_out := (state = cor & req = cor_out);
+prec_grant_cor_off := (state = cor & req = cor_off);
+prec_grant_cor_mr  := (state = cor & req = cor_mr);
+prec_grant_off_cor := (state = off & req = off_cor);
+prec_grant_mr_cor  := (state = mr & req = mr_cor);
+
+TRANS
+((action = grant_out_lob & !prec_grant_out_lob) -> FALSE)
+&
+((action = grant_out_cor & !prec_grant_out_cor) -> FALSE)
+&
+((action = grant_lob_out & !prec_grant_lob_out) -> FALSE)
+&
+((action = grant_lob_cor & !prec_grant_lob_cor) -> FALSE)
+&
+((action = grant_cor_lob & !prec_grant_cor_lob) -> FALSE)
+&
+((action = grant_cor_out & !prec_grant_cor_out) -> FALSE)
+&
+((action = grant_cor_off & !prec_grant_cor_off) -> FALSE)
+&
+((action = grant_cor_mr & !prec_grant_cor_mr) -> FALSE)
+&
+((action = grant_off_cor & !prec_grant_off_cor) -> FALSE)
+&
+((action = grant_mr_cor & !prec_grant_mr_cor) -> FALSE)
+
+ASSIGN
+init(state) := out;
+init(visitor) := {FALSE, TRUE};
+init(owner) := {FALSE, TRUE};
+init(req) := {out_cor, out_lob};
+
+next(state) :=
+case
+  (action = grant_out_lob) & prec_grant_out_lob : lob;
+  (action = grant_out_cor) & prec_grant_out_cor : cor;
+  (action = grant_lob_out) & prec_grant_lob_out : out;
+  (action = grant_lob_cor) & prec_grant_lob_cor : cor;
+  (action = grant_cor_lob) & prec_grant_cor_lob : lob;
+  (action = grant_cor_out) & prec_grant_cor_out : out;
+  (action = grant_cor_off) & prec_grant_cor_off : off;
+  (action = grant_cor_mr) & prec_grant_cor_mr : mr;
+  (action = grant_off_cor) & prec_grant_off_cor : cor;
+  (action = grant_mr_cor) & prec_grant_mr_cor : cor;
+  (action = deny) : out;
+  1 : state;
+esac;
+
+next(visitor) := visitor;
+next(owner) := owner;
+
+next(req) :=
+case
+  (action = grant_out_lob) & prec_grant_out_lob : {lob_out, lob_cor};
+  (action = grant_out_cor) & prec_grant_out_cor : {cor_lob, cor_out, cor_off, cor_mr};
+  (action = grant_lob_out) & prec_grant_lob_out : {out_cor, out_lob};
+  (action = grant_lob_cor) & prec_grant_lob_cor : {cor_lob, cor_out, cor_off, cor_mr};
+  (action = grant_cor_lob) & prec_grant_cor_lob : {lob_out, lob_cor};
+  (action = grant_cor_out) & prec_grant_cor_out : {out_cor, out_lob};
+  (action = grant_cor_off) & prec_grant_cor_off : off_cor;
+  (action = grant_cor_mr) & prec_grant_cor_mr : mr_cor;
+  (action = grant_off_cor) & prec_grant_off_cor : {cor_lob, cor_out, cor_off, cor_mr};
+  (action = grant_mr_cor) & prec_grant_mr_cor : {cor_lob, cor_out, cor_off, cor_mr};
+  (action = deny) : {out_lob, out_cor};
+  1 : req;
+esac;
+
+FULL_OBS_CTL_GOAL
+  AG ((owner & state = out) -> EF (owner & state = off)) &
+  AG ((visitor & state = out) -> EF (visitor & state = mr)) &
+  AG ((visitor & !owner & state = out) -> A[ state != mr W (state != mr & state = lob)]) &
+  AG (!owner -> AG(state != off)) 
