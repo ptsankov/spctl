@@ -5,12 +5,10 @@ import networkx as nx
 import itertools
 
 G = None
-A = ['visitor', 'owner']
+#A = ['visitor', 'owner']
+A = ['visitor', 'owner', 'owner_delegate', 'owner_cond_delegate']
 Authz = {} # authorizations
 attrPerms = None
-
-def getReq(attrs):
-    return 'visitor:{}_owner:{}'.format(attrs['visitor'], attrs['owner'])
 
 def setAttrs(attrs, vals):
     if len(attrs) == 0:
@@ -31,7 +29,8 @@ def genAttrCombinations():
     
 def getSMBPlanExpression(req, attrs):
     state = req.split('_')[0]
-    return "(= req {}) (= state {}) (= {} {}) (= {} {}))".format(req, state, 'visitor', 1 if attrs['visitor'] else 0, 'owner', 1 if attrs['owner'] else 0)
+    #return "(= req {}) (= state {}) (= {} {}) (= {} {}))".format(req, state, 'visitor', 1 if attrs['visitor'] else 0, 'owner', 1 if attrs['owner'] else 0)
+    return "(= req {}) (= state {}) (= {} {}) (= {} {}) (= {} {}) (= {} {}))".format(req, state, 'visitor', 1 if attrs['visitor'] else 0, 'owner', 1 if attrs['owner'] else 0, 'owner_delegate', 1 if attrs['owner_delegate'] else 0, 'owner_cond_delegate', 1 if attrs['owner_cond_delegate'] else 0)
 
 def attrPermToStr(attrPerm):
     strList = []
