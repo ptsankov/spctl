@@ -21,16 +21,16 @@ ASSIGN
   esac;
 
 DEFINE
-  authz_out_lob := visitor | owner;
-  authz_out_cor := owner;
-  authz_cor_out := FALSE;
-  authz_cor_lob := visitor | owner;
-  authz_cor_mr := visitor;
-  authz_cor_off := owner;
-  authz_mr_cor := owner;
-  authz_off_cor := visitor & owner;
+  authz_lob_cor := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
   authz_lob_out := FALSE;
-  authz_lob_cor := visitor | owner;
+  authz_mr_cor := (!visitor & owner) | (visitor & owner);
+  authz_cor_lob := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_cor_mr := (visitor & !owner) | (visitor & owner);
+  authz_cor_off := (!visitor & owner) | (visitor & owner);
+  authz_cor_out := FALSE;
+  authz_off_cor := (visitor & owner);
+  authz_out_lob := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_out_cor := (!visitor & owner) | (visitor & owner);
 
 TRANS
   ((state = out & !authz_out_lob) -> next(state) != lob) &
