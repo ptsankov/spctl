@@ -56,4 +56,5 @@ SPEC
   AG ( (state = out & visitor) -> !E[state != lob U state = mr]) &
   AG ( (state = out & owner_cond_delegate & !(owner | owner_delegate)) -> !E[state != lob U state = off]) &
   AG ( !(owner | owner_delegate | owner_cond_delegate) -> !EF(state = off)) &
-  AG ( EF (state = out)) 
+  AG ( EF (state = out))  &
+  AG ( owner -> AG owner)
