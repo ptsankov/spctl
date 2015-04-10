@@ -21,15 +21,15 @@ ASSIGN
   esac;
 
 DEFINE
-  authz_lob_cor := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_lob_cor := (visitor & !owner) | (visitor & owner);
   authz_lob_out := FALSE;
-  authz_mr_cor := (!visitor & owner) | (visitor & owner);
-  authz_cor_lob := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_mr_cor := (visitor & owner);
+  authz_cor_lob := FALSE;
   authz_cor_mr := (visitor & !owner) | (visitor & owner);
   authz_cor_off := (!visitor & owner) | (visitor & owner);
   authz_cor_out := FALSE;
   authz_off_cor := (visitor & owner);
-  authz_out_lob := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_out_lob := (visitor & !owner) | (visitor & owner);
   authz_out_cor := (!visitor & owner) | (visitor & owner);
 
 TRANS
@@ -48,4 +48,4 @@ SPEC
   AG ((owner & state = out) -> EF (owner & state = off)) &
   AG ((visitor & state = out) -> EF (visitor & state = mr)) &
   AG ((visitor & !owner & state = out) -> !E[state != lob U state = mr]) &
-  AG (!owner -> AG(state != off))
+  AG ((state = off) -> owner)

@@ -89,5 +89,6 @@ esac;
 FULL_OBS_CTL_GOAL
   AG ((owner & state = out) -> EF (owner & state = off)) &
   AG ((visitor & state = out) -> EF (visitor & state = mr)) &
-  AG ((visitor & !owner & state = out) -> A[ state != mr W (state != mr & state = lob)]) &
-  AG (!owner -> AG(state != off)) 
+  AG ((visitor & state = out) -> A[state != mr W state = lob]) &
+  AG ((state = off) -> owner) &
+  AG (EF (state = out))
