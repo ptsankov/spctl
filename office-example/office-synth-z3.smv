@@ -22,13 +22,13 @@ ASSIGN
 
 DEFINE
   authz_lob_cor := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
-  authz_lob_out := (!visitor & !owner) | (!visitor & owner) | (visitor & !owner) | (visitor & owner);
-  authz_mr_cor := (!visitor & !owner) | (!visitor & owner) | (visitor & !owner) | (visitor & owner);
-  authz_cor_lob := (!visitor & !owner) | (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_lob_out := TRUE;
+  authz_mr_cor := TRUE;
+  authz_cor_lob := TRUE;
   authz_cor_mr := (visitor & !owner) | (visitor & owner);
   authz_cor_off := (!visitor & owner) | (visitor & owner);
-  authz_cor_out := (!visitor & !owner) | (!visitor & owner) | (visitor & !owner) | (visitor & owner);
-  authz_off_cor := (!visitor & !owner) | (!visitor & owner) | (visitor & !owner) | (visitor & owner);
+  authz_cor_out := TRUE;
+  authz_off_cor := TRUE;
   authz_out_lob := (!visitor & owner) | (visitor & !owner) | (visitor & owner);
   authz_out_cor := (!visitor & owner);
 
