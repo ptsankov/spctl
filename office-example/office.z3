@@ -120,9 +120,37 @@
 ; (assert (= r4 owner))
 ; (assert (= r5 owner))
 
-(assert (forall ((o Bool) (v Bool)) (=> o (or (and (authz out lob o v) (authz lob cor o v) (authz cor off o v)) (and (authz out cor o v) (authz cor off o v))))))
-(assert (forall ((o Bool) (v Bool)) (=> v (or (and (authz out lob o v) (authz lob cor o v) (authz cor mr o v)) (and (authz out cor o v) (authz cor mr o v))))))
-(assert (forall ((o Bool) (v Bool)) (=> v (not (and (authz out cor o v) (authz cor mr o v))))))
+(assert (forall ((o Bool) (v Bool)) (=> o (or 
+    (and (authz out lob o v) (authz lob cor o v) (authz cor off o v)) 
+    (and (authz out cor o v) (authz cor off o v))
+))))
+(assert (forall ((o Bool) (v Bool)) (=> v (or 
+    (and (authz out lob o v) (authz lob cor o v) (authz cor mr o v)) 
+    (and (authz out cor o v) (authz cor mr o v))
+))))
+(assert (forall ((o Bool) (v Bool)) (=> v 
+    (not (and (authz out cor o v) (authz cor mr o v)))
+)))
+(assert (forall ((o Bool) (v Bool)) (=> !o (and 
+    (not (and (authz out cor o v) (authz cor off o v)))   
+    (not (and (authz out lob o v) (authz lob cor o v) (authz cor off o v)))
+))))
+(assert (forall ((o Bool) (v Bool)) 
+  (and 
+    (or (and (authz off cor o v) (authz cor lob o v) (authz lob out o v))
+        (and (authz off cor o v) (authz cor out o v))
+    )
+    (or (and (authz mr cor o v) (authz cor lob o v) (authz lob out o v))
+        (and (authz mr cor o v) (authz cor out o v))
+    )
+    (or (authz cor out o v)
+        (and (authz cor lob o v) (authz lob out o v))
+    )
+    (or (authz lob out o v)
+        (and (authz lob cor o v) (authz cor out o v))
+    )
+  )
+))
 
 (check-sat)
 (get-model)
