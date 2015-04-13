@@ -1,0 +1,52 @@
+MODULE main
+
+VAR
+  state : {out, lob, cor, off, mr};
+  visitor: boolean;
+  owner: boolean;
+
+ASSIGN
+  init(state) := out;
+  init(visitor) := {TRUE, FALSE};
+  init(owner) := {TRUE, FALSE};
+
+  next(visitor) := visitor;
+  next(owner) := owner;
+  next(state) := case
+      state = out: {lob, cor, out};
+      state = lob: {out, cor, lob};
+      state = cor: {out, lob, off, mr, cor};
+      state = off: {cor, off};
+      state = mr: {cor, mr};
+  esac;
+
+DEFINE
+  authz_lob_cor := owner | visitor;
+  authz_lob_out := TRUE & TRUE;
+  authz_mr_cor := TRUE | TRUE;
+  authz_cor_lob := TRUE | TRUE;
+  authz_cor_mr := owner | TRUE;
+  authz_cor_off := owner & TRUE;
+  authz_cor_out := TRUE | TRUE;
+  authz_off_cor := TRUE | TRUE;
+  authz_out_lob := TRUE | TRUE;
+  authz_out_cor := TRUE & !visitor;
+
+TRANS
+  ((state = out & !authz_out_lob) -> next(state) != lob) &
+  ((state = out & !authz_out_cor) -> next(state) != cor) &
+  ((state = lob & !authz_lob_out) -> next(state) != out) &
+  ((state = lob & !authz_lob_cor) -> next(state) != cor) &
+  ((state = cor & !authz_cor_out) -> next(state) != out) &
+  ((state = cor & !authz_cor_lob) -> next(state) != lob) &
+  ((state = cor & !authz_cor_off) -> next(state) != off) &
+  ((state = cor & !authz_cor_mr) -> next(state) != mr) &
+  ((state = off & !authz_off_cor) -> next(state) != cor) &
+  ((state = mr & !authz_mr_cor) -> next(state) != mr);
+
+SPEC
+  AG ((owner & state = out) -> EF (owner & state = off)) &
+  AG ((visitor & state = out) -> EF (visitor & state = mr)) &
+  AG ((visitor & !owner & state = out) -> !E[state != lob U state = mr]) &
+  AG ((state = off) -> owner) &
+  AG EF (state = out)
