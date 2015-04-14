@@ -21,45 +21,61 @@ def initGraph():
         M[n] = []
 
 def ctlToStr(formulaTree):
-    return '_'.join(formulaTree)
+    return '_'.join([x if type(x) is str else ctlToStr(x) for x in formulaTree])
 
 def ctlToSAT(formulaTree, state):
-    print ctlToStr(formulaTree)
+    print 'Processing formula tree:', formulaTree
     if formulaTree in M[state]:
         return
     M[state].append(formulaTree)
     if formulaTree[0] == 'true':
-        return
+        print '(define-fun fun_true ((r Room) (o Bool) (v Bool)) Bool true)'
+        return 'fun_true'
     elif formulaTree[0] == 'false':
         return
     elif formulaTree[0] == '!':
-        print 'pass'
+        print 'TODO: !'
     elif formulaTree[0] == '&':
-        print 'pass'
+        print 'TODO: &'
     elif formulaTree[0] == '|':
-        print 'pass'
+        print 'TODO: |'
     elif formulaTree[0] == 'AX':
-        print 'pass'
+        print 'TODO: AX'
     elif formulaTree[0] == 'EX':
-        print 'pass'
+        print 'TODO: EX'
     elif formulaTree[0] == 'AU':
-        print 'pass'
+        print 'TODO: AU'
     elif formulaTree[0] == 'EU':
-        print 'pass'
+        functionName = ctlToStr(formulaTree)        
+        phi1 = formulaTree[1]
+        phi2 = formulaTree[2]
+        phi1Name = ctlToSAT(phi1, state)
+        phi2Name = ctlToSAT(phi2, state)        
+        phi2HoldsInCurrentState = '({} {} {} {})'.format(phi2Name, state, 'o', 'v')
+        phi1HoldsInCurrentState = '({} {} {} {})'.format(phi1Name, state, 'o', 'v')
+        forwardStates = [e[1] for e in G.edges() if e[0] == state]
+        forwardStateFormulas = ['(and ({} {} {} {}) {} (edge {} o v))'.format(functionName, x, 'o', 'v', phi1HoldsInCurrentState, x) for x in forwardStates]
+        orFormula = '(or {})'.format(' '.join([phi2HoldsInCurrentState] + forwardStateFormulas))
+        print '(declare-fun {} (Room Bool Bool) Bool)'.format(functionName) 
+        print '(assert (forall ((r Room) (o Bool) (v Bool)) {}))'.format(orFormula)
+        return functionName
     elif formulaTree[0] == 'AF':
-        print 'pass'
+        print 'TODO: AF'
     elif formulaTree[0] == 'EF':
-        print 'pass'
+        subFormulaTree = formulaTree[1]
+        rewriteFormulaTree = ['EU', ['true'], subFormulaTree]
+        return ctlToSAT(rewriteFormulaTree, state)
     elif formulaTree[0] == 'AX':
-        print 'pass'
+        print 'TODO: AX'
     elif formulaTree[0] == 'EX':
-        print 'pass'
+        print 'TODO: EX'
     else:
-        print ctlToStr(formulaTree, state) + ' <-> ' + state + ' = ' + formulaTree[0] 
+        print '(define-fun fun_{} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(formulaTree, formulaTree)
+        return 'fun_' + formulaTree
         
 
 def main(argv):
-    formulaString = '(EF out)'
+    formulaString = '(EF off)'
     formulaTree = CTLGrammar.parseCTLFormula(formulaString)
     ctlToSAT(formulaTree, init)        
     
