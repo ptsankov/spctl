@@ -1,3 +1,4 @@
 scripts/.project
 scripts/.pydevproject
 *.swp
+*.pyc
