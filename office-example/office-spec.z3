@@ -150,7 +150,6 @@
 (define-fun neg_EF_neg_EF_out ((r Room) (o Bool) (v Bool)) Bool (not (EF_neg_EF_out r o v)))
 (define-fun AG_EF_out ((r Room) (o Bool) (v Bool)) Bool (neg_EF_neg_EF_out r o v))
 
-
 (assert 
   (forall ((r Room) (o Bool) (v Bool)) 
     (and 

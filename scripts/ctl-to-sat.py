@@ -59,13 +59,13 @@ def ctlToSAT(formulaTree):
         rightName = ctlToStr(right)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (=> ({} r o v) ({} r o v)))'.format(functionName, leftName, rightName)
     elif formulaTree[0] == '|':
-        print 'TODO: |'
+        raise NameError('TODO: |')
     elif formulaTree[0] == 'AX':
-        print 'TODO: AX'
+        raise NameError('TODO: AX')
     elif formulaTree[0] == 'EX':
-        print 'TODO: EX'
+        raise NameError('TODO: EX')
     elif formulaTree[0] == 'AU':
-        print 'TODO: AU'
+        raise NameError('TODO: AU')
     elif formulaTree[0] == 'EU':                        
         left = formulaTree[1]        
         ctlToSAT(left)        
@@ -95,7 +95,7 @@ def ctlToSAT(formulaTree):
         ctlToSAT(equivFormulaTree)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool ({} r o v))'.format(functionName, equivFunctionName)
     elif formulaTree[0] == 'EG':
-        print 'TODO: EG'
+        raise NameError('TODO: EG')
     else:
         propName = formulaTree
         if propName in G.nodes():
@@ -109,10 +109,6 @@ def ctlToSAT(formulaTree):
         
 
 def main(argv):
-    #ctlToSAT(CTLGrammar.parseCTLFormula('(EF mr)'))
-    #ctlToSAT(CTLGrammar.parseCTLFormula('(EF off)'))
-    #ctlToSAT(CTLGrammar.parseCTLFormula('(! (EU (! lob) mr))'))
-    #ctlToSAT(CTLGrammar.parseCTLFormula('(AG (-> off owner))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner out) (EF off))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (EF mr))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (! (EU (! lob) mr)))'))
