@@ -22,7 +22,7 @@ def ctlToStr(formulaTree):
         return 'fun_' + formulaTree
     if formulaTree[0] == 'true':
         return 'fun_true' 
-    return '_'.join([x if type(x) is str else ctlToStr(x) for x in formulaTree])
+    return '_'.join([x.replace('!', 'neg').replace('->', 'implies') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
 def ctlToSAT(formulaTree):
     functionName = ctlToStr(formulaTree)
@@ -36,11 +36,21 @@ def ctlToSAT(formulaTree):
     elif formulaTree[0] == 'false':
         return
     elif formulaTree[0] == '!':
-        print 'TODO: !'
+        subFormulaTree = formulaTree[1]
+        subFormulaName = ctlToStr(subFormulaTree)
+        ctlToSAT(subFormulaTree)
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (not ({} r o v)))'.format(functionName, subFormulaName)
     elif formulaTree[0] == '&':
         print 'TODO: &'
     elif formulaTree[0] == '->':
-        print 'TODO: ->'
+        left = formulaTree[1]
+        ctlToSAT(left)
+        right = formulaTree[2]
+        ctlToSAT(right)
+        
+        leftName = ctlToStr(left)
+        rightName = ctlToStr(right)
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (=> ({} r o v) ({} r o v)))'.format(functionName, leftName, rightName)
     elif formulaTree[0] == '|':
         print 'TODO: |'
     elif formulaTree[0] == 'AX':
@@ -72,18 +82,31 @@ def ctlToSAT(formulaTree):
         equivFunctionName = ctlToStr(equivFormulaTree)
         ctlToSAT(equivFormulaTree)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool ({} r o v))'.format(functionName, equivFunctionName)                
-    elif formulaTree[0] == 'AX':
-        print 'TODO: AX'
-    elif formulaTree[0] == 'EX':
-        print 'TODO: EX'
+    elif formulaTree[0] == 'AG':
+        equivFormulaTree = ['!', ['EF', ['!', formulaTree[1]]]]
+        equivFunctionName = ctlToStr(equivFormulaTree)
+        ctlToSAT(equivFormulaTree)
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool ({} r o v))'.format(functionName, equivFunctionName)
+    elif formulaTree[0] == 'EG':
+        print 'TODO: EG'
     else:
-        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(functionName, formulaTree)
+        propName = formulaTree
+        if propName in G.nodes():
+            print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(functionName, propName)
+        elif propName == 'owner':
+            print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool o)'.format(functionName)
+        elif propName == 'visitor':
+            print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool v)'.format(functionName)
+        else:
+            print 'Invalid proposition name'
         
 
 def main(argv):
-    formulaString = '(EF off)'
-    formulaTree = CTLGrammar.parseCTLFormula(formulaString)
-    ctlToSAT(formulaTree)        
+    #formulaString = '(EF off)'
+    ctlToSAT(CTLGrammar.parseCTLFormula('(EF mr)'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(EF off)'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(! (EU (! lob) mr))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(AG (-> off owner))'))
     
 if __name__ == "__main__":
     initGraph()
