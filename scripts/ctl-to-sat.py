@@ -11,18 +11,18 @@ def initGraph():
     global G
     G = nx.DiGraph()
     G.add_nodes_from(['out', 'lob', 'cor', 'off', 'mr'])
-    G.add_edges_from([('out', 'lob'), ('out', 'cor')])
-    G.add_edges_from([('lob', 'out'), ('lob', 'cor')])
-    G.add_edges_from([('cor', 'lob'), ('cor', 'out'), ('cor', 'off'), ('cor', 'mr')])
-    G.add_edge('off', 'cor')
-    G.add_edge('mr', 'cor')
+    G.add_edges_from([('out', 'lob'), ('out', 'cor'), ('out', 'out')])
+    G.add_edges_from([('lob', 'out'), ('lob', 'cor'), ('lob', 'lob')])
+    G.add_edges_from([('cor', 'lob'), ('cor', 'out'), ('cor', 'off'), ('cor', 'mr'), ('cor', 'cor')])
+    G.add_edges_from([('off', 'cor'), ('off', 'off')])
+    G.add_edges_from([('mr', 'cor'), ('mr', 'mr')])
 
 def ctlToStr(formulaTree):
     if type(formulaTree) is str:
         return 'fun_' + formulaTree
     if formulaTree[0] == 'true':
         return 'fun_true' 
-    return '_'.join([x.replace('!', 'neg').replace('->', 'implies') if type(x) is str else ctlToStr(x) for x in formulaTree])
+    return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
 def ctlToSAT(formulaTree):
     functionName = ctlToStr(formulaTree)
@@ -41,7 +41,14 @@ def ctlToSAT(formulaTree):
         ctlToSAT(subFormulaTree)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (not ({} r o v)))'.format(functionName, subFormulaName)
     elif formulaTree[0] == '&':
-        print 'TODO: &'
+        left = formulaTree[1]
+        ctlToSAT(left)
+        right = formulaTree[2]
+        ctlToSAT(right)
+        
+        leftName = ctlToStr(left)
+        rightName = ctlToStr(right)                
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (and ({} r o v) ({} r o v)))'.format(functionName, leftName, rightName)
     elif formulaTree[0] == '->':
         left = formulaTree[1]
         ctlToSAT(left)
@@ -102,11 +109,15 @@ def ctlToSAT(formulaTree):
         
 
 def main(argv):
-    #formulaString = '(EF off)'
-    ctlToSAT(CTLGrammar.parseCTLFormula('(EF mr)'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(EF off)'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(! (EU (! lob) mr))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(AG (-> off owner))'))
+    #ctlToSAT(CTLGrammar.parseCTLFormula('(EF mr)'))
+    #ctlToSAT(CTLGrammar.parseCTLFormula('(EF off)'))
+    #ctlToSAT(CTLGrammar.parseCTLFormula('(! (EU (! lob) mr))'))
+    #ctlToSAT(CTLGrammar.parseCTLFormula('(AG (-> off owner))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner out) (EF off))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (EF mr))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (! (EU (! lob) mr)))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) out) (! (EF off)))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(AG (EF out))'))
     
 if __name__ == "__main__":
     initGraph()

@@ -26,13 +26,13 @@ def parseZ3File(inputFile):
         i = 0
         while i < len(lines):
             if '(define-fun {}_{}_h0 () Int'.format(e[0], e[1]) in lines[i]:
-                synthOp = lines[i+1][0]
+                synthOp = lines[i+1].split(')')[0]
                 if int(synthOp) == 0:
                     op = '&'
                 else:
                     op = '|'
             if '(define-fun {}_{}_h1 () Int'.format(e[0], e[1]) in lines[i]:
-                synthLeft = lines[i+1][0]
+                synthLeft = lines[i+1].split(')')[0]
                 if int(synthLeft) == 0:
                     left = 'owner'
                 elif int(synthLeft) == 1:
@@ -40,7 +40,7 @@ def parseZ3File(inputFile):
                 else:
                     left = 'TRUE'
             if '(define-fun {}_{}_h2 () Int'.format(e[0], e[1]) in lines[i]:
-                synthRight = lines[i+1][0]
+                synthRight = lines[i+1].split(')')[0]
                 if int(synthRight) == 0:
                     right = 'visitor'
                 elif int(synthRight) == 1:

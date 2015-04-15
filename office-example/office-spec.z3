@@ -5,6 +5,7 @@
 (declare-const off Room)
 (declare-const mr Room)
 (assert (distinct out lob cor off mr))
+(assert (forall ((r Room)) (or (= r out) (= r lob) (= r cor) (= r off) (= r mr))))
 
 (declare-const out_lob_h0 Int)
 (declare-const out_lob_h1 Int)
@@ -83,17 +84,10 @@
   )
 )
 
+(define-fun fun_owner ((r Room) (o Bool) (v Bool)) Bool o)
+(define-fun fun_out ((r Room) (o Bool) (v Bool)) Bool (= r out))
+(define-fun and_owner_out ((r Room) (o Bool) (v Bool)) Bool (and (fun_owner r o v) (fun_out r o v)))
 (define-fun fun_true ((r Room) (o Bool) (v Bool)) Bool true)
-(define-fun fun_mr ((r Room) (o Bool) (v Bool)) Bool (= r mr))
-(define-fun EU_fun_true_mr ((r Room) (o Bool) (v Bool)) Bool
-  (or
-    (fun_mr r o v)
-    (exists ((r1 Room)) (and (distinct r r1) (fun_true r o v) (authz r r1 o v) (fun_mr r1 o v)))
-    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_mr r2 o v)))
-    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_true r2     o v) (authz r2 r3 o v) (fun_mr r3 o v)))
-  )
-)
-(define-fun EF_mr ((r Room) (o Bool) (v Bool)) Bool (EU_fun_true_mr r o v))
 (define-fun fun_off ((r Room) (o Bool) (v Bool)) Bool (= r off))
 (define-fun EU_fun_true_off ((r Room) (o Bool) (v Bool)) Bool
   (or
@@ -104,6 +98,20 @@
   )
 )
 (define-fun EF_off ((r Room) (o Bool) (v Bool)) Bool (EU_fun_true_off r o v))
+(define-fun implies_and_owner_out_EF_off ((r Room) (o Bool) (v Bool)) Bool (=> (and_owner_out r o v) (EF_off r o v)))
+(define-fun fun_visitor ((r Room) (o Bool) (v Bool)) Bool v)
+(define-fun and_visitor_out ((r Room) (o Bool) (v Bool)) Bool (and (fun_visitor r o v) (fun_out r o v)))
+(define-fun fun_mr ((r Room) (o Bool) (v Bool)) Bool (= r mr))
+(define-fun EU_fun_true_mr ((r Room) (o Bool) (v Bool)) Bool
+  (or
+    (fun_mr r o v)
+    (exists ((r1 Room)) (and (distinct r r1) (fun_true r o v) (authz r r1 o v) (fun_mr r1 o v)))
+    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_mr r2 o v)))
+    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_true r2     o v) (authz r2 r3 o v) (fun_mr r3 o v)))
+  )
+)
+(define-fun EF_mr ((r Room) (o Bool) (v Bool)) Bool (EU_fun_true_mr r o v))
+(define-fun implies_and_visitor_out_EF_mr ((r Room) (o Bool) (v Bool)) Bool (=> (and_visitor_out r o v) (EF_mr r o v)))
 (define-fun fun_lob ((r Room) (o Bool) (v Bool)) Bool (= r lob))
 (define-fun neg_lob ((r Room) (o Bool) (v Bool)) Bool (not (fun_lob r o v)))
 (define-fun EU_neg_lob_mr ((r Room) (o Bool) (v Bool)) Bool
@@ -115,49 +123,43 @@
   )
 )
 (define-fun neg_EU_neg_lob_mr ((r Room) (o Bool) (v Bool)) Bool (not (EU_neg_lob_mr r o v)))
-(define-fun fun_owner ((r Room) (o Bool) (v Bool)) Bool o)
-(define-fun implies_off_owner ((r Room) (o Bool) (v Bool)) Bool (=> (fun_off r o v) (fun_owner r o v)))
-(define-fun neg_implies_off_owner ((r Room) (o Bool) (v Bool)) Bool (not (implies_off_owner r o v)))
-(define-fun EU_fun_true_neg_implies_off_owner ((r Room) (o Bool) (v Bool)) Bool
+(define-fun implies_and_visitor_out_neg_EU_neg_lob_mr ((r Room) (o Bool) (v Bool)) Bool (=> (and_visitor_out r o v) (neg_EU_neg_lob_mr r o v)))
+(define-fun neg_owner ((r Room) (o Bool) (v Bool)) Bool (not (fun_owner r o v)))
+(define-fun and_neg_owner_out ((r Room) (o Bool) (v Bool)) Bool (and (neg_owner r o v) (fun_out r o v)))
+(define-fun neg_EF_off ((r Room) (o Bool) (v Bool)) Bool (not (EF_off r o v)))
+(define-fun implies_and_neg_owner_out_neg_EF_off ((r Room) (o Bool) (v Bool)) Bool (=> (and_neg_owner_out r o v) (neg_EF_off r o v)))
+(define-fun EU_fun_true_out ((r Room) (o Bool) (v Bool)) Bool
   (or
-    (neg_implies_off_owner r o v)
-    (exists ((r1 Room)) (and (distinct r r1) (fun_true r o v) (authz r r1 o v) (neg_implies_off_owner r1 o v)))
-    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (neg_implies_off_owner r2 o v)))
-    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_true r2     o v) (authz r2 r3 o v) (neg_implies_off_owner r3 o v)))
+    (fun_out r o v)
+    (exists ((r1 Room)) (and (distinct r r1) (fun_true r o v) (authz r r1 o v) (fun_out r1 o v)))
+    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_out r2 o v)))
+    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_true r2     o v) (authz r2 r3 o v) (fun_out r3 o v)))
   )
 )
-(define-fun EF_neg_implies_off_owner ((r Room) (o Bool) (v Bool)) Bool (EU_fun_true_neg_implies_off_owner r o v))
-(define-fun neg_EF_neg_implies_off_owner ((r Room) (o Bool) (v Bool)) Bool (not (EF_neg_implies_off_owner r o v)))
-(define-fun AG_implies_off_owner ((r Room) (o Bool) (v Bool)) Bool (neg_EF_neg_implies_off_owner r o v))
+(define-fun EF_out ((r Room) (o Bool) (v Bool)) Bool (EU_fun_true_out r o v))
+(define-fun neg_EF_out ((r Room) (o Bool) (v Bool)) Bool (not (EF_out r o v)))
+(define-fun EU_fun_true_neg_EF_out ((r Room) (o Bool) (v Bool)) Bool
+  (or
+    (neg_EF_out r o v)
+    (exists ((r1 Room)) (and (distinct r r1) (fun_true r o v) (authz r r1 o v) (neg_EF_out r1 o v)))
+    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (neg_EF_out r2 o v)))
+    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) (fun_true r o v) (authz r r1 o v) (fun_true r1 o v) (authz r1 r2 o v) (fun_true r2     o v) (authz r2 r3 o v) (neg_EF_out r3 o v)))
+  )
+)
+(define-fun EF_neg_EF_out ((r Room) (o Bool) (v Bool)) Bool (EU_fun_true_neg_EF_out r o v))
+(define-fun neg_EF_neg_EF_out ((r Room) (o Bool) (v Bool)) Bool (not (EF_neg_EF_out r o v)))
+(define-fun AG_EF_out ((r Room) (o Bool) (v Bool)) Bool (neg_EF_neg_EF_out r o v))
 
 
 (assert 
   (forall ((r Room) (o Bool) (v Bool)) 
-    (=> 
-      (and o (= r out))
-      (EF_off r o v)
+    (and 
+      (implies_and_owner_out_EF_off r o v)
+      (implies_and_visitor_out_EF_mr r o v)
+      (implies_and_visitor_out_neg_EU_neg_lob_mr r o v)
+      (implies_and_neg_owner_out_neg_EF_off r o v)
+      (AG_EF_out r o v)
     )
-  )
-)
-(assert 
-  (forall ((r Room) (o Bool) (v Bool)) 
-    (=> 
-      (and v (= r out))
-      (EF_mr r o v)
-    )
-  )
-)
-(assert
-  (forall ((r Room) (o Bool) (v Bool))
-    (=> 
-      (and v (= r out))
-      (neg_EU_neg_lob_mr r o v)
-    )
-  )
-)
-(assert
-  (forall ((r Room) (o Bool) (v Bool))
-    (=> (= r out) (AG_implies_off_owner r o v))
   )
 )
 
