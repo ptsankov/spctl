@@ -5,8 +5,7 @@ import networkx as nx
 import CTLGrammar
 
 G = None
-init = 'out'
-M = {}
+F = set()
 
 def initGraph():
     global G
@@ -17,17 +16,20 @@ def initGraph():
     G.add_edges_from([('cor', 'lob'), ('cor', 'out'), ('cor', 'off'), ('cor', 'mr')])
     G.add_edge('off', 'cor')
     G.add_edge('mr', 'cor')
-    for n in G.nodes():
-        M[n] = []
 
 def ctlToStr(formulaTree):
+    if type(formulaTree) is str:
+        return 'fun_' + formulaTree
+    if formulaTree[0] == 'true':
+        return 'fun_true' 
     return '_'.join([x if type(x) is str else ctlToStr(x) for x in formulaTree])
 
-def ctlToSAT(formulaTree, state):
-    print 'Processing formula tree:', formulaTree
-    if formulaTree in M[state]:
+def ctlToSAT(formulaTree):
+    functionName = ctlToStr(formulaTree)
+    if functionName in F:
         return
-    M[state].append(formulaTree)
+    F.add(functionName)
+    
     if formulaTree[0] == 'true':
         print '(define-fun fun_true ((r Room) (o Bool) (v Bool)) Bool true)'
         return 'fun_true'
@@ -37,6 +39,8 @@ def ctlToSAT(formulaTree, state):
         print 'TODO: !'
     elif formulaTree[0] == '&':
         print 'TODO: &'
+    elif formulaTree[0] == '->':
+        print 'TODO: ->'
     elif formulaTree[0] == '|':
         print 'TODO: |'
     elif formulaTree[0] == 'AX':
@@ -45,39 +49,41 @@ def ctlToSAT(formulaTree, state):
         print 'TODO: EX'
     elif formulaTree[0] == 'AU':
         print 'TODO: AU'
-    elif formulaTree[0] == 'EU':
-        functionName = ctlToStr(formulaTree)        
-        phi1 = formulaTree[1]
-        phi2 = formulaTree[2]
-        phi1Name = ctlToSAT(phi1, state)
-        phi2Name = ctlToSAT(phi2, state)        
-        phi2HoldsInCurrentState = '({} {} {} {})'.format(phi2Name, state, 'o', 'v')
-        phi1HoldsInCurrentState = '({} {} {} {})'.format(phi1Name, state, 'o', 'v')
-        forwardStates = [e[1] for e in G.edges() if e[0] == state]
-        forwardStateFormulas = ['(and ({} {} {} {}) {} (edge {} o v))'.format(functionName, x, 'o', 'v', phi1HoldsInCurrentState, x) for x in forwardStates]
-        orFormula = '(or {})'.format(' '.join([phi2HoldsInCurrentState] + forwardStateFormulas))
-        print '(declare-fun {} (Room Bool Bool) Bool)'.format(functionName) 
-        print '(assert (forall ((r Room) (o Bool) (v Bool)) {}))'.format(orFormula)
-        return functionName
+    elif formulaTree[0] == 'EU':                        
+        left = formulaTree[1]        
+        ctlToSAT(left)        
+        right = formulaTree[2]                
+        ctlToSAT(right)
+        
+        leftFunctionName = ctlToStr(left)
+        rightFunctionName = ctlToStr(right)        
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool'.format(functionName)
+        print '  (or'
+        print '    ({} r o v)'.format(rightFunctionName)
+        print '    (exists ((r1 Room)) (and (distinct r r1) ({} r o v) (authz r r1 o v) ({} r1 o v)))'.format(leftFunctionName, rightFunctionName)
+        print '    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) ({} r o v) (authz r r1 o v) ({} r1 o v) (authz r1 r2 o v) ({} r2 o v)))'.format(leftFunctionName, leftFunctionName, rightFunctionName)
+        print '    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) ({} r o v) (authz r r1 o v) ({} r1 o v) (authz r1 r2 o v) ({} r2     o v) (authz r2 r3 o v) ({} r3 o v)))'.format(leftFunctionName, leftFunctionName, leftFunctionName, rightFunctionName)
+        print '  )'
+        print ')'
     elif formulaTree[0] == 'AF':
         print 'TODO: AF'
-    elif formulaTree[0] == 'EF':
-        subFormulaTree = formulaTree[1]
-        rewriteFormulaTree = ['EU', ['true'], subFormulaTree]
-        return ctlToSAT(rewriteFormulaTree, state)
+    elif formulaTree[0] == 'EF':        
+        equivFormulaTree = ['EU', ['true'], formulaTree[1]]
+        equivFunctionName = ctlToStr(equivFormulaTree)
+        ctlToSAT(equivFormulaTree)
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool ({} r o v))'.format(functionName, equivFunctionName)                
     elif formulaTree[0] == 'AX':
         print 'TODO: AX'
     elif formulaTree[0] == 'EX':
         print 'TODO: EX'
     else:
-        print '(define-fun fun_{} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(formulaTree, formulaTree)
-        return 'fun_' + formulaTree
+        print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(functionName, formulaTree)
         
 
 def main(argv):
     formulaString = '(EF off)'
     formulaTree = CTLGrammar.parseCTLFormula(formulaString)
-    ctlToSAT(formulaTree, init)        
+    ctlToSAT(formulaTree)        
     
 if __name__ == "__main__":
     initGraph()
