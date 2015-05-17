@@ -3,18 +3,7 @@
 import sys
 import CTLGrammar
 
-RESOURCE_GRAPH = None
 DEFINED_FUNCTIONS = set()
-
-def initGraph():
-    global RESOURCE_GRAPH
-    RESOURCE_GRAPH = nx.DiGraph()
-    RESOURCE_GRAPH.add_nodes_from(['out', 'lob', 'cor', 'off', 'mr'])
-    RESOURCE_GRAPH.add_edges_from([('out', 'lob'), ('out', 'cor'), ('out', 'out')])
-    RESOURCE_GRAPH.add_edges_from([('lob', 'out'), ('lob', 'cor'), ('lob', 'lob')])
-    RESOURCE_GRAPH.add_edges_from([('cor', 'lob'), ('cor', 'out'), ('cor', 'off'), ('cor', 'mr'), ('cor', 'cor')])
-    RESOURCE_GRAPH.add_edges_from([('off', 'cor'), ('off', 'off')])
-    RESOURCE_GRAPH.add_edges_from([('mr', 'cor'), ('mr', 'mr')])
 
 def ctlToStr(formulaTree):
     if type(formulaTree) is str:
@@ -23,7 +12,7 @@ def ctlToStr(formulaTree):
         return 'fun_true' 
     return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
-def ctlToSAT(formulaTree):
+def ctlToSAT(formulaTree, resourceGraph):
     functionName = ctlToStr(formulaTree)
     if functionName in DEFINED_FUNCTIONS:
         return
@@ -97,7 +86,7 @@ def ctlToSAT(formulaTree):
         raise NameError('TODO: EG')
     else:
         propName = formulaTree
-        if propName in RESOURCE_GRAPH.nodes():
+        if propName in resourceGraph.nodes():
             print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(functionName, propName)
         elif propName == 'owner':
             print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool o)'.format(functionName)
@@ -105,14 +94,3 @@ def ctlToSAT(formulaTree):
             print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool v)'.format(functionName)
         else:
             print 'Invalid proposition name'
-        
-
-def main(argv):
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner out) (EF off))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (EF mr))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (! (EU (! lob) mr)))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) out) (! (EF off)))'))
-    
-if __name__ == "__main__":
-    initGraph()
-    main(sys.argv[1:])    
