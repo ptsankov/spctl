@@ -1,21 +1,20 @@
 #!/bin/python
 
 import sys
-import networkx as nx
 import CTLGrammar
 
-G = None
-F = set()
+RESOURCE_GRAPH = None
+DEFINED_FUNCTIONS = set()
 
 def initGraph():
-    global G
-    G = nx.DiGraph()
-    G.add_nodes_from(['out', 'lob', 'cor', 'off', 'mr'])
-    G.add_edges_from([('out', 'lob'), ('out', 'cor'), ('out', 'out')])
-    G.add_edges_from([('lob', 'out'), ('lob', 'cor'), ('lob', 'lob')])
-    G.add_edges_from([('cor', 'lob'), ('cor', 'out'), ('cor', 'off'), ('cor', 'mr'), ('cor', 'cor')])
-    G.add_edges_from([('off', 'cor'), ('off', 'off')])
-    G.add_edges_from([('mr', 'cor'), ('mr', 'mr')])
+    global RESOURCE_GRAPH
+    RESOURCE_GRAPH = nx.DiGraph()
+    RESOURCE_GRAPH.add_nodes_from(['out', 'lob', 'cor', 'off', 'mr'])
+    RESOURCE_GRAPH.add_edges_from([('out', 'lob'), ('out', 'cor'), ('out', 'out')])
+    RESOURCE_GRAPH.add_edges_from([('lob', 'out'), ('lob', 'cor'), ('lob', 'lob')])
+    RESOURCE_GRAPH.add_edges_from([('cor', 'lob'), ('cor', 'out'), ('cor', 'off'), ('cor', 'mr'), ('cor', 'cor')])
+    RESOURCE_GRAPH.add_edges_from([('off', 'cor'), ('off', 'off')])
+    RESOURCE_GRAPH.add_edges_from([('mr', 'cor'), ('mr', 'mr')])
 
 def ctlToStr(formulaTree):
     if type(formulaTree) is str:
@@ -26,9 +25,9 @@ def ctlToStr(formulaTree):
 
 def ctlToSAT(formulaTree):
     functionName = ctlToStr(formulaTree)
-    if functionName in F:
+    if functionName in DEFINED_FUNCTIONS:
         return
-    F.add(functionName)
+    DEFINED_FUNCTIONS.add(functionName)
     
     if formulaTree[0] == 'true':
         print '(define-fun fun_true ((r Room) (o Bool) (v Bool)) Bool true)'
@@ -98,7 +97,7 @@ def ctlToSAT(formulaTree):
         raise NameError('TODO: EG')
     else:
         propName = formulaTree
-        if propName in G.nodes():
+        if propName in RESOURCE_GRAPH.nodes():
             print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (= r {}))'.format(functionName, propName)
         elif propName == 'owner':
             print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool o)'.format(functionName)
@@ -113,26 +112,7 @@ def main(argv):
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (EF mr))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (! (EU (! lob) mr)))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) out) (! (EF off)))'))
-    #ctlToSAT(CTLGrammar.parseCTLFormula('(AG (EF out))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF off) (-> (& (& owner visitor) off) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF off) (-> (& (& (! owner) visitor) off) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF off) (-> (& (& owner (! visitor)) off) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF off) (-> (& (& (! owner) (! visitor)) off) (EF out))))'))
     
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF mr) (-> (& (& owner visitor) mr) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF mr) (-> (& (& (! owner) visitor) mr) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF mr) (-> (& (& owner (! visitor)) mr) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF mr) (-> (& (& (! owner) (! visitor)) mr) (EF out))))'))
-    
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF lob) (-> (& (& owner visitor) lob) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF lob) (-> (& (& (! owner) visitor) lob) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF lob) (-> (& (& owner (! visitor)) lob) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF lob) (-> (& (& (! owner) (! visitor)) lob) (EF out))))'))
-    
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF cor) (-> (& (& owner visitor) cor) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF cor) (-> (& (& (! owner) visitor) cor) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF cor) (-> (& (& owner (! visitor)) cor) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF cor) (-> (& (& (! owner) (! visitor)) cor) (EF out))))'))
 if __name__ == "__main__":
     initGraph()
     main(sys.argv[1:])    
