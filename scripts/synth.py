@@ -10,6 +10,8 @@ import networkx as nx
 import sys
 import os
 
+from ctl import ctlToSAT
+
 if __name__ == '__main__':
     if len(sys.argv) != 3:
         print 'Usage: %s <graph file> <ctl file>'.format(sys.argv[0])

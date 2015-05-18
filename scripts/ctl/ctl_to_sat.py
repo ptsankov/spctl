@@ -1,7 +1,7 @@
 #!/bin/python
 
 import sys
-import CTLGrammar
+import ctl_grammar
 
 DEFINED_FUNCTIONS = set()
 
