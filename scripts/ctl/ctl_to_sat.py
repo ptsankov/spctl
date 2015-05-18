@@ -2,6 +2,7 @@
 
 import sys
 import ctl_grammar
+from ctl_grammar import parseCTLFormula
 
 DEFINED_FUNCTIONS = set()
 
@@ -12,7 +13,11 @@ def ctlToStr(formulaTree):
         return 'fun_true' 
     return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
-def ctlToSAT(formulaTree, resourceGraph):
+def ctlToSAT(ctlString, resourceGraph):
+    ctlFormula = parseCTLFormula(ctlString)
+    return ctlFormulaToSAT(ctlFormula, resourceGraph)
+
+def ctlFormulaToSAT(formulaTree, resourceGraph):
     functionName = ctlToStr(formulaTree)
     if functionName in DEFINED_FUNCTIONS:
         return
@@ -26,22 +31,22 @@ def ctlToSAT(formulaTree, resourceGraph):
     elif formulaTree[0] == '!':
         subFormulaTree = formulaTree[1]
         subFormulaName = ctlToStr(subFormulaTree)
-        ctlToSAT(subFormulaTree)
+        ctlFormulaToSAT(subFormulaTree, resourceGraph)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (not ({} r o v)))'.format(functionName, subFormulaName)
     elif formulaTree[0] == '&':
         left = formulaTree[1]
-        ctlToSAT(left)
+        ctlFormulaToSAT(left, resourceGraph)
         right = formulaTree[2]
-        ctlToSAT(right)
+        ctlFormulaToSAT(right, resourceGraph)
         
         leftName = ctlToStr(left)
         rightName = ctlToStr(right)                
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool (and ({} r o v) ({} r o v)))'.format(functionName, leftName, rightName)
     elif formulaTree[0] == '->':
         left = formulaTree[1]
-        ctlToSAT(left)
+        ctlFormulaToSAT(left, resourceGraph)
         right = formulaTree[2]
-        ctlToSAT(right)
+        ctlFormulaToSAT(right, resourceGraph)
         
         leftName = ctlToStr(left)
         rightName = ctlToStr(right)
@@ -56,9 +61,9 @@ def ctlToSAT(formulaTree, resourceGraph):
         raise NameError('TODO: AU')
     elif formulaTree[0] == 'EU':                        
         left = formulaTree[1]        
-        ctlToSAT(left)        
+        ctlFormulaToSAT(left, resourceGraph)        
         right = formulaTree[2]                
-        ctlToSAT(right)
+        ctlFormulaToSAT(right, resourceGraph)
         
         leftFunctionName = ctlToStr(left)
         rightFunctionName = ctlToStr(right)        
@@ -75,12 +80,12 @@ def ctlToSAT(formulaTree, resourceGraph):
     elif formulaTree[0] == 'EF':        
         equivFormulaTree = ['EU', ['true'], formulaTree[1]]
         equivFunctionName = ctlToStr(equivFormulaTree)
-        ctlToSAT(equivFormulaTree)
+        ctlFormulaToSAT(equivFormulaTree, resourceGraph)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool ({} r o v))'.format(functionName, equivFunctionName)                
     elif formulaTree[0] == 'AG':
         equivFormulaTree = ['!', ['EF', ['!', formulaTree[1]]]]
         equivFunctionName = ctlToStr(equivFormulaTree)
-        ctlToSAT(equivFormulaTree)
+        ctlFormulaToSAT(equivFormulaTree, resourceGraph)
         print '(define-fun {} ((r Room) (o Bool) (v Bool)) Bool ({} r o v))'.format(functionName, equivFunctionName)
     elif formulaTree[0] == 'EG':
         raise NameError('TODO: EG')

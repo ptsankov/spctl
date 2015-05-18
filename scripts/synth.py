@@ -38,5 +38,5 @@ if __name__ == '__main__':
          
     for ctlFormula in ctlFormulas:
         ctlFormula = ctlFormula.strip()
-        
         print 'Processing CTL formula:', ctlFormula
+        ctlToSAT(ctlFormula, resourceGraph)        
