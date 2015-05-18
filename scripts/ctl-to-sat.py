@@ -113,26 +113,28 @@ def main(argv):
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (EF mr))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& visitor out) (! (EU (! lob) mr)))'))
     ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) out) (! (EF off)))'))
-    #ctlToSAT(CTLGrammar.parseCTLFormula('(AG (EF out))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF off) (-> (& (& owner visitor) off) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF off) (-> (& (& (! owner) visitor) off) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF off) (-> (& (& owner (! visitor)) off) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF off) (-> (& (& (! owner) (! visitor)) off) (EF out))))'))
-    
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF mr) (-> (& (& owner visitor) mr) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF mr) (-> (& (& (! owner) visitor) mr) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF mr) (-> (& (& owner (! visitor)) mr) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF mr) (-> (& (& (! owner) (! visitor)) mr) (EF out))))'))
-    
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF lob) (-> (& (& owner visitor) lob) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF lob) (-> (& (& (! owner) visitor) lob) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF lob) (-> (& (& owner (! visitor)) lob) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF lob) (-> (& (& (! owner) (! visitor)) lob) (EF out))))'))
-    
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF cor) (-> (& (& owner visitor) cor) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF cor) (-> (& (& (! owner) visitor) cor) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF cor) (-> (& (& owner (! visitor)) cor) (EF out))))'))
-    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF cor) (-> (& (& (! owner) (! visitor)) cor) (EF out))))'))
+    ctlToSAT(CTLGrammar.parseCTLFormula('(AG (EF out))'))
+
+
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF off) (-> (& (& owner visitor) off) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF off) (-> (& (& (! owner) visitor) off) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF off) (-> (& (& owner (! visitor)) off) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF off) (-> (& (& (! owner) (! visitor)) off) (EF out))))'))
+#    
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF mr) (-> (& (& owner visitor) mr) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF mr) (-> (& (& (! owner) visitor) mr) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF mr) (-> (& (& owner (! visitor)) mr) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF mr) (-> (& (& (! owner) (! visitor)) mr) (EF out))))'))
+#    
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF lob) (-> (& (& owner visitor) lob) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF lob) (-> (& (& (! owner) visitor) lob) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF lob) (-> (& (& owner (! visitor)) lob) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF lob) (-> (& (& (! owner) (! visitor)) lob) (EF out))))'))
+#
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner visitor) (-> (EF cor) (-> (& (& owner visitor) cor) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) visitor) (-> (EF cor) (-> (& (& (! owner) visitor) cor) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& owner (! visitor)) (-> (EF cor) (-> (& (& owner (! visitor)) cor) (EF out))))'))
+#    ctlToSAT(CTLGrammar.parseCTLFormula('(-> (& (! owner) (! visitor)) (-> (EF cor) (-> (& (& (! owner) (! visitor)) cor) (EF out))))'))
 if __name__ == "__main__":
     initGraph()
     main(sys.argv[1:])    
