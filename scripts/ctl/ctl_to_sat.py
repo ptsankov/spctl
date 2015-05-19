@@ -1,7 +1,5 @@
 #!/bin/python
 
-import sys
-import ctl_grammar
 from ctl_grammar import parseCTLFormula
 
 DEFINED_FUNCTIONS = set()

@@ -34,7 +34,7 @@ if __name__ == '__main__':
     print 'Resource in the graph:', resourceGraph.nodes()
 
     with open(ctlFilename) as f:
-         ctlFormulas = f.readlines()
+        ctlFormulas = f.readlines()
          
     for ctlFormula in ctlFormulas:
         ctlFormula = ctlFormula.strip()
