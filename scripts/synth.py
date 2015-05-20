@@ -12,6 +12,7 @@ import os
 
 from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
+from utils.smt2Translation import declarePolicyTemplates
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -52,8 +53,9 @@ if __name__ == '__main__':
     
     outFile = open(outputFilename, 'w')
     setOutputFile(outFile)
-    declareRooms(resGraph, outFile)    
-             
+    
+    declareRooms(resGraph)    
+    declarePolicyTemplates(resGraph) 
                  
     for ctlFormula in ctlFormulas:
         print 'Processing CTL formula:', ctlFormula
