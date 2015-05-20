@@ -13,17 +13,23 @@ import os
 from ctl import ctlToSAT
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print 'Usage: %s <graph file> <attributes file> <ctl file>'.format(sys.argv[0])
+    if len(sys.argv) != 5:
+        print 'Usage: {} <graph file> <attributes file> <ctl file> <output smt2 file>'.format(sys.argv[0])
         sys.exit(-1)
         
     resGraphFilename = sys.argv[1]
     attributesFilename = sys.argv[2]
     ctlFilename = sys.argv[3]
+    outputFilename = sys.argv[4]
     for filename in [resGraphFilename, attributesFilename, ctlFilename]:
         if not os.path.isfile(filename):
             print filename, 'is not a file'
-            sys.exit(-1)    
+            sys.exit(-1)
+    if os.path.isfile(outputFilename):
+        msg = 'The output file "' + outputFilename + '" exists. Override?'
+        shall = raw_input('{} (y/N) '.format(msg)).lower() == 'y'
+        if not shall:
+            sys.exit(-2)    
         
     print 'Resource graph filename:', resGraphFilename
     print 'Attributes filename:', attributesFilename
@@ -42,7 +48,9 @@ if __name__ == '__main__':
     with open(ctlFilename) as f:
         ctlFormulas = f.readlines()
     ctlFormulas = [f.strip() for f in ctlFormulas]
+    
+    outFile = open(outputFilename, 'w')
                  
     for ctlFormula in ctlFormulas:
         print 'Processing CTL formula:', ctlFormula
-        ctlToSAT(ctlFormula, resGraph, attrs)        
+        ctlToSAT(ctlFormula, resGraph, attrs, outFile)        
