@@ -13,30 +13,36 @@ import os
 from ctl import ctlToSAT
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print 'Usage: %s <graph file> <ctl file>'.format(sys.argv[0])
+    if len(sys.argv) != 4:
+        print 'Usage: %s <graph file> <attributes file> <ctl file>'.format(sys.argv[0])
         sys.exit(-1)
         
-    resourceGraphFilename = sys.argv[1]
-    ctlFilename = sys.argv[2]
-    if not os.path.isfile(resourceGraphFilename):
-        print resourceGraphFilename, 'is not a file'
-        sys.exit(-2)
-    if not os.path.isfile(ctlFilename):
-        print ctlFilename, 'is not a file'
-        sys.exit(-2)
+    resGraphFilename = sys.argv[1]
+    attributesFilename = sys.argv[2]
+    ctlFilename = sys.argv[3]
+    for filename in [resGraphFilename, attributesFilename, ctlFilename]:
+        if not os.path.isfile(filename):
+            print filename, 'is not a file'
+            sys.exit(-1)    
         
-    print 'Resource graph filename:', resourceGraphFilename
+    print 'Resource graph filename:', resGraphFilename
+    print 'Attributes filename:', attributesFilename
     print 'CTL filename:', ctlFilename
     
+    resGraph = nx.read_adjlist(resGraphFilename, create_using = nx.DiGraph())    
+    print 'Resource in the graph:', resGraph.nodes()
     
-    resourceGraph = nx.read_adjlist(resourceGraphFilename, create_using = nx.DiGraph())    
-    print 'Resource in the graph:', resourceGraph.nodes()
+    with open(attributesFilename) as f:
+        attrs = f.readlines()
+    attrs = [a.strip() for a in attrs]
+        
+    for attr in attrs:
+        print attr
 
     with open(ctlFilename) as f:
         ctlFormulas = f.readlines()
-         
+    ctlFormulas = [f.strip() for f in ctlFormulas]
+                 
     for ctlFormula in ctlFormulas:
-        ctlFormula = ctlFormula.strip()
         print 'Processing CTL formula:', ctlFormula
-        ctlToSAT(ctlFormula, resourceGraph)        
+        ctlToSAT(ctlFormula, resGraph, attrs)        
