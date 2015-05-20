@@ -11,6 +11,8 @@ import sys
 import os
 
 from ctl import ctlToSAT
+from utils.helperMethods import setOutputFile
+from z3_utils import smt2Translation
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -50,7 +52,10 @@ if __name__ == '__main__':
     ctlFormulas = [f.strip() for f in ctlFormulas]
     
     outFile = open(outputFilename, 'w')
+    setOutputFile(outFile)
+    smt2Translation.declareRooms(resGraph, outFile)    
+             
                  
     for ctlFormula in ctlFormulas:
         print 'Processing CTL formula:', ctlFormula
-        ctlToSAT(ctlFormula, resGraph, attrs, outFile)        
+        ctlToSAT(ctlFormula, resGraph, attrs)        

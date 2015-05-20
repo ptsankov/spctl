@@ -1,10 +1,10 @@
 #!/bin/python
 
 from ctl_grammar import parseCTLFormula
+from utils import write
 
 DEFINED_FUNCTIONS = set()
 LONGEST_ACYCLIC_PATH = 3
-OUTPUT_FILE = None
 
 def ctlToStr(formulaTree):
     if type(formulaTree) is str:
@@ -17,15 +17,9 @@ def funParams(attrs):
     attrParams = ' '.join(['(room Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])    
     return '(' + attrParams + ')'
 
-def ctlToSAT(ctlString, resGraph, attrs, outFile):
-    global OUTPUT_FILE
-    OUTPUT_FILE = outFile
+def ctlToSAT(ctlString, resGraph, attrs):    
     ctlFormula = parseCTLFormula(ctlString)
     return ctlFormulaToSAT(ctlFormula, resGraph, attrs)
-
-def write(str):
-    assert OUTPUT_FILE is not None
-    OUTPUT_FILE.write(str)
     
 
 def ctlFormulaToSAT(formulaTree, resGraph, attrs):
