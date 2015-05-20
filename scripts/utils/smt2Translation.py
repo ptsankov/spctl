@@ -7,3 +7,6 @@ def declareRooms(resGraph, outFile):
     write('(assert (distinct {}))\n'.format(' '.join(resGraph.nodes())))
     write('(assert (forall ((r Room)) (or ' + ' '.join(['(= r ' + x + ')' for x in resGraph.nodes()]) + ')))\n')
     
+    
+def declarePolicyTemplates(resGraph, outFile):
+    pass
