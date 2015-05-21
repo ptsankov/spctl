@@ -1,7 +1,8 @@
 from utils import write
 
-NUM_ORS = 3
-NUM_ANDS = 3
+
+NUM_ORS = 2
+NUM_ANDS = 2
 
 TRUE_ID = -1
 
@@ -51,7 +52,7 @@ def declarePolicyTemplates(resGraph, attrs):
     
 def declareCTLMustHold(ctlFuncNames, attrs):
     write('(assert\n')
-    write('  (forall ({})\n'.format(' '.join(['(room0 Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])))
+    write('  (forall ({})\n'.format(' '.join(['(room0 Room)'] + ['(' + attr + ' Bool)' for attr in attrs])))
     write('    (and\n')
     
     for ctlFunc in ctlFuncNames:
@@ -59,3 +60,5 @@ def declareCTLMustHold(ctlFuncNames, attrs):
     write('    )\n')
     write('  )\n')
     write(')\n')
+    #write('(check-sat)\n')
+    #write('(get-model)')

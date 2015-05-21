@@ -1,7 +1,7 @@
-#!/bin/python
-
+#!/usr/bin/python
 from ctl_grammar import parseCTLFormula
 from utils import write
+
 
 DEFINED_FUNCTIONS = set()
 LONGEST_ACYCLIC_PATH = 3
@@ -14,7 +14,7 @@ def ctlToStr(formulaTree):
     return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
 def funParams(attrs):
-    attrParams = ' '.join(['(room0 Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])    
+    attrParams = ' '.join(['(room0 Room)'] + ['(' + attr + ' Bool)' for attr in attrs])    
     return '(' + attrParams + ')'
 
 def ctlToSAT(ctlString, resGraph, attrs):    

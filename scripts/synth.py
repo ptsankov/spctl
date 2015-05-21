@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/bin/python
 
 '''
 Created on May 17, 2015
@@ -13,6 +13,7 @@ import os
 from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold
+from z3 import Solver, parse_smt2_file  # @UnresolvedImport
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -63,4 +64,7 @@ if __name__ == '__main__':
         ctlFuncName = ctlToSAT(ctlFormula, resGraph, attrs)
         ctlFuncNames.append(ctlFuncName)
         
-    declareCTLMustHold(ctlFuncNames, attrs)        
+    declareCTLMustHold(ctlFuncNames, attrs)
+    
+    s = Solver()
+    parse_smt2_file(outputFilename)

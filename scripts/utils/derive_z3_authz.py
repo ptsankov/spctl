@@ -1,7 +1,9 @@
 #!/bin/python
 
 import sys
+
 import networkx as nx
+
 
 G = None
 A = ['visitor', 'owner']
