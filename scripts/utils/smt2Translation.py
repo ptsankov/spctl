@@ -51,11 +51,11 @@ def declarePolicyTemplates(resGraph, attrs):
     
 def declareCTLMustHold(ctlFuncNames, attrs):
     write('(assert\n')
-    write('  (forall ({})\n'.format(' '.join(['(room Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])))
+    write('  (forall ({})\n'.format(' '.join(['(room0 Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])))
     write('    (and\n')
     
     for ctlFunc in ctlFuncNames:
-        write('        ({} room {})\n'.format(ctlFunc, ' '.join(attrs)))
+        write('        ({} room0 {})\n'.format(ctlFunc, ' '.join(attrs)))
     write('    )\n')
     write('  )\n')
     write(')\n')

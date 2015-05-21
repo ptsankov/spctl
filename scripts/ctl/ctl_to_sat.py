@@ -14,7 +14,7 @@ def ctlToStr(formulaTree):
     return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
 def funParams(attrs):
-    attrParams = ' '.join(['(room Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])    
+    attrParams = ' '.join(['(room0 Bool)'] + ['(' + attr + ' Bool)' for attr in attrs])    
     return '(' + attrParams + ')'
 
 def ctlToSAT(ctlString, resGraph, attrs):    
@@ -109,7 +109,7 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
     else:
         propName = formulaTree
         if propName in resGraph.nodes():
-            write('(define-fun {} {} Bool (= room {}))\n'.format(functionName, funParams(attrs), propName))
+            write('(define-fun {} {} Bool (= room0 {}))\n'.format(functionName, funParams(attrs), propName))
         elif propName in attrs:
             write('(define-fun {} {} Bool {})\n'.format(functionName, funParams(attrs), propName))
         else:
