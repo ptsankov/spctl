@@ -18,8 +18,9 @@ def funParams(attrs):
     return '(' + attrParams + ')'
 
 def ctlToSAT(ctlString, resGraph, attrs):    
-    ctlFormula = parseCTLFormula(ctlString)
-    return ctlFormulaToSAT(ctlFormula, resGraph, attrs)
+    ctlFormula = parseCTLFormula(ctlString)    
+    ctlFormulaToSAT(ctlFormula, resGraph, attrs)
+    return ctlToStr(ctlFormula)
     
 
 def ctlFormulaToSAT(formulaTree, resGraph, attrs):
