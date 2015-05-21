@@ -30,6 +30,7 @@ def declarePolicyTemplates(resGraph, attrs):
     write(')\n')    
     
     write('(define-fun hole ((i Int) {}) Bool\n'.format(' '.join(['(' + attr + ' Bool)' for attr in attrs])))
+    #write('  (if (= i {}) true\n'.format(str(TRUE_ID)))
     write('  (if (= i {}) true\n'.format(str(TRUE_ID)))
     for i in range(len(attrs)):
         write('  (if (= i {}) {}\n'.format(str(i), attrs[i]))

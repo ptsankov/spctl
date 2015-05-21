@@ -13,13 +13,13 @@ import os
 from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold
-from z3 import Solver, parse_smt2_file  # @UnresolvedImport
+from z3 import Solver, parse_smt2_file
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
         print 'Usage: {} <graph file> <attributes file> <ctl file> <output smt2 file>'.format(sys.argv[0])
         sys.exit(-1)
-        
+    print sys.path
     resGraphFilename = sys.argv[1]
     attributesFilename = sys.argv[2]
     ctlFilename = sys.argv[3]
@@ -67,4 +67,4 @@ if __name__ == '__main__':
     declareCTLMustHold(ctlFuncNames, attrs)
     
     s = Solver()
-    parse_smt2_file(outputFilename)
+    f = parse_smt2_file(outputFilename)
