@@ -55,7 +55,7 @@ if __name__ == '__main__':
     setOutputFile(outFile)
     
     declareRooms(resGraph)    
-    declarePolicyTemplates(resGraph) 
+    declarePolicyTemplates(resGraph, attrs) 
                  
     for ctlFormula in ctlFormulas:
         print 'Processing CTL formula:', ctlFormula
