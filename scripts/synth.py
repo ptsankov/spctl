@@ -13,7 +13,7 @@ import os
 from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold,\
-    modelToPolicy
+    modelToPolicy, modelToSimplifiedPolicy
 from z3 import Solver, parse_smt2_file, Context, parse_smt2_string,\
     CheckSatResult
 from utils.helperMethods import close
@@ -77,4 +77,7 @@ if __name__ == '__main__':
     if s.check() == CheckSatResult(Z3_L_FALSE):
         print 'Cannot find a model'
         sys.exit(-1)
-    modelToPolicy(s.model(), resGraph, attrs)
+    model = s.model()
+    modelToPolicy(model, resGraph, attrs)
+    print 'simpler'
+    modelToSimplifiedPolicy(model, resGraph, attrs)

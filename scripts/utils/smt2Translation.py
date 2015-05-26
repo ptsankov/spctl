@@ -1,9 +1,9 @@
 from utils import write
-from z3 import Int
+from z3 import Int, Bool, And, Or, simplify, Not
 
 
-NUM_ORS = 2
-NUM_ANDS = 2
+NUM_ORS = 4
+NUM_ANDS = 4
 
 TRUE_ID = -1
 
@@ -72,14 +72,34 @@ def modelToPolicy(model, resGraph, attrs):
         for i in range(NUM_ORS):
             conjuncts = []
             for j in range(NUM_ANDS):
-                hole = model[Int('{}_{}_hole{}'.format(edge[0], edge[1], j))].as_long()
-                if hole < len(attrs):
-                    
+                hole = model[Int('{}_{}_hole{}'.format(edge[0], edge[1], i*NUM_ANDS + j))].as_long()
+                if hole >= 0 and hole < len(attrs):                    
                     conjuncts.append(attrs[hole])
-                elif hole == len(attrs):
+                elif hole >= len(attrs) and hole < 2 * len(attrs):
+                    conjuncts.append('!' + attrs[hole - len(attrs)])
+                elif hole == 2 * len(attrs):
                     conjuncts.append('TRUE')
                 else:
                     conjuncts.append('FALSE')
             disjuncts.append('(' + ' & '.join(conjuncts) + ')')
         print ' | '.join(disjuncts)
                 
+def modelToSimplifiedPolicy(model, resGraph, attrs):
+    for edge in resGraph.edges():
+        print 'authz_{}_{} := '.format(edge[0], edge[1]),
+        disjuncts = []
+        for i in range(NUM_ORS):
+            conjuncts = []
+            for j in range(NUM_ANDS):
+                hole = model[Int('{}_{}_hole{}'.format(edge[0], edge[1], i*NUM_ANDS + j))].as_long()
+                if hole >= 0 and hole < len(attrs):
+                    conjuncts.append(Bool(attrs[hole]))
+                elif hole >= len(attrs) and hole < 2 * len(attrs):
+                    conjuncts.append(Not(Bool(attrs[hole - len(attrs)])))
+                elif hole == 2 * len(attrs):
+                    conjuncts.append(True)
+                else:
+                    conjuncts.append(False)
+            disjuncts.append(And(conjuncts))
+        policy = simplify(Or(disjuncts))
+        print policy
