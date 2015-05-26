@@ -31,12 +31,12 @@ def declarePolicyTemplates(resGraph, attrs):
     write(')\n')    
     
     write('(define-fun hole ((i Int) {}) Bool\n'.format(' '.join(['(' + attr + ' Bool)' for attr in attrs])))
-    #write('  (if (= i {}) true\n'.format(str(TRUE_ID)))
-    write('  (if (= i {}) true\n'.format(str(TRUE_ID)))
+    #write('  (if (= i {}) true\n'.format(str(TRUE_ID)))    
     for i in range(len(attrs)):
         write('  (if (= i {}) {}\n'.format(str(i), attrs[i]))
     for i in range(len(attrs)):
         write('  (if (= i {}) (not {})\n'.format(str(i + len(attrs)), attrs[i]))
+    write('  (if (= i {}) true\n'.format(len(attrs)))
     write('  false')
     for i in range(len(attrs)*2+1):
         write(')')    
@@ -73,10 +73,11 @@ def modelToPolicy(model, resGraph, attrs):
             conjuncts = []
             for j in range(NUM_ANDS):
                 hole = model[Int('{}_{}_hole{}'.format(edge[0], edge[1], j))].as_long()
-                if hole == TRUE_ID:
-                    conjuncts.append('TRUE')
-                elif hole < len(attrs):
+                if hole < len(attrs):
+                    
                     conjuncts.append(attrs[hole])
+                elif hole == len(attrs):
+                    conjuncts.append('TRUE')
                 else:
                     conjuncts.append('FALSE')
             disjuncts.append('(' + ' & '.join(conjuncts) + ')')

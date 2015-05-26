@@ -14,8 +14,10 @@ from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold,\
     modelToPolicy
-from z3 import Solver, parse_smt2_file, Context, parse_smt2_string
+from z3 import Solver, parse_smt2_file, Context, parse_smt2_string,\
+    CheckSatResult
 from utils.helperMethods import close
+from z3consts import Z3_L_FALSE
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -72,7 +74,7 @@ if __name__ == '__main__':
     close()
     f = parse_smt2_file(outputFilename)
     s.add(f)
-    if not s.check():
-        print 'Inconsistent requirements'
+    if s.check() == CheckSatResult(Z3_L_FALSE):
+        print 'Cannot find a model'
         sys.exit(-1)
     modelToPolicy(s.model(), resGraph, attrs)
