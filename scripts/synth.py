@@ -13,7 +13,8 @@ import os
 from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold
-from z3 import Solver, parse_smt2_file
+from z3 import Solver, parse_smt2_file, Context, parse_smt2_string
+from utils.helperMethods import close
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -67,4 +68,7 @@ if __name__ == '__main__':
     declareCTLMustHold(ctlFuncNames, attrs)
     
     s = Solver()
+    close()
     f = parse_smt2_file(outputFilename)
+    s.add(f)
+    print s.check()

@@ -7,3 +7,6 @@ def setOutputFile(outFile):
 def write(s):
     assert OUTPUT_FILE is not None
     OUTPUT_FILE.write(s)
+    
+def close():
+    OUTPUT_FILE.close()
