@@ -1,4 +1,5 @@
 from utils import write
+from z3 import Int
 
 
 NUM_ORS = 2
@@ -63,3 +64,21 @@ def declareCTLMustHold(ctlFuncNames, attrs):
     write(')\n')
     #write('(check-sat)\n')
     #write('(get-model)')
+    
+def modelToPolicy(model, resGraph, attrs):
+    for edge in resGraph.edges():
+        print 'authz_{}_{} := '.format(edge[0], edge[1]),
+        disjuncts = []
+        for i in range(NUM_ORS):
+            conjuncts = []
+            for j in range(NUM_ANDS):
+                hole = model[Int('{}_{}_hole{}'.format(edge[0], edge[1], j))].as_long()
+                if hole == TRUE_ID:
+                    conjuncts.append('TRUE')
+                elif hole < len(attrs):
+                    conjuncts.append(attrs[hole])
+                else:
+                    conjuncts.append('FALSE')
+            disjuncts.append('(' + ' & '.join(conjuncts) + ')')
+        print ' | '.join(disjuncts)
+                
