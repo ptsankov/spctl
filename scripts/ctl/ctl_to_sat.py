@@ -84,21 +84,31 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         for i in range(LONGEST_ACYCLIC_PATH):
             write('    (exists')
             write(' (' + ' '.join(['(room' + str(x+1) + ' Room)' for x in range(i+1)]) + ')')
-            write(' (and (distinct {})'.format(' '.join(['room' + str(x) for x in range(i+2)])))
-            write(' ')
+            write(' (and ')
             write(' '.join(['(authz room' + str(x) + ' room' + str(x+1) + ' ' + ' '.join(attrs) + ')' for x in range(i+1)]))
             write(' ')
             write(' '.join(['(' + leftFunctionName + ' room' + str(x) + ' ' + ' '.join(attrs) + ')' for x in range(i+1)]))
             write(' ')
             write('({} {} {})'.format(rightFunctionName, 'room' + str(i+1), ' '.join(attrs)))
             write('))\n')
-        #print '    (exists ((r1 Room)) (and (distinct r r1) ({} r o v) (authz r r1 o v) ({} r1 o v)))'.format(leftFunctionName, rightFunctionName)
-        #print '    (exists ((r1 Room) (r2 Room)) (and (distinct r r1 r2) ({} r o v) (authz r r1 o v) ({} r1 o v) (authz r1 r2 o v) ({} r2 o v)))'.format(leftFunctionName, leftFunctionName, rightFunctionName)
-        #print '    (exists ((r1 Room) (r2 Room) (r3 Room)) (and (distinct r r1 r2 r3) (authz r r1 o v) (authz r1 r2 o v) (authz r2 r3 o v) ({} r o v) ({} r1 o v) ({} r2 o v) ({} r3 o v)))'.format(leftFunctionName, leftFunctionName, leftFunctionName, rightFunctionName)
         write('  )\n')
         write(')\n')
     elif formulaTree[0] == 'AF':
-        raise NameError('TODO: AF')
+        subformula = formulaTree[1]        
+        ctlFormulaToSAT(subformula, resGraph, attrs)                
+        subformulaName = ctlToStr(subformula)
+        write('(define-fun {} {} Bool\n'.format(functionName, funParams(attrs)))
+        write('  (forall (' + ' '.join(['(room' + str(x+1) + ' Room)' for x in range(LONGEST_ACYCLIC_PATH)]) + ')\n')
+        write('    (-> (and ')
+        write(' ')
+        write(' '.join(['(authz room' + str(x) + ' room' + str(x+1) + ' ' + ' '.join(attrs) + ')' for x in range(LONGEST_ACYCLIC_PATH)]))
+        write(' )\n')
+        write('        (or ')
+        write(' '.join(['(' + subformulaName + ' room' + str(x) + ' ' + ' '.join(attrs) + ')' for x in range(LONGEST_ACYCLIC_PATH + 1)]))
+        write(' )\n')
+        write('    )\n')
+        write('  )\n')
+        write(')\n')
     elif formulaTree[0] == 'EF':        
         equivFormulaTree = ['EU', ['true'], formulaTree[1]]
         equivFunctionName = ctlToStr(equivFormulaTree)
@@ -110,7 +120,10 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         ctlFormulaToSAT(equivFormulaTree, resGraph, attrs)
         write('(define-fun {} {} Bool ({} {}))\n'.format(functionName, funParams(attrs), equivFunctionName, ' '.join(['room0'] + attrs)))
     elif formulaTree[0] == 'EG':
-        raise NameError('TODO: EG')
+        equivFormulaTree = ['!', ['AF', ['!', formulaTree[1]]]]
+        equivFunctionName = ctlToStr(equivFormulaTree)
+        ctlFormulaToSAT(equivFormulaTree, resGraph, attrs)
+        write('(define-fun {} {} Bool ({} {}))\n'.format(functionName, funParams(attrs), equivFunctionName, ' '.join(['room0'] + attrs)))
     else:
         propName = formulaTree
         if propName in resGraph.nodes():

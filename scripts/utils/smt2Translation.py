@@ -24,7 +24,7 @@ def declarePolicyTemplates(resGraph, attrs):
     for edge in resGraph.edges():
         for i in range(NUM_ORS * NUM_ANDS): 
             write('  (if (and (= from {}) (= to {}) (= i {})) {}_{}_hole{}\n'.format(edge[0], edge[1], str(i), edge[0], edge[1], str(i)))
-    write('  -1')
+    write('  {}'.format(len(attrs) + 1))
     for edge in resGraph.edges():
         for i in range(NUM_ORS * NUM_ANDS):
             write(')')
@@ -49,6 +49,7 @@ def declarePolicyTemplates(resGraph, attrs):
         for j in range(NUM_ANDS):
             write('      (hole (from_to_hole from to {}) {})\n'.format(str(i*NUM_ANDS + j), ' '.join(attrs)))
         write('    )\n')
+    write('    (= from to)\n')
     write('  )\n')
     write(')\n')
     
