@@ -24,7 +24,7 @@ def declarePolicyTemplates(resGraph, attrs):
     for edge in resGraph.edges():
         for i in range(NUM_ORS * NUM_ANDS): 
             write('  (if (and (= from {}) (= to {}) (= i {})) {}_{}_hole{}\n'.format(edge[0], edge[1], str(i), edge[0], edge[1], str(i)))
-    write('  {}'.format(len(attrs) + 1))
+    write('  {}'.format(2 * len(attrs) + 1))
     for edge in resGraph.edges():
         for i in range(NUM_ORS * NUM_ANDS):
             write(')')
@@ -36,7 +36,7 @@ def declarePolicyTemplates(resGraph, attrs):
         write('  (if (= i {}) {}\n'.format(str(i), attrs[i]))
     for i in range(len(attrs)):
         write('  (if (= i {}) (not {})\n'.format(str(i + len(attrs)), attrs[i]))
-    write('  (if (= i {}) true\n'.format(len(attrs)))
+    write('  (if (= i {}) true\n'.format(len(attrs)*2))
     write('  false')
     for i in range(len(attrs)*2+1):
         write(')')    
@@ -55,11 +55,13 @@ def declarePolicyTemplates(resGraph, attrs):
     
 def declareCTLMustHold(ctlFuncNames, attrs):
     write('(assert\n')
-    write('  (forall ({})\n'.format(' '.join(['(room0 Room)'] + ['(' + attr + ' Bool)' for attr in attrs])))
+    #write('  (forall ({})\n'.format(' '.join(['(room0 Room)'] + ['(' + attr + ' Bool)' for attr in attrs])))
+    write('  (forall ({})\n'.format(' '.join(['(' + attr + ' Bool)' for attr in attrs])))
     write('    (and\n')
     
     for ctlFunc in ctlFuncNames:
-        write('        ({} room0 {})\n'.format(ctlFunc, ' '.join(attrs)))
+        #write('        ({} room0 {})\n'.format(ctlFunc, ' '.join(attrs)))
+        write('        ({} out {})\n'.format(ctlFunc, ' '.join(attrs)))
     write('    )\n')
     write('  )\n')
     write(')\n')

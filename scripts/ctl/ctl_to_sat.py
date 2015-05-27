@@ -99,7 +99,7 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         subformulaName = ctlToStr(subformula)
         write('(define-fun {} {} Bool\n'.format(functionName, funParams(attrs)))
         write('  (forall (' + ' '.join(['(room' + str(x+1) + ' Room)' for x in range(LONGEST_ACYCLIC_PATH)]) + ')\n')
-        write('    (-> (and ')
+        write('    (implies (and ')
         write(' ')
         write(' '.join(['(authz room' + str(x) + ' room' + str(x+1) + ' ' + ' '.join(attrs) + ')' for x in range(LONGEST_ACYCLIC_PATH)]))
         write(' )\n')
