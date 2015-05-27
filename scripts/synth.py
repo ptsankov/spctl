@@ -32,11 +32,11 @@ if __name__ == '__main__':
         if not os.path.isfile(filename):
             print filename, 'is not a file'
             sys.exit(-1)
-    if os.path.isfile(outputFilename):
-        msg = 'The output file "' + outputFilename + '" exists. Override?'
-        shall = raw_input('{} (y/N) '.format(msg)).lower() == 'y'
-        if not shall:
-            sys.exit(-2)    
+    #if os.path.isfile(outputFilename):
+    #    msg = 'The output file "' + outputFilename + '" exists. Override?'
+    #    shall = raw_input('{} (y/N) '.format(msg)).lower() == 'y'
+    #    if not shall:
+    #        sys.exit(-2)    
         
     print 'Resource graph filename:', resGraphFilename
     print 'Attributes filename:', attributesFilename
@@ -64,6 +64,9 @@ if __name__ == '__main__':
                  
     ctlFuncNames = []
     for ctlFormula in ctlFormulas:
+        if ctlFormula[0] == ';':
+            print 'Skipping commented formula', ctlFormula
+            continue
         print 'Processing CTL formula:', ctlFormula
         ctlFuncName = ctlToSAT(ctlFormula, resGraph, attrs)
         ctlFuncNames.append(ctlFuncName)

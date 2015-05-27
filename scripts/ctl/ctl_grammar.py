@@ -1,4 +1,4 @@
-from pyparsing import Word, Literal, srange, Forward, Group, Or
+from pyparsing import Word, Literal, srange, Forward, Group, Or, Optional
 
 
 class CTLGrammar:
@@ -22,7 +22,7 @@ class CTLGrammar:
         
     true = Literal('true')
     false = Literal('false')
-    proposition = Word(srange("[a-z]"))
+    proposition = Word(srange("[a-z0-9]"))
                        
     unaryOperator = neg | ax | ex | af | ef | ag | eg
     binaryOperator = conj | disj | impl | au | eu    

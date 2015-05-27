@@ -2,10 +2,8 @@ from utils import write
 from z3 import Int, Bool, And, Or, simplify, Not
 
 
-NUM_ORS = 4
-NUM_ANDS = 4
-
-TRUE_ID = -1
+NUM_ORS = 2
+NUM_ANDS = 2
 
 def declareRooms(resGraph):
     write('(declare-sort Room)\n')
@@ -19,6 +17,8 @@ def declarePolicyTemplates(resGraph, attrs):
     for edge in resGraph.edges():
         for i in range(NUM_ORS * NUM_ANDS):
             write('(declare-const {}_{}_hole{} Int)\n'.format(edge[0], edge[1], str(i)))
+            #write('(assert (>= {}_{}_hole{} 0))\n'.format(edge[0], edge[1], str(i)))
+            #write('(assert (<= {}_{}_hole{} {}))\n'.format(edge[0], edge[1], str(i), str(2 * len(attrs) + 2)))
             
     write('(define-fun from_to_hole ((from Room) (to Room) (i Int)) Int\n')
     for edge in resGraph.edges():

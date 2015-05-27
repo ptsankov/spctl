@@ -11,7 +11,7 @@ def ctlToStr(formulaTree):
         return 'fun_' + formulaTree
     if formulaTree[0] == 'true':
         return 'fun_true' 
-    return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and') if type(x) is str else ctlToStr(x) for x in formulaTree])
+    return '_'.join([x.replace('!', 'neg').replace('->', 'implies').replace('&', 'and').replace('|', 'or') if type(x) is str else ctlToStr(x) for x in formulaTree])
 
 def funParams(attrs):
     attrParams = ' '.join(['(room0 Room)'] + ['(' + attr + ' Bool)' for attr in attrs])    
@@ -28,12 +28,10 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
     if functionName in DEFINED_FUNCTIONS:
         return
     DEFINED_FUNCTIONS.add(functionName)
-    
     if formulaTree[0] == 'true':
         write('(define-fun fun_true {} Bool true)\n'.format(funParams(attrs)))
-        return 'fun_true'
     elif formulaTree[0] == 'false':
-        return
+        raise NameError('TODO: False')
     elif formulaTree[0] == '!':
         subFormulaTree = formulaTree[1]
         subFormulaName = ctlToStr(subFormulaTree)
@@ -58,7 +56,14 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         rightName = ctlToStr(right)
         write('(define-fun {} {} Bool (=> ({} {}) ({} {})))\n'.format(functionName, funParams(attrs), leftName, ' '.join(['room0'] + attrs), rightName, ' '.join(['room0'] + attrs)))
     elif formulaTree[0] == '|':
-        raise NameError('TODO: |')
+        left = formulaTree[1]
+        ctlFormulaToSAT(left, resGraph, attrs)
+        right = formulaTree[2]
+        ctlFormulaToSAT(right, resGraph, attrs)
+        
+        leftName = ctlToStr(left)
+        rightName = ctlToStr(right)                
+        write('(define-fun {} {} Bool (or ({} {}) ({} {})))\n'.format(functionName, funParams(attrs), leftName, ' '.join(['room0'] + attrs), rightName, ' '.join(['room0'] + attrs)))
     elif formulaTree[0] == 'AX':
         raise NameError('TODO: AX')
     elif formulaTree[0] == 'EX':
