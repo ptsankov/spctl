@@ -1,3 +1,7 @@
+'''
+Author: ptsankov
+'''
+
 from utils import write
 from z3 import Int, Bool, And, Or, simplify, Not
 
