@@ -18,6 +18,7 @@ from z3 import Solver, parse_smt2_file, Context, parse_smt2_string,\
     CheckSatResult
 from utils.helperMethods import close
 from z3consts import Z3_L_FALSE
+from utils.paths import allPaths
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -45,6 +46,10 @@ if __name__ == '__main__':
     resGraph = nx.read_adjlist(resGraphFilename, create_using = nx.DiGraph())    
     print 'Resource in the graph:', resGraph.nodes()
     
+    nx.all_simple_paths(resGraph, 'out', 'bur1')
+    allPaths(resGraph, 'a', 'v')
+    
+    '''
     with open(attributesFilename) as f:
         attrs = f.readlines()
     attrs = [a.strip() for a in attrs]
@@ -84,3 +89,4 @@ if __name__ == '__main__':
     modelToPolicy(model, resGraph, attrs)
     print 'simpler'
     modelToSimplifiedPolicy(model, resGraph, attrs)
+    '''
