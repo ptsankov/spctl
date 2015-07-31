@@ -6,8 +6,8 @@ from utils import write
 from z3 import Int, Bool, And, Or, simplify, Not
 
 
-NUM_ORS = 2
-NUM_ANDS = 2
+NUM_ORS = 3
+NUM_ANDS = 3
 
 def declareRooms(resGraph):
     write('(declare-sort Room)\n')

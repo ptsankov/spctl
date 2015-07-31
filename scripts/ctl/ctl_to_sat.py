@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from ctl_grammar import parseCTLFormula
 from utils import write
+import networkx as nx
 
 
 DEFINED_FUNCTIONS = set()
@@ -17,13 +18,13 @@ def funParams(attrs):
     attrParams = ' '.join(['(room0 Room)'] + ['(' + attr + ' Bool)' for attr in attrs])    
     return '(' + attrParams + ')'
 
-def ctlToSAT(ctlString, resGraph, attrs):    
+def ctlToSAT(ctlString, resGraph, attrs, initResource):    
     ctlFormula = parseCTLFormula(ctlString)    
-    ctlFormulaToSAT(ctlFormula, resGraph, attrs)
+    ctlFormulaToSAT(ctlFormula, resGraph, attrs, initResource)
     return ctlToStr(ctlFormula)
     
 
-def ctlFormulaToSAT(formulaTree, resGraph, attrs):
+def ctlFormulaToSAT(formulaTree, resGraph, attrs, resource):
     functionName = ctlToStr(formulaTree)
     if functionName in DEFINED_FUNCTIONS:
         return
@@ -35,31 +36,31 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
     elif formulaTree[0] == '!':
         subFormulaTree = formulaTree[1]
         subFormulaName = ctlToStr(subFormulaTree)
-        ctlFormulaToSAT(subFormulaTree, resGraph, attrs)
+        ctlFormulaToSAT(subFormulaTree, resGraph, attrs, resource)
         write('(define-fun {} {} Bool (not ({} {})))\n'.format(functionName, funParams(attrs), subFormulaName, ' '.join(['room0'] + attrs)))
     elif formulaTree[0] == '&':
         left = formulaTree[1]
-        ctlFormulaToSAT(left, resGraph, attrs)
+        ctlFormulaToSAT(left, resGraph, attrs, resource)
         right = formulaTree[2]
-        ctlFormulaToSAT(right, resGraph, attrs)
+        ctlFormulaToSAT(right, resGraph, attrs, resource)
         
         leftName = ctlToStr(left)
         rightName = ctlToStr(right)                
         write('(define-fun {} {} Bool (and ({} {}) ({} {})))\n'.format(functionName, funParams(attrs), leftName, ' '.join(['room0'] + attrs), rightName, ' '.join(['room0'] + attrs)))
     elif formulaTree[0] == '->':
         left = formulaTree[1]
-        ctlFormulaToSAT(left, resGraph, attrs)
+        ctlFormulaToSAT(left, resGraph, attrs, resource)
         right = formulaTree[2]
-        ctlFormulaToSAT(right, resGraph, attrs)
+        ctlFormulaToSAT(right, resGraph, attrs, resource)
         
         leftName = ctlToStr(left)
         rightName = ctlToStr(right)
         write('(define-fun {} {} Bool (=> ({} {}) ({} {})))\n'.format(functionName, funParams(attrs), leftName, ' '.join(['room0'] + attrs), rightName, ' '.join(['room0'] + attrs)))
     elif formulaTree[0] == '|':
         left = formulaTree[1]
-        ctlFormulaToSAT(left, resGraph, attrs)
+        ctlFormulaToSAT(left, resGraph, attrs, resource)
         right = formulaTree[2]
-        ctlFormulaToSAT(right, resGraph, attrs)
+        ctlFormulaToSAT(right, resGraph, attrs, resource)
         
         leftName = ctlToStr(left)
         rightName = ctlToStr(right)                
@@ -70,10 +71,13 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         raise NameError('TODO: EX')
     elif formulaTree[0] == 'AU':
         raise NameError('TODO: AU')
-    elif formulaTree[0] == 'EU':                       
+    elif formulaTree[0] == 'EU':                            
         left = formulaTree[1]        
-        ctlFormulaToSAT(left, resGraph, attrs)        
-        right = formulaTree[2]                
+        right = formulaTree[2]
+        for r in resGraph.nodes():
+            print r
+        raise NameError("todo")
+        ctlFormulaToSAT(left, resGraph, attrs)                            
         ctlFormulaToSAT(right, resGraph, attrs)
         
         leftFunctionName = ctlToStr(left)
@@ -94,6 +98,7 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         write('  )\n')
         write(')\n')
     elif formulaTree[0] == 'AF':
+        raise NameError('remove quantifiers')
         subformula = formulaTree[1]        
         ctlFormulaToSAT(subformula, resGraph, attrs)                
         subformulaName = ctlToStr(subformula)
@@ -109,16 +114,72 @@ def ctlFormulaToSAT(formulaTree, resGraph, attrs):
         write('    )\n')
         write('  )\n')
         write(')\n')
-    elif formulaTree[0] == 'EF':        
-        equivFormulaTree = ['EU', ['true'], formulaTree[1]]
-        equivFunctionName = ctlToStr(equivFormulaTree)
-        ctlFormulaToSAT(equivFormulaTree, resGraph, attrs)
-        write('(define-fun {} {} Bool ({} {}))\n'.format(functionName, funParams(attrs), equivFunctionName, ' '.join(['room0'] + attrs)))                
+    elif formulaTree[0] == 'EF':
+        if formulaTree[1] in resGraph.nodes():        
+            targetResource = formulaTree[1]
+            write('(define-fun {} {} Bool\n'.format(functionName, funParams(attrs)))
+            write('  (or ')
+            for path in nx.all_simple_paths(resGraph, resource, targetResource):
+                write('    (and ')    
+                for i in range(len(path)-1):
+                    write('      (authz ' + path[i] + ' ' + path[i+1] + ' ' + ' '.join(attrs) + ')\n')
+                write('    )\n')
+            write('  )\n')
+            write(')\n')
+        else:
+            for r in resGraph.nodes():
+                if r == resource:
+                    continue
+                subFormula = formulaTree[1]
+                subFormulaName = ctlToStr(subFormula)
+                ctlFormulaToSAT(subFormula, resGraph, attrs, r)
+            write('(define-fun {} {} Bool\n'.format(functionName, funParams(attrs)))
+            write('  (or ')
+            for r in resGraph.nodes():
+                if r == resource:
+                    continue
+                for path in nx.all_simple_paths(resGraph, resource, r):
+                    write('    (=> ')
+                    write('      (and ')
+                    for i in range(len(path)-1):
+                        write('        (authz ' + path[i] + ' ' + path[i+1] + ' ' + ' '.join(attrs) + ')\n')                    
+                    write('      ({} {} {})'.format(subFormulaName, r, ' '.join(attrs)))
+                    write('      )\n')
+                    write('    )\n')
+            write('  )\n')
+            write(')\n')
     elif formulaTree[0] == 'AG':
+        print 'AG'        
+        
+        for r in resGraph.nodes():
+            if r == resource:
+                continue
+            subFormula = formulaTree[1]
+            subFormulaName = ctlToStr(subFormula)
+            ctlFormulaToSAT(subFormula, resGraph, attrs, r)
+        
+        write('(define-fun {} {} Bool\n'.format(functionName, funParams(attrs)))
+        write('  (and ')
+        for r in resGraph.nodes():
+            if r == resource:
+                continue
+            for path in nx.all_simple_paths(resGraph, resource, r):
+                write('    (=> ')
+                write('      (and ')
+                for i in range(len(path)-1):
+                    write('        (authz ' + path[i] + ' ' + path[i+1] + ' ' + ' '.join(attrs) + ')\n')                
+                write('      ({} {} {})'.format(subFormulaName, r, ' '.join(attrs)))
+                write('      )\n')
+                write('    )\n')
+        write('  )\n')
+        write(')\n')                
+                
+        '''
         equivFormulaTree = ['!', ['EF', ['!', formulaTree[1]]]]
         equivFunctionName = ctlToStr(equivFormulaTree)
         ctlFormulaToSAT(equivFormulaTree, resGraph, attrs)
         write('(define-fun {} {} Bool ({} {}))\n'.format(functionName, funParams(attrs), equivFunctionName, ' '.join(['room0'] + attrs)))
+        '''
     elif formulaTree[0] == 'EG':
         equivFormulaTree = ['!', ['AF', ['!', formulaTree[1]]]]
         equivFunctionName = ctlToStr(equivFormulaTree)

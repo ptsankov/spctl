@@ -10,6 +10,8 @@ import networkx as nx
 import sys
 import os
 
+INIT_RESOURCE = 'out'
+
 from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold,\
@@ -44,12 +46,8 @@ if __name__ == '__main__':
     print 'CTL filename:', ctlFilename
     
     resGraph = nx.read_adjlist(resGraphFilename, create_using = nx.DiGraph())    
-    print 'Resource in the graph:', resGraph.nodes()
+    print 'Resource in the graph:', resGraph.nodes()    
     
-    nx.all_simple_paths(resGraph, 'out', 'bur1')
-    allPaths(resGraph, 'a', 'v')
-    
-    '''
     with open(attributesFilename) as f:
         attrs = f.readlines()
     attrs = [a.strip() for a in attrs]
@@ -73,11 +71,11 @@ if __name__ == '__main__':
             print 'Skipping commented formula', ctlFormula
             continue
         print 'Processing CTL formula:', ctlFormula
-        ctlFuncName = ctlToSAT(ctlFormula, resGraph, attrs)
+        ctlFuncName = ctlToSAT(ctlFormula, resGraph, attrs, INIT_RESOURCE)
         ctlFuncNames.append(ctlFuncName)
         
     declareCTLMustHold(ctlFuncNames, attrs)
-    
+
     s = Solver()
     close()
     f = parse_smt2_file(outputFilename)
@@ -89,4 +87,3 @@ if __name__ == '__main__':
     modelToPolicy(model, resGraph, attrs)
     print 'simpler'
     modelToSimplifiedPolicy(model, resGraph, attrs)
-    '''
