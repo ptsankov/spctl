@@ -6,8 +6,8 @@ from utils import write
 from z3 import Int, Bool, And, Or, simplify, Not
 
 
-NUM_ORS = 3
-NUM_ANDS = 3
+NUM_ORS = 2
+NUM_ANDS = 2
 
 def declareRooms(resGraph):
     write('(declare-sort Room)\n')
@@ -65,7 +65,7 @@ def declareCTLMustHold(ctlFuncNames, attrs):
     
     for ctlFunc in ctlFuncNames:
         #write('        ({} room0 {})\n'.format(ctlFunc, ' '.join(attrs)))
-        write('        ({} out {})\n'.format(ctlFunc, ' '.join(attrs)))
+        write('        ({} {})\n'.format(ctlFunc, ' '.join(attrs)))
     write('    )\n')
     write('  )\n')
     write(')\n')

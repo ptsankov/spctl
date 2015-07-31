@@ -12,3 +12,6 @@
 (-> (EF post) (| hr postman))
 (-> (& it workhours) (EF serv))
 (AG (-> serv it))
+(-> (& (! pin) (! workhours)) (! (EF (| lob cor1))))
+(-> (& (! workhours) pin) (EF lob))
+(-> (& (! workhours) pin) (EF cor1))
