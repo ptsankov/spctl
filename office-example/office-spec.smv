@@ -35,3 +35,5 @@ TRANS
 
 FULL_OBS_CTL_GOAL
   AG state != off
+--- & A[ state != mr W state = lob]
+--- & AG ((state = out) -> (EF state = mr))
