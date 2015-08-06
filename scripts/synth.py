@@ -16,11 +16,9 @@ from ctl import ctlToSAT
 from utils import declareRooms, setOutputFile
 from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold,\
     modelToPolicy, modelToSimplifiedPolicy
-from z3 import Solver, parse_smt2_file, Context, parse_smt2_string,\
-    CheckSatResult
+from z3 import Solver, parse_smt2_file, CheckSatResult
 from utils.helperMethods import close
 from z3consts import Z3_L_FALSE
-from utils.paths import allPaths
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:

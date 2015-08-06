@@ -4809,3 +4809,5 @@
     )
   )
 )
+(check-sat)
+(get-model)

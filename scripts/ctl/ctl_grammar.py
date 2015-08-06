@@ -1,6 +1,5 @@
 from pyparsing import Word, Literal, srange, Forward, Group, Or, Optional
 
-
 class CTLGrammar:
     left = Literal('(').suppress()
     right = Literal(')').suppress()
