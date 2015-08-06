@@ -34,6 +34,6 @@ TRANS
   (!grant_req -> next(state) = state)
 
 FULL_OBS_CTL_GOAL
-  AG state != off
---- & A[ state != mr W state = lob]
---- & AG ((state = out) -> (EF state = mr))
+---  AG state != off
+  A[ state != mr W state = lob]
+---  AG ((state = out) -> (EF state = mr))
