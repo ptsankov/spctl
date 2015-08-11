@@ -1,4 +1,4 @@
-from pyparsing import Word, Literal, srange, Forward, Group, Or
+from pyparsing import Word, Literal, srange, Forward, Group, Or, OneOrMore
 
 class CTLGrammar:
     left = Literal('(').suppress()
@@ -31,7 +31,7 @@ class CTLGrammar:
     binaryCTLOperator = conj | disj | impl | au | eu
     
     propositionalFormula = Forward()
-    propositionalFormula << Or([true, false, proposition, Group(left + unaryPropositionalOperator + propositionalFormula + right), Group(left + binaryPropositionalOperator + propositionalFormula + propositionalFormula + right)])    
+    propositionalFormula << Or([true, false, proposition, Group(left + unaryPropositionalOperator + propositionalFormula + right), Group(left + binaryPropositionalOperator + propositionalFormula + OneOrMore(propositionalFormula) + right)])    
     
     ctlFormula = Forward()
     ctlFormula << Or([propositionalFormula, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
@@ -40,3 +40,9 @@ class CTLGrammar:
         
 def parseRequirement(string):
     return CTLGrammar.req.parseString(string, parseAll = True)[0]
+
+def parsePropositionalFormula(string):
+    return CTLGrammar.propositionalFormula.parseString(string, parseAll = True)[0]
+
+def parseCTLFormula(string):
+    return CTLGrammar.ctlFormula.parseString(string, parseAll = True)[0]
