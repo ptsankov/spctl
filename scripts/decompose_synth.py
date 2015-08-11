@@ -36,7 +36,6 @@ def decomposeReqs(reqs):
     s = Solver()    
     
     for req in reqs:
-        print 'cur reqs', curReqs
         nextReqs = []
         depReqs = []
         for curReq in curReqs:
@@ -84,4 +83,6 @@ def decomposeSynth(graph, attrs, reqs):
         
     decomposedReqs = decomposeReqs(reqs)
     for r in decomposedReqs:
-        print r
+        if r[0] != 'false':
+            print r
+            print '========================'

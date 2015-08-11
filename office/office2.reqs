@@ -1,0 +1,2 @@
+(visitor, (EF mr))
+(true, (not (EU (not lob) mr)))
