@@ -58,6 +58,11 @@ def decomposeReqs(reqs):
             newReqCTL = '(and ' + depReq[1] + ' ' + req[1] + ')'
             newReq = '(' + newReqProp + ', ' +  newReqCTL + ')'
             nextReqs.append(newReq)
+            
+            newReqProp = simplify(And(depProp, Not(reqProp))).sexpr()
+            newReqCTL = '(and ' + depReq[1] + ' (not ' + req[1] + '))'
+            newReq = '(' + newReqProp + ', ' +  newReqCTL + ')'
+            nextReqs.append(newReq)
                 
         print 'Requirement', req        
         propFormula = req[0]
