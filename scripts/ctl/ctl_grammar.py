@@ -6,7 +6,7 @@ class CTLGrammar:
     comma = Literal(',').suppress()
     
     
-    neg = Literal('!')    
+    neg = Literal('not')    
     ax = Literal('AX')
     ex = Literal('EX')
     af = Literal('AF')
@@ -14,9 +14,9 @@ class CTLGrammar:
     ag = Literal('AG')
     eg = Literal('EG')
     
-    conj = Literal('&')
-    disj = Literal('|')
-    impl = Literal('->')
+    conj = Literal('and')
+    disj = Literal('or')
+    impl = Literal('=>')
     au = Literal('AU')
     eu = Literal('EU')
         

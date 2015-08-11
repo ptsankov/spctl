@@ -1,5 +1,5 @@
 (visitor, (EF mr))
-(visitor, (! (EU (! lob) mr)))
+(visitor, (not (EU (not lob) mr)))
 (employee, (EF bur))
-((! employee), (! (EF bur)))
+((not employee), (not (EF bur)))
 (true, (AG (EF out)))
