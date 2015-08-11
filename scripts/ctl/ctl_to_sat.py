@@ -1,5 +1,4 @@
 #!/usr/bin/python
-from ctl_grammar import parseCTLFormula
 from utils import write
 import networkx as nx
 from IN import TMP_MAX
@@ -19,10 +18,9 @@ def funParams(attrs):
     attrParams = ' '.join(['(' + attr + ' Bool)' for attr in attrs])    
     return '(' + attrParams + ')'
 
-def ctlToSAT(ctlString, resGraph, attrs, initResource):    
-    ctlFormula = parseCTLFormula(ctlString)    
-    ctlFormulaToSAT(ctlFormula, resGraph, attrs, initResource)
-    return ctlToStr(ctlFormula, initResource)
+def ctlToSAT(req, resGraph, attrs, initResource):    
+    ctlFormulaToSAT(req, resGraph, attrs, initResource)
+    return ctlToStr(req, initResource)
     
 
 def ctlFormulaToSAT(formulaTree, resGraph, attrs, resource):

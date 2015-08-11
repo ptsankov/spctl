@@ -9,79 +9,57 @@ Created on May 17, 2015
 import networkx as nx
 import sys
 import os
+from policy_guided_synth import policyGuidedSynth
+from ctl import ctl_grammar
+from decompose_synth import decomposeSynth
+from negative_synth import negativeSynth
 
 INIT_RESOURCE = 'out'
 
-from ctl import ctlToSAT
-from utils import declareRooms, setOutputFile
-from utils.smt2Translation import declarePolicyTemplates, declareCTLMustHold,\
-    modelToPolicy, modelToSimplifiedPolicy
-from z3 import Solver, parse_smt2_file, CheckSatResult
-from utils.helperMethods import close
-from z3consts import Z3_L_FALSE
-
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print 'Usage: {} <graph file> <attributes file> <ctl file> <output smt2 file>'.format(sys.argv[0])
+    if len(sys.argv) not in [4,5]:
+        print 'Usage: {} <graph file> <attributes file> <requirements> [<algorithm>]'.format(sys.argv[0])
         sys.exit(-1)
-    print sys.path
-    resGraphFilename = sys.argv[1]
+    graphFilename = sys.argv[1]
     attributesFilename = sys.argv[2]
-    ctlFilename = sys.argv[3]
-    outputFilename = sys.argv[4]
-    for filename in [resGraphFilename, attributesFilename, ctlFilename]:
+    reqsFilename = sys.argv[3]
+    
+    for filename in [graphFilename, attributesFilename, reqsFilename]:
         if not os.path.isfile(filename):
             print filename, 'is not a file'
             sys.exit(-1)
+            
+    if len(sys.argv) == 5:
+        algorithm = sys.argv[4]
+        if algorithm not in ['policy-guided', 'decompose', 'negative']:
+            print 'Unsupported algorithm. The supported ones are: policy-guided, decompose, negative'
+            sys.exit(-1)
+            
     #if os.path.isfile(outputFilename):
     #    msg = 'The output file "' + outputFilename + '" exists. Override?'
     #    shall = raw_input('{} (y/N) '.format(msg)).lower() == 'y'
     #    if not shall:
     #        sys.exit(-2)    
         
-    print 'Resource graph filename:', resGraphFilename
+    print 'Resource graph filename:', graphFilename
     print 'Attributes filename:', attributesFilename
-    print 'CTL filename:', ctlFilename
+    print 'Requirements filename:', reqsFilename
     
-    resGraph = nx.read_adjlist(resGraphFilename, create_using = nx.DiGraph())    
-    print 'Resource in the graph:', resGraph.nodes()    
+    graph = nx.read_adjlist(graphFilename, create_using = nx.DiGraph())    
+    print 'Resources in the resource graph:', graph.nodes()    
     
     with open(attributesFilename) as f:
         attrs = f.readlines()
     attrs = [a.strip() for a in attrs]
-        
-    for attr in attrs:
-        print attr
+    print 'Attributes:', attrs        
 
-    with open(ctlFilename) as f:
-        ctlFormulas = f.readlines()
-    ctlFormulas = [f.strip() for f in ctlFormulas]
+    with open(reqsFilename) as f:
+        reqsStr = f.readlines()
+    reqs = [ctl_grammar.parseRequirement(reqStr.strip()) for reqStr in reqsStr]
     
-    outFile = open(outputFilename, 'w')
-    setOutputFile(outFile)
-    
-    declareRooms(resGraph)    
-    declarePolicyTemplates(resGraph, attrs) 
-                 
-    ctlFuncNames = []
-    for ctlFormula in ctlFormulas:
-        if ctlFormula[0] == ';':
-            print 'Skipping commented formula', ctlFormula
-            continue
-        print 'Processing CTL formula:', ctlFormula
-        ctlFuncName = ctlToSAT(ctlFormula, resGraph, attrs, INIT_RESOURCE)
-        ctlFuncNames.append(ctlFuncName)
-        
-    declareCTLMustHold(ctlFuncNames, attrs)
-
-    s = Solver()
-    close()
-    f = parse_smt2_file(outputFilename)
-    s.add(f)
-    if s.check() == CheckSatResult(Z3_L_FALSE):
-        print 'Cannot find a model'
-        sys.exit(-1)
-    model = s.model()
-    modelToPolicy(model, resGraph, attrs)
-    print 'simpler'
-    modelToSimplifiedPolicy(model, resGraph, attrs)
+    if algorithm == 'decompose':
+        decomposeSynth(graph, attrs, reqs)
+    elif algorithm == 'negative':
+        negativeSynth(graph, attrs, reqs)
+    else:
+        policyGuidedSynth(graph, attrs, reqs)

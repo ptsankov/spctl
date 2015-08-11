@@ -1,8 +1,9 @@
-from pyparsing import Word, Literal, srange, Forward, Group, Or, Optional
+from pyparsing import Word, Literal, srange, Forward, Group, Or
 
 class CTLGrammar:
     left = Literal('(').suppress()
     right = Literal(')').suppress()
+    comma = Literal(',').suppress()
     
     
     neg = Literal('!')    
@@ -23,11 +24,19 @@ class CTLGrammar:
     false = Literal('false')
     proposition = Word(srange("[a-z0-9]"))
                        
-    unaryOperator = neg | ax | ex | af | ef | ag | eg
-    binaryOperator = conj | disj | impl | au | eu    
+    unaryPropositionalOperator = neg
+    binaryPropositionalOperator = conj | disj | impl
+                       
+    unaryCTLOperator = neg | ax | ex | af | ef | ag | eg
+    binaryCTLOperator = conj | disj | impl | au | eu
     
-    formula = Forward()
-    formula << Or([true, false, proposition, Group(left + unaryOperator + formula + right), Group(left + binaryOperator + formula + formula + right)])
+    propositionalFormula = Forward()
+    propositionalFormula << Or([true, false, proposition, Group(left + unaryPropositionalOperator + propositionalFormula + right), Group(left + binaryPropositionalOperator + propositionalFormula + propositionalFormula + right)])    
+    
+    ctlFormula = Forward()
+    ctlFormula << Or([propositionalFormula, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
+    
+    req = Group(left + propositionalFormula + comma + ctlFormula + right)
         
-def parseCTLFormula(string):
-    return CTLGrammar.formula.parseString(string, parseAll = True)[0]
+def parseRequirement(string):
+    return CTLGrammar.req.parseString(string, parseAll = True)[0]
