@@ -3,40 +3,52 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from utils.helperMethods import setOutputFile, close, INIT_RESOURCE
-from z3 import parse_smt2_file, Solver, CheckSatResult
-from utils.smt2Translation import declareRooms, declarePolicyTemplates,\
-    declareCTLMustHold, modelToPolicy, modelToSimplifiedPolicy
-from ctl.ctl_to_sat import ctlToSAT
-from z3consts import Z3_L_FALSE
-import sys
+from z3 import unsat, Int, If, Not, Or, And
+from utils.helperMethods import ATTR_VARS
 
-outputFilename = 'output.smt2'
+NUM_ORS = 2
+NUM_ANDS = 2
 
-def policyGuidedSynth(graph, attrs, reqs):
+TEMPLATE_VARS = {}
+
+def declareTemplateVars(attrs, graph):    
+    for edge in graph.edges():
+        if edge[0] == edge[1]:
+            continue
+        for position in range(NUM_ORS * NUM_ANDS):
+            TEMPLATE_VARS[edge, position] = Int(edge[0] + '_' + edge[1] + '_' + str(position))
+
+def attrTemplate(templateIntVar, index):
+    numAttrs = len(ATTR_VARS.keys())
+    if index in range(numAttrs):
+        attr = ATTR_VARS.keys()[index]
+        return If(templateIntVar == index, ATTR_VARS[attr], attrTemplate(templateIntVar, index+1))
+    elif index in range(numAttrs, numAttrs*2):
+        attr = ATTR_VARS.keys()[index - numAttrs]
+        return If(templateIntVar == index, Not(ATTR_VARS[attr]), attrTemplate(templateIntVar, index+1))
+    else:
+        return True
+
+def policyTemplate(edge):    
+    conjunctions = []    
+    for i in range(NUM_ANDS):
+        disjunctions = []        
+        for j in range(NUM_ORS):            
+            pos = i * NUM_ANDS + j
+            disjunctions.append(attrTemplate(TEMPLATE_VARS[edge, pos], 0))
+        conjunctions.append(Or(disjunctions))
+    return And(conjunctions)
+            
+            
+
+def policyGuidedSynth(graph, reqs, attrs):
     print 'Running the policy-guided synthesis algorithm'
-    outFile = open(outputFilename, 'w')
-    setOutputFile(outFile)
     
-    declareRooms(graph)    
-    declarePolicyTemplates(graph, attrs) 
-                 
-    ctlFuncNames = []
-    for req in reqs:
-        print 'Processing requirement:', req
-        ctlFuncName = ctlToSAT(req, graph, attrs, INIT_RESOURCE)
-        ctlFuncNames.append(ctlFuncName)
-        
-    declareCTLMustHold(ctlFuncNames, attrs)
-
-    s = Solver()
-    close()
-    f = parse_smt2_file(outputFilename)
-    s.add(f)
-    if s.check() == CheckSatResult(Z3_L_FALSE):
-        print 'Cannot find a model'
-        sys.exit(-1)
-    model = s.model()
-    modelToPolicy(model, graph, attrs)
-    print 'simpler'
-    modelToSimplifiedPolicy(model, graph, attrs)
+    declareTemplateVars(attrs, graph)
+    
+    for edge in graph.edges():
+        if edge[0] == edge[1]:
+            continue
+        print 'edge', edge, 'template', policyTemplate(edge)
+    
+    return unsat

@@ -62,7 +62,7 @@ if __name__ == '__main__':
     elif algorithm == 'negative':
         policy = negativeSynth(graph, reqs)
     else:
-        policy = policyGuidedSynth(graph, reqs)
+        policy = policyGuidedSynth(graph, reqs, attrs)
         
     if policy == unsat:
         print 'No solution was found'

@@ -14,8 +14,7 @@ def declareRooms(resGraph):
     for res in resGraph.nodes():
         write('(declare-const {} Room)\n'.format(res))
     write('(assert (distinct {}))\n'.format(' '.join(resGraph.nodes())))
-    write('(assert (forall ((r Room)) (or ' + ' '.join(['(= r ' + x + ')' for x in resGraph.nodes()]) + ')))\n')
-    
+    write('(assert (forall ((r Room)) (or ' + ' '.join(['(= r ' + x + ')' for x in resGraph.nodes()]) + ')))\n')    
     
 def declarePolicyTemplates(resGraph, attrs):
     for edge in resGraph.edges():
