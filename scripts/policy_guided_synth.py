@@ -11,9 +11,9 @@ from ctl.ctl_to_sat import ctlToSAT
 from z3consts import Z3_L_FALSE
 import sys
 
-outputFilename = 'output.smt2'
-
 INIT_RESOURCE = 'out'
+
+outputFilename = 'output.smt2'
 
 def policyGuidedSynth(graph, attrs, reqs):
     print 'Running the policy-guided synthesis algorithm'

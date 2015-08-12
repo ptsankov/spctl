@@ -6,6 +6,7 @@ Created on Aug 11, 2015
 from z3 import Solver, Bool, Not, And, Implies, Or, sat, simplify
 from ctl.ctl_grammar import CTLGrammar
 from ctl import ctl_grammar
+from ctl.ctl_solver import restrictGraph
 
 ATTR_VARS = {}
 
@@ -114,4 +115,6 @@ def decomposeSynth(graph, attrs, reqs):
         print '========================'
         print 'q = ', r[0]
         print 'ctl = ', r[1]
+        
+    restrictGraph(graph, [['EF', 'mr']])
             

@@ -6,15 +6,17 @@ Created on May 17, 2015
 @author: ptsankov
 '''
 
+
+INIT_RESOURCE = 'out'
+
 import networkx as nx
 import sys
 import os
-from policy_guided_synth import policyGuidedSynth
 from ctl import ctl_grammar
+from policy_guided_synth import policyGuidedSynth
 from decompose_synth import decomposeSynth
 from negative_synth import negativeSynth
 
-INIT_RESOURCE = 'out'
 
 if __name__ == '__main__':
     if len(sys.argv) not in [4,5]:
