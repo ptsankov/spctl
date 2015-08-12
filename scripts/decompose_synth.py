@@ -69,8 +69,12 @@ def decomposeReqs(reqs):
             s.reset()
             s.add(And(depProp, reqProp))
             if s.check() == sat:
-                newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, reqProp)).sexpr())
+                newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, reqProp)).sexpr())                
                 newReqCTL = ['and', depReq[1], req[1]]
+                print 'depReq[1]', depReq[1]
+                print 'req[1]', req[1]
+                print 'newReqCTL', ['and', depReq[1], req[1]]
+
                 newReq = [newReqProp, newReqCTL]
                 nextReqs.append(newReq)
             
@@ -80,6 +84,8 @@ def decomposeReqs(reqs):
             if s.check() == sat:
                 newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, Not(reqProp))).sexpr())
                 newReqCTL = depReq[1]
+                print 'depReq[1]', depReq[1]
+                print 'newReqCTL', depReq[1]
                 newReq = [newReqProp, newReqCTL]
                 nextReqs.append(newReq)
         
@@ -91,6 +97,8 @@ def decomposeReqs(reqs):
         if s.check() == sat:
             newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(reqProp, tmp)).sexpr())                
             newReqCTL = req[1]
+            print 'req[1]', req[1]
+            print 'newReqCTL', req[1]
             newReq = [newReqProp, newReqCTL]
             nextReqs.append(newReq)    
         
@@ -122,9 +130,12 @@ def decomposeSynth(graph, attrs, reqs):
     for edge in graph.edges():
         policy[edge] = True        
            
-    for req in reqs:
+    for req in decomposedReqs:
         propReq = req[0]
         ctlReq = req[1]
+        print 'Handling decomposed requirement'
+        print 'Q =', propReq
+        print 'CTL =', ctlReq
         restrictedGraph = restrictGraph(graph, ctlReq)
                 
         if restrictedGraph == unsat:
@@ -134,5 +145,5 @@ def decomposeSynth(graph, attrs, reqs):
 
     print 'SYNTHESIZED POLICY'
     for e in graph.edges():
-        print e, '->', policy[e]       
+        print e[0], e[1], '->', policy[e]       
     return policy

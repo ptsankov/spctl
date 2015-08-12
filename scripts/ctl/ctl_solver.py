@@ -12,12 +12,6 @@ INIT_RESOURCE = 'out'
 EDGE_VARS = None
 DEFINED_FUNCTIONS = None
 
-def karyFun(name, k):
-    if k == 10:
-        return Function(name, BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort())
-    else:
-        raise NameError('Need to define a constructor for functions with arity' + str(k))
-
 def nodePathToEdgePath(graph, nodePath):
     edgePath = []
     for i in range(0, len(nodePath)-1):
@@ -27,12 +21,7 @@ def nodePathToEdgePath(graph, nodePath):
     return edgePath
 
 def encodeFormula(graph, ctlFormula, resource):
-    print 'Encoding', ctlFormula, 'for resource', resource
-    
-       
-    #function = karyFun(functionName, len(graph.edges()))
-    #print function.sexpr()
-
+    #print 'encode', ctlFormula, 'for state', resource
     if ctlFormula in graph.nodes():
         if ctlFormula == resource:
             return True
@@ -47,7 +36,7 @@ def encodeFormula(graph, ctlFormula, resource):
         return Not(subFormula)
     elif ctlFormula[0] in ['and', 'or', '=>']:
         subFormulaLeft = encodeFormula(graph, ctlFormula[1], resource)
-        subFormulaRight = encodeFormula(graph, ctlFormula[1], resource)
+        subFormulaRight = encodeFormula(graph, ctlFormula[2], resource)
         if ctlFormula[0] == 'and':
             return And(subFormulaLeft, subFormulaRight)
         elif ctlFormula[0] == 'or':
@@ -124,6 +113,10 @@ def restrictGraph(graph, ctlFormula):
     s = Solver()
     s.reset()
     s.add(encodeFormula(graph, ctlFormula, INIT_RESOURCE))
+    
+    for e in graph.edges():
+        if e[0] == e[1]:
+            s.add(EDGE_VARS[e] == True)
    
     if s.check() == sat:
         model = s.model()

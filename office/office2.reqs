@@ -1,2 +1,4 @@
 (visitor, (EF mr))
-(true, (not (EU (not lob) mr)))
+(visitor, (not (EU (not lob) mr)))
+(employee, (EF bur))
+((not employee), (not (EF bur)))
