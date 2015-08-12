@@ -3,8 +3,9 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import unsat, Int, If, Not, Or, And
-from utils.helperMethods import ATTR_VARS
+from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat
+from utils.helperMethods import ATTR_VARS, INIT_RESOURCE, strToZ3
+from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 
 NUM_ORS = 2
 NUM_ANDS = 2
@@ -39,16 +40,32 @@ def policyTemplate(edge):
         conjunctions.append(Or(disjunctions))
     return And(conjunctions)
             
-            
+def policyGuidedPathCondition(graph, path, req):
+    reqProp = req[0]
+    edgePath = nodePathToEdgePath(graph, path)    
+    edgeTemplates = [policyTemplate(e) for e in edgePath]   
+    pathCondition = Implies(strToZ3(reqProp), And(edgeTemplates))
+    return pathCondition
+    
+    
 
 def policyGuidedSynth(graph, reqs, attrs):
     print 'Running the policy-guided synthesis algorithm'
     
     declareTemplateVars(attrs, graph)
     
-    for edge in graph.edges():
-        if edge[0] == edge[1]:
-            continue
-        print 'edge', edge, 'template', policyTemplate(edge)
+    s = Solver()
+    for req in reqs:
+        propReq = req[0]
+        ctlReq = req[1]
+        print 'Handling decomposed requirement'
+        print 'Q =', propReq
+        print 'CTL =', ctlReq
+        
+        formula = encodeFormula(graph, req, INIT_RESOURCE, policyGuidedPathCondition)
+        s.assert_and_track(ForAll([ATTR_VARS[attr] for attr in ATTR_VARS.keys()], formula), str(req))
     
-    return unsat
+    if s.check() == sat:
+        print s.model()
+    else:    
+        return unsat

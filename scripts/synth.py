@@ -6,7 +6,7 @@ Created on May 17, 2015
 @author: ptsankov
 '''
 from z3 import unsat
-from utils.helperMethods import setAttrVars, setEdgeVars
+from utils.helperMethods import setAttrVars
 
 
 import networkx as nx
@@ -43,7 +43,6 @@ if __name__ == '__main__':
     
     graph = nx.read_adjlist(graphFilename, create_using = nx.DiGraph())    
     print 'Resources in the resource graph:', graph.nodes()
-    setEdgeVars(graph)    
     
     with open(attributesFilename) as f:
         attrs = f.readlines()

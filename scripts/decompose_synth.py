@@ -3,12 +3,12 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import Solver, Not, And, sat, simplify, unsat
+from z3 import Solver, Not, And, sat, simplify, unsat, Bool
 from ctl import ctl_grammar
 from ctl.ctl_solver import restrictGraph
-from utils.helperMethods import strToZ3
+from utils.helperMethods import strToZ3, EDGE_VARS, setEdgeVars
 
-        
+  
     
 # decouple requirements into
 # (Q1, F1), ..., (Qn, Fn) such that for all i, j we have (Qi and Qj = False)
@@ -95,7 +95,7 @@ def decomposeReqs(reqs):
 
 def decomposeSynth(graph, reqs):
     print 'Running the decompose synthesis algorithm'    
-        
+    setEdgeVars(graph)
         
     decomposedReqs = decomposeReqs(reqs)
     print 'FINAL DECOMPOSED REQUIREMNETS'
@@ -115,7 +115,7 @@ def decomposeSynth(graph, reqs):
         print 'Handling decomposed requirement'
         print 'Q =', propReq
         print 'CTL =', ctlReq
-        restrictedGraph = restrictGraph(graph, ctlReq)
+        restrictedGraph = restrictGraph(graph, req)
                 
         if restrictedGraph == unsat:
             return unsat        

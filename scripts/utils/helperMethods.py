@@ -28,7 +28,6 @@ def setEdgeVars(graph):
     # declare variables for all edges
     for e in graph.edges():
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
-    
 
 def strToZ3(propFormula):
     if propFormula in ATTR_VARS.keys():

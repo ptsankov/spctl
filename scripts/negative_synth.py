@@ -5,10 +5,11 @@ Created on Aug 11, 2015
 '''
 from z3 import unsat, Solver, sat, And, Not, simplify
 from ctl.ctl_solver import encodeFormula, restrictGraph
-from utils.helperMethods import INIT_RESOURCE, EDGE_VARS, strToZ3
+from utils.helperMethods import INIT_RESOURCE, EDGE_VARS, strToZ3, setEdgeVars
 
 def negativeSynth(graph, reqs):
     print 'Running the negative synthesis algorithm'
+    setEdgeVars(graph)
 
     policy = {}
     for edge in graph.edges():

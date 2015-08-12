@@ -15,65 +15,72 @@ def nodePathToEdgePath(graph, nodePath):
                 edgePath.append(e)                 
     return edgePath
 
-def encodeFormula(graph, ctlFormula, resource):
+
+def simplePathConditionFunction(graph, path, req):
+    edgePath = nodePathToEdgePath(graph, path)
+    edgeVars = [EDGE_VARS[e] for e in edgePath]
+    return And(edgeVars)
+
+def encodeFormula(graph, req, resource, pathConditionFunction):
+    reqProp = req[0]
+    reqCTL = req[1]
     #print 'encode', ctlFormula, 'for state', resource
-    if ctlFormula in graph.nodes():
-        if ctlFormula == resource:
+    if reqCTL in graph.nodes():
+        if reqCTL == resource:
             return True
         else:
             return False  
-    elif ctlFormula[0] == 'true':
+    elif reqCTL[0] == 'true':
         return True
-    elif ctlFormula[0] == 'false':
+    elif reqCTL[0] == 'false':
         return False
-    elif ctlFormula[0] == 'not':
-        subFormula = encodeFormula(graph, ctlFormula[1], resource)
+    elif reqCTL[0] == 'not':
+        subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
         return Not(subFormula)
-    elif ctlFormula[0] in ['and', 'or', '=>']:
-        subFormulaLeft = encodeFormula(graph, ctlFormula[1], resource)
-        subFormulaRight = encodeFormula(graph, ctlFormula[2], resource)
-        if ctlFormula[0] == 'and':
+    elif reqCTL[0] in ['and', 'or', '=>']:
+        subFormulaLeft = encodeFormula(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
+        subFormulaRight = encodeFormula(graph, [reqProp, reqCTL[2]], resource, pathConditionFunction)
+        if reqCTL[0] == 'and':
             return And(subFormulaLeft, subFormulaRight)
-        elif ctlFormula[0] == 'or':
+        elif reqCTL[0] == 'or':
             return Or(subFormulaLeft, subFormulaRight)
-        elif ctlFormula[0] == '=>':
+        elif reqCTL[0] == '=>':
             return Implies(subFormulaLeft, subFormulaRight)
-    elif ctlFormula[0] == 'EF':
-        if ctlFormula[1] in graph.nodes():
-            targetResource = ctlFormula[1]
-            pathConjuncts = []
+    elif reqCTL[0] == 'EF':
+        if reqCTL[1] in graph.nodes():
+            targetResource = reqCTL[1]
+            pathDisjuncts = []
             for path in nx.all_simple_paths(graph, resource, targetResource):
-                edgePath = nodePathToEdgePath(graph, path)
-                conjunct = And([EDGE_VARS[e] for e in edgePath])
-                pathConjuncts.append(conjunct)
-            return Or(pathConjuncts)                                
+                pathCondition = pathConditionFunction(graph, path, req)
+                pathDisjuncts.append(pathCondition)
+            return Or(pathDisjuncts)                                
         else:
             raise NameError('Implement full support for the EF operator')
-    elif ctlFormula[0] == 'EU':
+    elif reqCTL[0] == 'EU':
         targetResources = graph.nodes()
-        if ctlFormula[2] in graph.nodes():
-            targetResources = [ctlFormula[2]]
+        if reqCTL[2] in graph.nodes():
+            targetResources = [reqCTL[2]]
         disjuncts = []
         for targetResource in targetResources:
             for path in nx.all_simple_paths(graph, resource, targetResource):        
                 for i in range(len(path)):
                     conjuncts = []
-                    conjuncts.append(encodeFormula(graph, ctlFormula[2], path[i]))
+                    conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
                     for j in range(0, i):
-                        conjuncts.append(encodeFormula(graph, ctlFormula[1], path[j]))
-                    edgePath = nodePathToEdgePath(graph, path[0:i])                   
-                    conjuncts.append(And([EDGE_VARS[e] for e in edgePath]))
-                    
+                        conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))
+                    subpath = path[0:i]
+                    pathCondition = pathConditionFunction(graph, subpath, req)            
+                    conjuncts.append(pathCondition)                    
                     s = Solver()
                     s.add(And(conjuncts))
-                    # simple check to avoid adding conjuncts that are always false
+                    # add only if the condition is feasible
                     if s.check() == sat:                                        
                         disjuncts.append(And(conjuncts))
         return Or(disjuncts)
-    elif ctlFormula[0] == 'AG':
+    elif reqCTL[0] == 'AG':
         conjuncts = []
         for targetResource in graph.nodes():
-            subFormula = encodeFormula(graph, ctlFormula[1], targetResource)
+            subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
             s = Solver()
             s.add(subFormula)
             if s.check() != sat:
@@ -82,24 +89,23 @@ def encodeFormula(graph, ctlFormula, resource):
                 conjuncts.append(subFormula)
             else:
                 edgePathConditions = []
-                for path in nx.all_simple_paths(graph, resource, targetResource):
-                    edgePath = nodePathToEdgePath(graph, path)
-                    edgeConjunct = And([EDGE_VARS[e] for e in edgePath])
-                    edgePathConditions.append(edgeConjunct)                    
+                for path in nx.all_simple_paths(graph, resource, targetResource):                    
+                    pathCondition = pathConditionFunction(graph, path, req)
+                    edgePathConditions.append(pathCondition)                    
                 pathExists = Or(edgePathConditions)
                 conjuncts.append(Implies(pathExists, subFormula))
         return And(conjuncts)
     else:
-        raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(ctlFormula))
+        raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(reqCTL))
             
                      
 # graph - a directed graph
-# ctlFormulas - a list of CTL formulas
+# req - a list of CTL formulas
 # returns the restricted graph that satisfies the formulas or unsat
-def restrictGraph(graph, ctlFormula):    
+def restrictGraph(graph, req):    
     s = Solver()
     s.reset()
-    s.add(encodeFormula(graph, ctlFormula, INIT_RESOURCE))
+    s.add(encodeFormula(graph, req, INIT_RESOURCE, simplePathConditionFunction))
     
     for e in graph.edges():
         if e[0] == e[1]:
