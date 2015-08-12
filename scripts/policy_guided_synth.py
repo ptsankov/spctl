@@ -65,6 +65,8 @@ def policyGuidedSynth(graph, reqs, attrs):
         formula = encodeFormula(graph, req, INIT_RESOURCE, policyGuidedPathCondition)
         s.assert_and_track(ForAll([ATTR_VARS[attr] for attr in ATTR_VARS.keys()], formula), str(req))
     
+    print s.sexpr()
+    
     if s.check() == sat:
         print s.model()
     else:    
