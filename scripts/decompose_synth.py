@@ -35,7 +35,18 @@ def decomposeReqs(reqs):
     
     s = Solver()    
     
+    print '======================== INITIAL STEP ========================'
+    for r in curReqs:
+        print '========================'
+        print 'q = ', r[0]
+        print 'ctl = ', r[1]
+    
     for req in reqs:
+        
+        print '===========TAKING FROMT THE QUEUE============='
+        print 'q = ', req[0]
+        print 'ctl = ', req[1]
+        
         nextReqs = []
         depReqs = []
         for curReq in curReqs:
@@ -52,26 +63,42 @@ def decomposeReqs(reqs):
             # Case (Q and Qi, F and Fi)
             depProp = strToZ3(depReq[0])
             reqProp =  strToZ3(req[0])
-            newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, reqProp)).sexpr())
-            newReqCTL = ['and', depReq[1], req[1]]
-            newReq = [newReqProp, newReqCTL]
-            nextReqs.append(newReq)
+            
+            s.reset()
+            s.add(And(depProp, reqProp))
+            if s.check() == sat:
+                newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, reqProp)).sexpr())
+                newReqCTL = ['and', depReq[1], req[1]]
+                newReq = [newReqProp, newReqCTL]
+                nextReqs.append(newReq)
             
             # Case (not Q and Qi, not F and Fi)
-            newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, Not(reqProp))).sexpr())
-            newReqCTL = depReq[1]
-            newReq = [newReqProp, newReqCTL]
-            nextReqs.append(newReq)
+            s.reset()
+            s.add(And(depProp, Not(reqProp)))
+            if s.check() == sat:
+                newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, Not(reqProp))).sexpr())
+                newReqCTL = depReq[1]
+                newReq = [newReqProp, newReqCTL]
+                nextReqs.append(newReq)
         
         # Case (Q and not Q1 and ... and not Qn, F and not F1 and ... not Fn)
         tmp = simplify(And([Not(strToZ3(depReq[0])) for depReq in depReqs]))
         reqProp =  strToZ3(req[0])
-        newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(reqProp, tmp)).sexpr())                
-        newReqCTL = req[1]
-        newReq = [newReqProp, newReqCTL]
-        nextReqs.append(newReq)    
+        s.reset()
+        s.add(And(reqProp, tmp))
+        if s.check() == sat:
+            newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(reqProp, tmp)).sexpr())                
+            newReqCTL = req[1]
+            newReq = [newReqProp, newReqCTL]
+            nextReqs.append(newReq)    
         
         curReqs = nextReqs
+        
+        print '======================== NEXT STEP ========================'
+        for r in curReqs:
+            print '========================'
+            print 'q = ', r[0]
+            print 'ctl = ', r[1]
         
     return curReqs
 
@@ -82,7 +109,9 @@ def decomposeSynth(graph, attrs, reqs):
         ATTR_VARS[attr] = Bool(attr)
         
     decomposedReqs = decomposeReqs(reqs)
+    print 'FINAL DECOMPOSED REQUIREMNETS'
     for r in decomposedReqs:
-        if r[0] != 'false':
-            print r
-            print '========================'
+        print '========================'
+        print 'q = ', r[0]
+        print 'ctl = ', r[1]
+            
