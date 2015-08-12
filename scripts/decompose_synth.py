@@ -116,5 +116,6 @@ def decomposeSynth(graph, attrs, reqs):
         print 'q = ', r[0]
         print 'ctl = ', r[1]
         
-    restrictGraph(graph, [['AG', ['EF', 'out']]])
+    restrictedGraph = restrictGraph(graph, [['not', ['EF', 'mr']]])
+    print restrictedGraph.nodes(), restrictedGraph.edges()
             

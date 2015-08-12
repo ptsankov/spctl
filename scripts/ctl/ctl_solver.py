@@ -3,7 +3,8 @@ Created on Aug 12, 2015
 
 @author: ptsankov
 '''
-from z3 import Bool, Solver, Function, BoolSort, Not, And, Or, Implies, sat
+from z3 import Bool, Solver, Function, BoolSort, Not, And, Or, Implies, sat,\
+    unsat
 from ctl.ctl_to_sat import ctlToStr
 import networkx as nx
 
@@ -16,8 +17,7 @@ def karyFun(name, k):
     if k == 10:
         return Function(name, BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort(), BoolSort())
     else:
-        print 'Need to define the kary function'
-        assert False
+        raise NameError('Need to define a constructor for functions with arity' + str(k))
 
 def nodePathToEdgePath(graph, nodePath):
     edgePath = []
@@ -107,7 +107,7 @@ def encodeFormula(graph, ctlFormula, resource):
                 conjuncts.append(Implies(pathExists, subFormula))
         return And(conjuncts)
     else:
-        raise NameError('TODO: implement remaining CTL operators')
+        raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(ctlFormula))
             
                      
 # graph - a directed graph
@@ -125,5 +125,21 @@ def restrictGraph(graph, ctlFormulas):
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
         
     SOLVER = Solver()
+    formulas = []
     for ctlFormula in ctlFormulas:
-        print encodeFormula(graph, ctlFormula, INIT_RESOURCE)
+        formulas.append(encodeFormula(graph, ctlFormula, INIT_RESOURCE))
+    SOLVER.reset()
+    for f in formulas:
+        SOLVER.assert_and_track(f, str(f))
+    
+    if SOLVER.check() == sat:
+        model = SOLVER.model()
+        print model
+        restrictedGraph = graph.copy()
+        for e in graph.edges():
+            if model[EDGE_VARS[e]] is not None and model[EDGE_VARS[e]].sexpr() == 'false':
+                print 'removing edge', e
+                restrictedGraph.remove_edge(e[0], e[1])
+    else:
+        return unsat
+    return restrictedGraph
