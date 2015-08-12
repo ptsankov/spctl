@@ -10,7 +10,6 @@ import networkx as nx
 
 INIT_RESOURCE = 'out'
 EDGE_VARS = None
-SOLVER = None
 DEFINED_FUNCTIONS = None
 
 def karyFun(name, k):
@@ -81,19 +80,19 @@ def encodeFormula(graph, ctlFormula, resource):
                     edgePath = nodePathToEdgePath(graph, path[0:i])                   
                     conjuncts.append(And([EDGE_VARS[e] for e in edgePath]))
                     
-                    SOLVER.reset()
-                    SOLVER.add(And(conjuncts))
+                    s = Solver()
+                    s.add(And(conjuncts))
                     # simple check to avoid adding conjuncts that are always false
-                    if SOLVER.check() == sat:                                        
+                    if s.check() == sat:                                        
                         disjuncts.append(And(conjuncts))
         return Or(disjuncts)
     elif ctlFormula[0] == 'AG':
         conjuncts = []
         for targetResource in graph.nodes():
             subFormula = encodeFormula(graph, ctlFormula[1], targetResource)
-            SOLVER.reset()
-            SOLVER.add(subFormula)
-            if SOLVER.check() != sat:
+            s = Solver()
+            s.add(subFormula)
+            if s.check() != sat:
                 continue
             if targetResource == resource:
                 conjuncts.append(subFormula)
@@ -113,27 +112,21 @@ def encodeFormula(graph, ctlFormula, resource):
 # graph - a directed graph
 # ctlFormulas - a list of CTL formulas
 # returns the restricted graph that satisfies the formulas or unsat
-def restrictGraph(graph, ctlFormulas):
-    global DEFINED_FUNCTIONS, EDGE_VARS, SOLVER
+def restrictGraph(graph, ctlFormula):
+    global DEFINED_FUNCTIONS, EDGE_VARS
     DEFINED_FUNCTIONS = set()
-    print 'Restrict graph'    
-    
+       
     EDGE_VARS = {}    
     # declare variables for all edges
     for e in graph.edges():
-        print e
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
         
-    SOLVER = Solver()
-    formulas = []
-    for ctlFormula in ctlFormulas:
-        formulas.append(encodeFormula(graph, ctlFormula, INIT_RESOURCE))
-    SOLVER.reset()
-    for f in formulas:
-        SOLVER.assert_and_track(f, str(f))
-    
-    if SOLVER.check() == sat:
-        model = SOLVER.model()
+    s = Solver()
+    s.reset()
+    s.add(encodeFormula(graph, ctlFormula, INIT_RESOURCE))
+   
+    if s.check() == sat:
+        model = s.model()
         print model
         restrictedGraph = graph.copy()
         for e in graph.edges():

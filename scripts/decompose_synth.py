@@ -3,7 +3,7 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import Solver, Bool, Not, And, Implies, Or, sat, simplify
+from z3 import Solver, Bool, Not, And, Implies, Or, sat, simplify, unsat
 from ctl.ctl_grammar import CTLGrammar
 from ctl import ctl_grammar
 from ctl.ctl_solver import restrictGraph
@@ -11,7 +11,9 @@ from ctl.ctl_solver import restrictGraph
 ATTR_VARS = {}
 
 def strToZ3(propFormula):
-    if propFormula[0] == 'not':
+    if propFormula in ATTR_VARS.keys():
+        return ATTR_VARS[propFormula]
+    elif propFormula[0] == 'not':
         return Not(strToZ3(propFormula[1]))
     elif propFormula[0] == 'and':
         return And([strToZ3(x) for x in propFormula[1:]])
@@ -24,9 +26,8 @@ def strToZ3(propFormula):
     elif propFormula == 'false':
         return False
     else:
-        # must be an attribute
-        assert propFormula in ATTR_VARS.keys()
-        return ATTR_VARS[propFormula]
+        raise NameError('could not convert propositional formula to the Z3 format')
+        
     
 # decouple requirements into
 # (Q1, F1), ..., (Qn, Fn) such that for all i, j we have (Qi and Qj = False)
@@ -116,6 +117,22 @@ def decomposeSynth(graph, attrs, reqs):
         print 'q = ', r[0]
         print 'ctl = ', r[1]
         
-    restrictedGraph = restrictGraph(graph, [['not', ['EF', 'mr']]])
-    print restrictedGraph.nodes(), restrictedGraph.edges()
-            
+    
+    policy = {}
+    for edge in graph.edges():
+        policy[edge] = True        
+           
+    for req in reqs:
+        propReq = req[0]
+        ctlReq = req[1]
+        restrictedGraph = restrictGraph(graph, ctlReq)
+                
+        if restrictedGraph == unsat:
+            return unsat        
+        for removedEdge in list(set(graph.edges()) - set(restrictedGraph.edges())):
+            policy[removedEdge] = simplify(And(policy[removedEdge], Not(strToZ3(propReq))))
+
+    print 'SYNTHESIZED POLICY'
+    for e in graph.edges():
+        print e, '->', policy[e]       
+    return policy
