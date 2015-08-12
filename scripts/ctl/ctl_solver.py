@@ -3,12 +3,13 @@ Created on Aug 12, 2015
 
 @author: ptsankov
 '''
-from z3 import Bool, Solver, Function, BoolSort, Not, And, Or, Implies
+from z3 import Bool, Solver, Function, BoolSort, Not, And, Or, Implies, sat
 from ctl.ctl_to_sat import ctlToStr
 import networkx as nx
 
 INIT_RESOURCE = 'out'
 EDGE_VARS = None
+SOLVER = None
 DEFINED_FUNCTIONS = None
 
 def karyFun(name, k):
@@ -26,28 +27,28 @@ def nodePathToEdgePath(graph, nodePath):
                 edgePath.append(e)                 
     return edgePath
 
-def encodeFormula(graph, ctlFormula, solver, resource):
-    print 'Encoding', ctlFormula
-    functionName = ctlToStr(ctlFormula, resource)
-    print 'function name', functionName
-    if functionName in DEFINED_FUNCTIONS:
-        return
+def encodeFormula(graph, ctlFormula, resource):
+    print 'Encoding', ctlFormula, 'for resource', resource
     
-    DEFINED_FUNCTIONS.add(functionName)
-        
+       
     #function = karyFun(functionName, len(graph.edges()))
     #print function.sexpr()
-    
-    if ctlFormula[0] == 'true':
+
+    if ctlFormula in graph.nodes():
+        if ctlFormula == resource:
+            return True
+        else:
+            return False  
+    elif ctlFormula[0] == 'true':
         return True
     elif ctlFormula[0] == 'false':
         return False
     elif ctlFormula[0] == 'not':
-        subFormula = encodeFormula(graph, ctlFormula[1], solver, resource)
+        subFormula = encodeFormula(graph, ctlFormula[1], resource)
         return Not(subFormula)
     elif ctlFormula[0] in ['and', 'or', '=>']:
-        subFormulaLeft = encodeFormula(graph, ctlFormula[1], solver, resource)
-        subFormulaRight = encodeFormula(graph, ctlFormula[1], solver, resource)
+        subFormulaLeft = encodeFormula(graph, ctlFormula[1], resource)
+        subFormulaRight = encodeFormula(graph, ctlFormula[1], resource)
         if ctlFormula[0] == 'and':
             return And(subFormulaLeft, subFormulaRight)
         elif ctlFormula[0] == 'or':
@@ -62,16 +63,58 @@ def encodeFormula(graph, ctlFormula, solver, resource):
                 edgePath = nodePathToEdgePath(graph, path)
                 conjunct = And([EDGE_VARS[e] for e in edgePath])
                 pathConjuncts.append(conjunct)
-            print 'path conjuncts', pathConjuncts
             return Or(pathConjuncts)                                
         else:
-            print 'TODO'
-            assert False
+            raise NameError('Implement full support for the EF operator')
+    elif ctlFormula[0] == 'EU':
+        targetResources = graph.nodes()
+        if ctlFormula[2] in graph.nodes():
+            targetResources = [ctlFormula[2]]
+        disjuncts = []
+        for targetResource in targetResources:
+            for path in nx.all_simple_paths(graph, resource, targetResource):        
+                for i in range(len(path)):
+                    conjuncts = []
+                    conjuncts.append(encodeFormula(graph, ctlFormula[2], path[i]))
+                    for j in range(0, i):
+                        conjuncts.append(encodeFormula(graph, ctlFormula[1], path[j]))
+                    edgePath = nodePathToEdgePath(graph, path[0:i])                   
+                    conjuncts.append(And([EDGE_VARS[e] for e in edgePath]))
+                    
+                    SOLVER.reset()
+                    SOLVER.add(And(conjuncts))
+                    # simple check to avoid adding conjuncts that are always false
+                    if SOLVER.check() == sat:                                        
+                        disjuncts.append(And(conjuncts))
+        return Or(disjuncts)
+    elif ctlFormula[0] == 'AG':
+        conjuncts = []
+        for targetResource in graph.nodes():
+            subFormula = encodeFormula(graph, ctlFormula[1], targetResource)
+            SOLVER.reset()
+            SOLVER.add(subFormula)
+            if SOLVER.check() != sat:
+                continue
+            if targetResource == resource:
+                conjuncts.append(subFormula)
+            else:
+                edgePathConditions = []
+                for path in nx.all_simple_paths(graph, resource, targetResource):
+                    edgePath = nodePathToEdgePath(graph, path)
+                    edgeConjunct = And([EDGE_VARS[e] for e in edgePath])
+                    edgePathConditions.append(edgeConjunct)                    
+                pathExists = Or(edgePathConditions)
+                conjuncts.append(Implies(pathExists, subFormula))
+        return And(conjuncts)
+    else:
+        raise NameError('TODO: implement remaining CTL operators')
+            
+                     
 # graph - a directed graph
 # ctlFormulas - a list of CTL formulas
 # returns the restricted graph that satisfies the formulas or unsat
 def restrictGraph(graph, ctlFormulas):
-    global DEFINED_FUNCTIONS, EDGE_VARS
+    global DEFINED_FUNCTIONS, EDGE_VARS, SOLVER
     DEFINED_FUNCTIONS = set()
     print 'Restrict graph'    
     
@@ -81,6 +124,6 @@ def restrictGraph(graph, ctlFormulas):
         print e
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
         
-    solver = Solver()
+    SOLVER = Solver()
     for ctlFormula in ctlFormulas:
-        encodeFormula(graph, ctlFormula, solver, INIT_RESOURCE)
+        print encodeFormula(graph, ctlFormula, INIT_RESOURCE)
