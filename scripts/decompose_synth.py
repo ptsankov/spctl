@@ -3,30 +3,11 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import Solver, Bool, Not, And, Implies, Or, sat, simplify, unsat
-from ctl.ctl_grammar import CTLGrammar
+from z3 import Solver, Not, And, sat, simplify, unsat
 from ctl import ctl_grammar
 from ctl.ctl_solver import restrictGraph
+from utils.helperMethods import strToZ3
 
-ATTR_VARS = {}
-
-def strToZ3(propFormula):
-    if propFormula in ATTR_VARS.keys():
-        return ATTR_VARS[propFormula]
-    elif propFormula[0] == 'not':
-        return Not(strToZ3(propFormula[1]))
-    elif propFormula[0] == 'and':
-        return And([strToZ3(x) for x in propFormula[1:]])
-    elif propFormula[0] == 'or':
-        return Or([strToZ3(x) for x in propFormula[1:]])
-    elif propFormula[0] == '=>':
-        return Implies(strToZ3(propFormula[1]), strToZ3(propFormula[2]))
-    elif propFormula == 'true':
-        return True
-    elif propFormula == 'false':
-        return False
-    else:
-        raise NameError('could not convert propositional formula to the Z3 format')
         
     
 # decouple requirements into
@@ -112,11 +93,9 @@ def decomposeReqs(reqs):
         
     return curReqs
 
-def decomposeSynth(graph, attrs, reqs):
+def decomposeSynth(graph, reqs):
     print 'Running the decompose synthesis algorithm'    
         
-    for attr in attrs:
-        ATTR_VARS[attr] = Bool(attr)
         
     decomposedReqs = decomposeReqs(reqs)
     print 'FINAL DECOMPOSED REQUIREMNETS'
@@ -142,8 +121,5 @@ def decomposeSynth(graph, attrs, reqs):
             return unsat        
         for removedEdge in list(set(graph.edges()) - set(restrictedGraph.edges())):
             policy[removedEdge] = simplify(And(policy[removedEdge], Not(strToZ3(propReq))))
-
-    print 'SYNTHESIZED POLICY'
-    for e in graph.edges():
-        print e[0], e[1], '->', policy[e]       
+       
     return policy

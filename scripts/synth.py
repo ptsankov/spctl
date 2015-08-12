@@ -5,9 +5,9 @@ Created on May 17, 2015
 
 @author: ptsankov
 '''
+from z3 import unsat
+from utils.helperMethods import setAttrVars, setEdgeVars
 
-
-INIT_RESOURCE = 'out'
 
 import networkx as nx
 import sys
@@ -37,31 +37,37 @@ if __name__ == '__main__':
             print 'Unsupported algorithm. The supported ones are: policy-guided, decompose, negative'
             sys.exit(-1)
             
-    #if os.path.isfile(outputFilename):
-    #    msg = 'The output file "' + outputFilename + '" exists. Override?'
-    #    shall = raw_input('{} (y/N) '.format(msg)).lower() == 'y'
-    #    if not shall:
-    #        sys.exit(-2)    
-        
     print 'Resource graph filename:', graphFilename
     print 'Attributes filename:', attributesFilename
     print 'Requirements filename:', reqsFilename
     
     graph = nx.read_adjlist(graphFilename, create_using = nx.DiGraph())    
-    print 'Resources in the resource graph:', graph.nodes()    
+    print 'Resources in the resource graph:', graph.nodes()
+    setEdgeVars(graph)    
     
     with open(attributesFilename) as f:
         attrs = f.readlines()
     attrs = [a.strip() for a in attrs]
-    print 'Attributes:', attrs        
+    print 'Attributes:', attrs
+    setAttrVars(attrs)        
 
     with open(reqsFilename) as f:
         reqsStr = f.readlines()
     reqs = [ctl_grammar.parseRequirement(reqStr.strip()) for reqStr in reqsStr]
     
+    policy = None
+    
     if algorithm == 'decompose':
-        decomposeSynth(graph, attrs, reqs)
+        policy = decomposeSynth(graph, reqs)
     elif algorithm == 'negative':
-        negativeSynth(graph, attrs, reqs)
+        policy = negativeSynth(graph, reqs)
     else:
-        policyGuidedSynth(graph, attrs, reqs)
+        policy = policyGuidedSynth(graph, reqs)
+        
+    if policy == unsat:
+        print 'No solution was found'
+        sys.exit(-1)
+    
+    print '============ SYNTHESIZED POLICY ============'
+    for edge in graph.edges():
+        print edge[0], edge[1], ':', policy[edge]

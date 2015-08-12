@@ -3,14 +3,9 @@ Created on Aug 12, 2015
 
 @author: ptsankov
 '''
-from z3 import Bool, Solver, Function, BoolSort, Not, And, Or, Implies, sat,\
-    unsat
-from ctl.ctl_to_sat import ctlToStr
+from z3 import Solver, Not, And, Or, Implies, sat, unsat
 import networkx as nx
-
-INIT_RESOURCE = 'out'
-EDGE_VARS = None
-DEFINED_FUNCTIONS = None
+from utils.helperMethods import EDGE_VARS, INIT_RESOURCE
 
 def nodePathToEdgePath(graph, nodePath):
     edgePath = []
@@ -101,15 +96,7 @@ def encodeFormula(graph, ctlFormula, resource):
 # graph - a directed graph
 # ctlFormulas - a list of CTL formulas
 # returns the restricted graph that satisfies the formulas or unsat
-def restrictGraph(graph, ctlFormula):
-    global DEFINED_FUNCTIONS, EDGE_VARS
-    DEFINED_FUNCTIONS = set()
-       
-    EDGE_VARS = {}    
-    # declare variables for all edges
-    for e in graph.edges():
-        EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
-        
+def restrictGraph(graph, ctlFormula):    
     s = Solver()
     s.reset()
     s.add(encodeFormula(graph, ctlFormula, INIT_RESOURCE))

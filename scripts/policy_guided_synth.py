@@ -3,15 +3,13 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from utils.helperMethods import setOutputFile, close
+from utils.helperMethods import setOutputFile, close, INIT_RESOURCE
 from z3 import parse_smt2_file, Solver, CheckSatResult
 from utils.smt2Translation import declareRooms, declarePolicyTemplates,\
     declareCTLMustHold, modelToPolicy, modelToSimplifiedPolicy
 from ctl.ctl_to_sat import ctlToSAT
 from z3consts import Z3_L_FALSE
 import sys
-
-INIT_RESOURCE = 'out'
 
 outputFilename = 'output.smt2'
 
