@@ -1,25 +1,9 @@
 from z3 import Bool, Not, And, Or, Implies
 
-OUTPUT_FILE = None
-DEBUG = True
 INIT_RESOURCE = 'out'
 ATTR_VARS = {}
 EDGE_VARS = {}
 
-def setOutputFile(outFile):
-    global OUTPUT_FILE
-    OUTPUT_FILE = outFile
-
-def write(s):
-    assert OUTPUT_FILE is not None
-    if DEBUG:
-        print s
-    OUTPUT_FILE.write(s)
-    
-def close():
-    OUTPUT_FILE.close()
-    
-    
 def setAttrVars(attrs):
     for attr in attrs:
         ATTR_VARS[attr] = Bool(attr)
