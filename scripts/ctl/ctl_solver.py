@@ -115,11 +115,9 @@ def restrictGraph(graph, req):
    
     if s.check() == sat:
         model = s.model()
-        print model
         restrictedGraph = graph.copy()
         for e in graph.edges():
             if model[EDGE_VARS[e]] is not None and model[EDGE_VARS[e]].sexpr() == 'false':
-                print 'removing edge', e
                 restrictedGraph.remove_edge(e[0], e[1])
     else:
         return unsat

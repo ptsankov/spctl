@@ -69,5 +69,7 @@ if __name__ == '__main__':
     
     print '============ SYNTHESIZED POLICY ============'
     for edge in graph.edges():
+        if edge[0] == edge[1]:
+            continue
         check = policy[edge] if type(policy[edge]) == bool else policy[edge].sexpr()
         print edge[0], edge[1], ':', check
