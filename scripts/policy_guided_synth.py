@@ -49,7 +49,10 @@ def instantiatePolicyTemplateForEdge(edge, model):
         disjunctions = []
         for j in range(NUM_ORS):
             pos = i * NUM_ANDS + j
-            synthVal = model[TEMPLATE_VARS[edge, pos]].as_long()
+            if model[TEMPLATE_VARS[edge, pos]] is not None:
+                synthVal = model[TEMPLATE_VARS[edge, pos]].as_long()
+            else:
+                synthVal = -1
             attr = ATTR_VARS.keys()[synthVal % numAttrs]
             if synthVal in range(numAttrs):
                 disjunctions.append(ATTR_VARS[attr])

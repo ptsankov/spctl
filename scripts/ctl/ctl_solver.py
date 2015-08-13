@@ -57,7 +57,13 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                 pathDisjuncts.append(pathCondition)
             return Or(pathDisjuncts)                                
         else:
-            raise NameError('Implement full support for the EF operator')
+            pathDisjuncts = []
+            for targetResource in graph.nodes():                
+                for path in nx.all_simple_paths(graph, resource, targetResource):
+                    targetFormula = encodeFormula(graph, [reqProp, reqCTL[1]], path, pathConditionFunction)
+                    pathCondition = pathConditionFunction(graph, path, req)
+                    pathDisjuncts.append(And(targetFormula, pathCondition))
+            return Or(pathDisjuncts)
     elif reqCTL[0] == 'EU':
         targetResources = graph.nodes()
         if reqCTL[2] in graph.nodes():
