@@ -2,7 +2,7 @@ from z3 import Bool, Not, And, Or, Implies
 
 OUTPUT_FILE = None
 DEBUG = True
-INIT_RESOURCE = 'Outside'
+INIT_RESOURCE = 'out'
 ATTR_VARS = {}
 EDGE_VARS = {}
 
