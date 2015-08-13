@@ -3,7 +3,7 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat
+from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify
 from utils.helperMethods import ATTR_VARS, INIT_RESOURCE, strToZ3
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 
@@ -28,9 +28,11 @@ def attrTemplate(templateIntVar, index):
         attr = ATTR_VARS.keys()[index - numAttrs]
         return If(templateIntVar == index, Not(ATTR_VARS[attr]), attrTemplate(templateIntVar, index+1))
     else:
-        return False
+        return True
 
-def policyTemplate(edge):    
+def policyTemplateForEdge(edge):
+    if edge[0] == edge[1]:
+        return True    
     conjunctions = []    
     for i in range(NUM_ANDS):
         disjunctions = []        
@@ -39,14 +41,31 @@ def policyTemplate(edge):
             disjunctions.append(attrTemplate(TEMPLATE_VARS[edge, pos], 0))
         conjunctions.append(Or(disjunctions))
     return And(conjunctions)
+
+def instantiatePolicyTemplateForEdge(edge, model):
+    numAttrs = len(ATTR_VARS.keys())
+    conjunctions = []
+    for i in range(NUM_ANDS):
+        disjunctions = []
+        for j in range(NUM_ORS):
+            pos = i * NUM_ANDS + j
+            synthVal = model[TEMPLATE_VARS[edge, pos]].as_long()
+            attr = ATTR_VARS.keys()[synthVal % numAttrs]
+            if synthVal in range(numAttrs):
+                disjunctions.append(ATTR_VARS[attr])
+            elif synthVal in range(numAttrs, numAttrs*2):
+                disjunctions.append(Not(ATTR_VARS[attr]))
+            else:
+                disjunctions.append(True)
+        conjunctions.append(simplify(Or(disjunctions)))
+    return simplify(And(conjunctions))
             
 def policyGuidedPathCondition(graph, path, req):
-    print 'path condition for', path
     if len(path) < 2:
         return True
     reqProp = req[0]
-    edgePath = nodePathToEdgePath(graph, path)    
-    edgeTemplates = [policyTemplate(e) for e in edgePath]   
+    edgePath = nodePathToEdgePath(graph, path)  
+    edgeTemplates = [policyTemplateForEdge(e) for e in edgePath]   
     pathCondition = Implies(strToZ3(reqProp), And(edgeTemplates))
     return pathCondition
     
@@ -67,7 +86,17 @@ def policyGuidedSynth(graph, reqs, attrs):
         formula = encodeFormula(graph, req, INIT_RESOURCE, policyGuidedPathCondition)
         s.add(ForAll([ATTR_VARS[attr] for attr in ATTR_VARS.keys()], Implies(strToZ3(reqProp), formula)))        
     
+    
+    policy = {}
+    
     if s.check() == sat:
-        print s.model()
+        m = s.model()
+        print m
+        for edge in graph.edges():
+            if edge[0] == edge[1]:
+                policy[edge] = True
+                continue
+            policy[edge] = instantiatePolicyTemplateForEdge(edge, m)
+        return policy
     else:    
         return unsat
