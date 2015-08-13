@@ -1,0 +1,30 @@
+(declare-const h0 Int)
+(declare-const h1 Int)
+(declare-const h2 Int)
+(define-fun synth-connective ((a Bool) (b Bool)) Bool
+  (if (= h0 0) (and a b) (or a b))
+)
+(define-fun synth-left ((a Bool)) Bool
+  (if (= h1 0) true (if (= h1 1) a (not a)))
+)
+(define-fun synth-right ((b Bool)) Bool
+  (if (= h2 0) true (if (= h2 1) b (not b)))
+)
+(define-fun authz ((a Bool) (b Bool)) Bool
+  (synth-connective 
+    (synth-left a)
+    (synth-right b)
+  )
+)
+(assert (forall ((a Bool) (b Bool)) (=> (and a b) (authz a b))))
+(assert (forall ((a Bool) (b Bool)) (=> (and a (not b)) (authz a b))))
+(assert (forall ((a Bool) (b Bool)) (=> (and (not a) b) (not (authz a b)))))
+(assert (<= h0 1))
+(assert (<= h1 2))
+(assert (<= h2 2))
+(assert (>= h0 0))
+(assert (>= h1 0))
+(assert (>= h2 0))
+(minimize (+ h0 h1 h2))
+(check-sat)
+(get-model)
