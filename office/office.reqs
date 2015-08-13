@@ -2,4 +2,3 @@
 (visitor, (not (EU (not lob) mr)))
 (employee, (EF bur))
 ((not employee), (not (EF bur)))
-(true, (AG (EF out)))

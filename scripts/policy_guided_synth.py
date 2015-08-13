@@ -28,7 +28,7 @@ def attrTemplate(templateIntVar, index):
         attr = ATTR_VARS.keys()[index - numAttrs]
         return If(templateIntVar == index, Not(ATTR_VARS[attr]), attrTemplate(templateIntVar, index+1))
     else:
-        return True
+        return False
 
 def policyTemplate(edge):    
     conjunctions = []    
@@ -41,6 +41,9 @@ def policyTemplate(edge):
     return And(conjunctions)
             
 def policyGuidedPathCondition(graph, path, req):
+    print 'path condition for', path
+    if len(path) < 2:
+        return True
     reqProp = req[0]
     edgePath = nodePathToEdgePath(graph, path)    
     edgeTemplates = [policyTemplate(e) for e in edgePath]   
@@ -56,16 +59,13 @@ def policyGuidedSynth(graph, reqs, attrs):
     
     s = Solver()
     for req in reqs:
-        propReq = req[0]
-        ctlReq = req[1]
-        print 'Handling decomposed requirement'
-        print 'Q =', propReq
-        print 'CTL =', ctlReq
+        reqProp = req[0]
+        reqCTL = req[1]
+        print 'Q =', reqProp
+        print 'CTL =', reqCTL
         
         formula = encodeFormula(graph, req, INIT_RESOURCE, policyGuidedPathCondition)
-        s.assert_and_track(ForAll([ATTR_VARS[attr] for attr in ATTR_VARS.keys()], formula), str(req))
-    
-    print s.sexpr()
+        s.add(ForAll([ATTR_VARS[attr] for attr in ATTR_VARS.keys()], Implies(strToZ3(reqProp), formula)))        
     
     if s.check() == sat:
         print s.model()

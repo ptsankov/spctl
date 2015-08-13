@@ -17,6 +17,8 @@ def nodePathToEdgePath(graph, nodePath):
 
 
 def simplePathConditionFunction(graph, path, req):
+    if len(path) < 2:
+        return True
     edgePath = nodePathToEdgePath(graph, path)
     edgeVars = [EDGE_VARS[e] for e in edgePath]
     return And(edgeVars)
@@ -62,15 +64,15 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
             targetResources = [reqCTL[2]]
         disjuncts = []
         for targetResource in targetResources:
-            for path in nx.all_simple_paths(graph, resource, targetResource):        
+            for path in nx.all_simple_paths(graph, resource, targetResource):
                 for i in range(len(path)):
-                    conjuncts = []
+                    conjuncts = []                    
+                    subpath = path[0:i+1]
+                    pathCondition = pathConditionFunction(graph, subpath, req)           
+                    conjuncts.append(pathCondition)
                     conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
                     for j in range(0, i):
-                        conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))
-                    subpath = path[0:i]
-                    pathCondition = pathConditionFunction(graph, subpath, req)            
-                    conjuncts.append(pathCondition)                    
+                        conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
                     s = Solver()
                     s.add(And(conjuncts))
                     # add only if the condition is feasible
