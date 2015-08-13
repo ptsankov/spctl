@@ -1,5 +1,5 @@
-out out lob cor
-lob lob out cor
-cor cor lob out bur mr
-bur bur cor
-mr mr cor
+Outside Outside Lobby Corridor
+Lobby Lobby Outside Corridor
+Corridor Corridor Lobby Outside Bureau MeetingRoom
+Bureau Bureau Corridor
+MeetingRoom MeetingRoom Corridor
