@@ -62,7 +62,7 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
             targetResources = [reqCTL[2]]
         disjuncts = []
         for targetResource in targetResources:
-            for path in nx.all_simple_paths(graph, resource, targetResource):        
+            for path in nx.all_simple_paths(graph, resource, targetResource):
                 for i in range(len(path)):
                     conjuncts = []
                     conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
