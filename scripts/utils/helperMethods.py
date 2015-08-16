@@ -1,25 +1,9 @@
 from z3 import Bool, Not, And, Or, Implies
 
-OUTPUT_FILE = None
-DEBUG = True
 INIT_RESOURCE = 'out'
 ATTR_VARS = {}
 EDGE_VARS = {}
 
-def setOutputFile(outFile):
-    global OUTPUT_FILE
-    OUTPUT_FILE = outFile
-
-def write(s):
-    assert OUTPUT_FILE is not None
-    if DEBUG:
-        print s
-    OUTPUT_FILE.write(s)
-    
-def close():
-    OUTPUT_FILE.close()
-    
-    
 def setAttrVars(attrs):
     for attr in attrs:
         ATTR_VARS[attr] = Bool(attr)
@@ -46,3 +30,21 @@ def strToZ3(propFormula):
         return False
     else:
         raise NameError('could not convert propositional formula to the Z3 format')
+
+def Z3toStr(z3Formula):
+    if z3Formula.decl().name() in ATTR_VARS.keys():
+        return z3Formula.decl().name()
+    elif z3Formula.decl().name() == 'not':
+        return ['not', Z3toStr(z3Formula.arg(0))]
+    elif z3Formula.decl().name() == 'and':
+        return ['and'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula.decl().name() == 'or':
+        return ['or'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula.decl().name() == '=>':
+        return ['=>'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula == True:
+        return ['true']
+    elif z3Formula == False:
+        return ['false']
+    else:
+        raise NameError('could not convert Z3 formula to string')

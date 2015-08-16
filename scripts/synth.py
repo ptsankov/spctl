@@ -7,7 +7,7 @@ Created on May 17, 2015
 '''
 from z3 import unsat
 from utils.helperMethods import setAttrVars
-
+from tabulate import tabulate
 
 import networkx as nx
 import sys
@@ -68,6 +68,10 @@ if __name__ == '__main__':
         sys.exit(-1)
     
     print '============ SYNTHESIZED POLICY ============'
+    policyTable = []
     for edge in graph.edges():
+        if edge[0] == edge[1]:
+            continue
         check = policy[edge] if type(policy[edge]) == bool else policy[edge].sexpr()
-        print edge[0], edge[1], ':', check
+        policyTable.append([edge[0], '->', edge[1], check])
+    print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])

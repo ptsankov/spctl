@@ -6,7 +6,7 @@ Created on Aug 11, 2015
 from z3 import Solver, Not, And, sat, simplify, unsat, Bool
 from ctl import ctl_grammar
 from ctl.ctl_solver import restrictGraph
-from utils.helperMethods import strToZ3, EDGE_VARS, setEdgeVars
+from utils.helperMethods import strToZ3, EDGE_VARS, setEdgeVars, Z3toStr
 
   
     
@@ -18,17 +18,17 @@ def decomposeReqs(reqs):
     
     s = Solver()    
     
-    print '======================== INITIAL STEP ========================'
-    for r in curReqs:
-        print '========================'
-        print 'q = ', r[0]
-        print 'ctl = ', r[1]
+    #print '======================== INITIAL STEP ========================'
+    #for r in curReqs:
+    #    print '========================'
+    #    print 'q = ', r[0]
+    #    print 'ctl = ', r[1]
     
     for req in reqs:
         
-        print '===========TAKING FROMT THE QUEUE============='
-        print 'q = ', req[0]
-        print 'ctl = ', req[1]
+        #print '===========TAKING FROMT THE QUEUE============='
+        #print 'q = ', req[0]
+        #print 'ctl = ', req[1]
         
         nextReqs = []
         depReqs = []
@@ -50,11 +50,11 @@ def decomposeReqs(reqs):
             s.reset()
             s.add(And(depProp, reqProp))
             if s.check() == sat:
-                newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, reqProp)).sexpr())                
+                newReqProp = Z3toStr(simplify(And(depProp, reqProp)))                
                 newReqCTL = ['and', depReq[1], req[1]]
-                print 'depReq[1]', depReq[1]
-                print 'req[1]', req[1]
-                print 'newReqCTL', ['and', depReq[1], req[1]]
+                #print 'depReq[1]', depReq[1]
+                #print 'req[1]', req[1]
+                #print 'newReqCTL', ['and', depReq[1], req[1]]
 
                 newReq = [newReqProp, newReqCTL]
                 nextReqs.append(newReq)
@@ -63,10 +63,10 @@ def decomposeReqs(reqs):
             s.reset()
             s.add(And(depProp, Not(reqProp)))
             if s.check() == sat:
-                newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(depProp, Not(reqProp))).sexpr())
+                newReqProp = Z3toStr(simplify(And(depProp, Not(reqProp))))
                 newReqCTL = depReq[1]
-                print 'depReq[1]', depReq[1]
-                print 'newReqCTL', depReq[1]
+                #print 'depReq[1]', depReq[1]
+                #print 'newReqCTL', depReq[1]
                 newReq = [newReqProp, newReqCTL]
                 nextReqs.append(newReq)
         
@@ -76,20 +76,20 @@ def decomposeReqs(reqs):
         s.reset()
         s.add(And(reqProp, tmp))
         if s.check() == sat:
-            newReqProp = ctl_grammar.parsePropositionalFormula(simplify(And(reqProp, tmp)).sexpr())                
+            newReqProp = Z3toStr(simplify(And(reqProp, tmp)))                
             newReqCTL = req[1]
-            print 'req[1]', req[1]
-            print 'newReqCTL', req[1]
+            #print 'req[1]', req[1]
+            #print 'newReqCTL', req[1]
             newReq = [newReqProp, newReqCTL]
             nextReqs.append(newReq)    
         
         curReqs = nextReqs
         
-        print '======================== NEXT STEP ========================'
-        for r in curReqs:
-            print '========================'
-            print 'q = ', r[0]
-            print 'ctl = ', r[1]
+        #print '======================== NEXT STEP ========================'
+        #for r in curReqs:
+        #    print '========================'
+        #    print 'q = ', r[0]
+        #    print 'ctl = ', r[1]
         
     return curReqs
 

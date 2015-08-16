@@ -17,6 +17,8 @@ def nodePathToEdgePath(graph, nodePath):
 
 
 def simplePathConditionFunction(graph, path, req):
+    if len(path) < 2:
+        return True
     edgePath = nodePathToEdgePath(graph, path)
     edgeVars = [EDGE_VARS[e] for e in edgePath]
     return And(edgeVars)
@@ -55,7 +57,13 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                 pathDisjuncts.append(pathCondition)
             return Or(pathDisjuncts)                                
         else:
-            raise NameError('Implement full support for the EF operator')
+            pathDisjuncts = []
+            for targetResource in graph.nodes():                
+                for path in nx.all_simple_paths(graph, resource, targetResource):
+                    targetFormula = encodeFormula(graph, [reqProp, reqCTL[1]], path, pathConditionFunction)
+                    pathCondition = pathConditionFunction(graph, path, req)
+                    pathDisjuncts.append(And(targetFormula, pathCondition))
+            return Or(pathDisjuncts)
     elif reqCTL[0] == 'EU':
         targetResources = graph.nodes()
         if reqCTL[2] in graph.nodes():
@@ -64,13 +72,13 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
         for targetResource in targetResources:
             for path in nx.all_simple_paths(graph, resource, targetResource):
                 for i in range(len(path)):
-                    conjuncts = []
+                    conjuncts = []                    
+                    subpath = path[0:i+1]
+                    pathCondition = pathConditionFunction(graph, subpath, req)           
+                    conjuncts.append(pathCondition)
                     conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
                     for j in range(0, i):
-                        conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))
-                    subpath = path[0:i]
-                    pathCondition = pathConditionFunction(graph, subpath, req)            
-                    conjuncts.append(pathCondition)                    
+                        conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
                     s = Solver()
                     s.add(And(conjuncts))
                     # add only if the condition is feasible
@@ -113,11 +121,9 @@ def restrictGraph(graph, req):
    
     if s.check() == sat:
         model = s.model()
-        print model
         restrictedGraph = graph.copy()
         for e in graph.edges():
             if model[EDGE_VARS[e]] is not None and model[EDGE_VARS[e]].sexpr() == 'false':
-                print 'removing edge', e
                 restrictedGraph.remove_edge(e[0], e[1])
     else:
         return unsat

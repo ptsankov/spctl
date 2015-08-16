@@ -22,7 +22,7 @@ class CTLGrammar:
         
     true = Literal('true')
     false = Literal('false')
-    proposition = Word(srange("[a-z0-9]"))
+    proposition = Word(srange("[A-Za-z0-9]"))
                        
     unaryPropositionalOperator = neg
     binaryPropositionalOperator = conj | disj | impl

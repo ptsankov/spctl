@@ -4,7 +4,8 @@ Created on Aug 11, 2015
 @author: ptsankov
 '''
 from z3 import unsat, Solver, sat, And, Not, simplify
-from ctl.ctl_solver import encodeFormula, restrictGraph
+from ctl.ctl_solver import encodeFormula, restrictGraph,\
+    simplePathConditionFunction
 from utils.helperMethods import INIT_RESOURCE, EDGE_VARS, strToZ3, setEdgeVars
 
 def negativeSynth(graph, reqs):
@@ -19,10 +20,9 @@ def negativeSynth(graph, reqs):
         print 'Handling requirement', req
         
         propReq = req[0]
-        ctlFormula = req[1]
         
         s = Solver()       
-        s.add(encodeFormula(graph, ctlFormula, INIT_RESOURCE))
+        s.add(encodeFormula(graph, req, INIT_RESOURCE, simplePathConditionFunction))
         for e in graph.edges():
             s.add(EDGE_VARS[e] == True)
         if s.check() == sat:
@@ -30,7 +30,7 @@ def negativeSynth(graph, reqs):
             print 'Skipping positive requirement'
             continue
         
-        restrictedGraph = restrictGraph(graph, ctlFormula)
+        restrictedGraph = restrictGraph(graph, req)
         if restrictedGraph == unsat:
             return unsat
                     
