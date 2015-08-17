@@ -15,13 +15,21 @@ def nodePathToEdgePath(graph, nodePath):
                 edgePath.append(e)                 
     return edgePath
 
-
 def simplePathConditionFunction(graph, path, req):
     if len(path) < 2:
         return True
     edgePath = nodePathToEdgePath(graph, path)
     edgeVars = [EDGE_VARS[e] for e in edgePath]
     return And(edgeVars)
+
+def stateFormula(graph, formula):
+    if formula in graph.nodes() or formula in ['true', 'false']:
+        return True
+    if formula[0] == 'not':
+        return stateFormula(graph, formula[1])
+    if formula[0] in ['and', 'or', '=>']:
+        return stateFormula(graph, formula[1]) and stateFormula(graph, formula[2])
+    return False
 
 def encodeFormula(graph, req, resource, pathConditionFunction):
     reqProp = req[0]
@@ -56,14 +64,20 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                 pathCondition = pathConditionFunction(graph, path, req)
                 pathDisjuncts.append(pathCondition)
             return Or(pathDisjuncts)                                
-        else:
+        elif stateFormula(graph, reqCTL[1]):
             pathDisjuncts = []
-            for targetResource in graph.nodes():                
+            for targetResource in graph.nodes():
+                s = Solver()
+                stateCond = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
+                s.add(stateCond)
+                if s.check() == unsat:
+                    continue
                 for path in nx.all_simple_paths(graph, resource, targetResource):
-                    targetFormula = encodeFormula(graph, [reqProp, reqCTL[1]], path, pathConditionFunction)
                     pathCondition = pathConditionFunction(graph, path, req)
-                    pathDisjuncts.append(And(targetFormula, pathCondition))
+                    pathDisjuncts.append(pathCondition)
             return Or(pathDisjuncts)
+        else:
+            raise NameError('TODO: Add support for path quantifiers in EF')
     elif reqCTL[0] == 'EU':
         targetResources = graph.nodes()
         if reqCTL[2] in graph.nodes():
