@@ -51,8 +51,14 @@ if __name__ == '__main__':
     setAttrVars(attrs)        
 
     with open(reqsFilename) as f:
-        reqsStr = f.readlines()
-    reqs = [ctl_grammar.parseRequirement(reqStr.strip()) for reqStr in reqsStr]
+        reqsStr = [x.strip() for x in f.readlines()]
+        
+    reqs = []
+    for reqStr in reqsStr:
+        if reqStr.startswith(';'):
+            print reqStr
+        else:
+            reqs.append(ctl_grammar.parseRequirement(reqStr))
     
     policy = None
     
