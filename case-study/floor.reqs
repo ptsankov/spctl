@@ -1,6 +1,14 @@
-; Noone can access without a PIN code during nonworking hours
+; R1: Noone can access without a PIN code outside of the workhours
 ((not workhours), (not (EF (not out))))
-; Visitors can access the meeting rooms
+; R2: Visitors can access the meeting rooms
 ((and workhours visitor), (EF mr1))
 ((and workhours visitor), (EF mr2))
 ((and workhours visitor), (EF mr3))
+; R3: Visitors and employees can access the lobby during workhours
+((and workhours (or visitor (or hr (or it researcher)))), (EF lob))
+; R4: Visitors and employees can access the lobby outside of workhours with their PIN
+((and (and (not workhours) pin) (or visitor (or hr (or it researcher)))), (EF lob))
+; R5: isitors can access one of the restrooms if they have access to a meeting room
+(visitor, AG (=> (EF mr) (EF (or wc1 wc2))))
+; R7: Visitors can exit/enter only through the lobby
+(visitor, (=> (EF mr) (not (EU (not lob) mr)))
