@@ -55,7 +55,7 @@ if __name__ == '__main__':
         
     reqs = []
     for reqStr in reqsStr:
-        if reqStr.startswith(';'):
+        if not reqStr.startswith('('):
             print reqStr
         else:
             reqs.append(ctl_grammar.parseRequirement(reqStr))

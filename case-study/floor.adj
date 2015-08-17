@@ -1,6 +1,6 @@
 out out lob cor2 cor3
 lob lob mr1 mr2 mr3 cor1
-cor1 cor1 out cor3 lob bur1 bur2 bur3 bur4 bur5 bur6 bur7 post wc1 wc2 
+cor1 cor1 out cor3 lob bur1 bur2 bur3 bur4 bur5 bur_staff bur7 post wc1 wc2 
 cor2 cor2 out serv elev post
 cor3 cor3 out cor1
 post post cor1 cor2
@@ -10,7 +10,7 @@ bur2 bur2 cor1
 bur3 bur3 cor1
 bur4 bur4 cor1
 bur5 bur5 cor1
-bur6 bur6 cor1
+bur_staff bur_staff cor1
 bur7 bur7 cor1
 mr1 mr1 lob
 mr2 mr2 lob
