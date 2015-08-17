@@ -100,8 +100,14 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                         disjuncts.append(And(conjuncts))
         return Or(disjuncts)
     elif reqCTL[0] == 'AG':
-        conjuncts = []
+        conjuncts = []        
         for targetResource in graph.nodes():
+            if reqCTL[1][0] == '=>' and stateFormula(graph, reqCTL[1][1]):               
+                stateCond = encodeFormula(graph, [req[0], reqCTL[1][1]], targetResource, pathConditionFunction)
+                s = Solver()
+                s.add(stateCond)
+                if s.check() == unsat:
+                    continue            
             subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
             s = Solver()
             s.add(subFormula)
