@@ -13,9 +13,9 @@ R4: Visitors and employees can access the lobby outside of workhours with their 
 ((and (and (not workhours) pin) (or visitor (or hr (or it researcher)))), (EF lob))
 
 R5: Visitors can access one of the restrooms if they have access to a meeting room
-(visitor, (AG (=> (EF mr1) (EF (or wc1 wc2)))))
-(visitor, (AG (=> (EF mr2) (EF (or wc1 wc2)))))
-(visitor, (AG (=> (EF mr3) (EF (or wc1 wc2)))))
+((and (not postman) visitor), (AG (=> (EF mr1) (EF (or wc1 wc2)))))
+((and (not postman) visitor), (AG (=> (EF mr2) (EF (or wc1 wc2)))))
+((and (not postman) visitor), (AG (=> (EF mr3) (EF (or wc1 wc2)))))
 
 R7: Visitors can exit/enter only through the lobby
 (visitor, (=> (EF mr1) (not (EU (not lob) mr1))))
@@ -35,3 +35,19 @@ R9: Only HR employees can access the staff management office (bur_staff)
 ((not hr), (not (EF bur_staff)))
 HR employees can access the staff management office during workhours
 ((and workhours hr), (EF bur_staff))
+
+R10: The postman can access the post office
+((and postman workhours), (EF post))
+
+R11: The postman cannot access the employee corridor (cor1)
+Refined to: unless he is an employee
+((and postman (not (or hr (or it researcher)))), (not (EF cor1)))
+
+R12: The postman can access the elevator from the post office
+(postman, (=> post (EF elev)))
+
+R14: IT and researcher emplyees cannot access the post office
+((and (not (or postman hr)) (or it researcher)), (not (EF post)))
+
+R15: Only IT can access the server room
+((not it), (not (EF serv)))
