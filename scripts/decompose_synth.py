@@ -93,7 +93,7 @@ def decomposeReqs(reqs):
         
     return curReqs
 
-def decomposeSynth(graph, reqs):
+def synth(graph, reqs):
     print 'Running the decompose synthesis algorithm'    
     setEdgeVars(graph)
         

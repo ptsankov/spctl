@@ -8,7 +8,7 @@ from ctl.ctl_solver import encodeFormula, restrictGraph,\
     simplePathConditionFunction
 from utils.helperMethods import INIT_RESOURCE, EDGE_VARS, strToZ3, setEdgeVars
 
-def negativeSynth(graph, reqs):
+def synth(graph, reqs):
     print 'Running the negative synthesis algorithm'
     setEdgeVars(graph)
 

@@ -1,2 +1,4 @@
-visitor
-employee
+visitor: boolean
+employee: boolean
+validPin: boolean
+time: numeric

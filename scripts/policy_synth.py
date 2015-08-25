@@ -8,7 +8,11 @@ from utils.helperMethods import ATTR_VARS, INIT_RESOURCE, strToZ3
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 
 NUM_ORS = 2
-NUM_ANDS = 2
+NUM_BOOLS = 3
+NUM_NUMERIC = 1
+
+BOOL_ATTRS = []
+NUMERIC_ATTRS = []
 
 TEMPLATE_VARS = {}
 
@@ -16,7 +20,7 @@ def declareTemplateVars(attrs, graph):
     for edge in graph.edges():
         if edge[0] == edge[1]:
             continue
-        for position in range(NUM_ORS * NUM_ANDS):
+        for position in range(NUM_ORS * NUM_BOOLS):
             TEMPLATE_VARS[edge, position] = Int(edge[0] + '_' + edge[1] + '_' + str(position))
 
 def attrTemplate(templateIntVar, index):
@@ -34,7 +38,7 @@ def policyTemplateForEdge(edge):
     if edge[0] == edge[1]:
         return True    
     conjunctions = []    
-    for i in range(NUM_ANDS):
+    for i in range(NUM_BOOLS):
         disjunctions = []        
         for j in range(NUM_ORS):            
             pos = i * NUM_ANDS + j
@@ -63,7 +67,7 @@ def instantiatePolicyTemplateForEdge(edge, model):
         conjunctions.append(simplify(Or(disjunctions)))
     return simplify(And(conjunctions))
             
-def policyGuidedPathCondition(graph, path, req):
+def pathCondition(graph, path, req):
     if len(path) < 2:
         return True
     reqProp = req[0]
@@ -74,10 +78,11 @@ def policyGuidedPathCondition(graph, path, req):
     
     
 
-def policyGuidedSynth(graph, reqs, attrs):
+def synth(graph, reqs, attrs):
     print 'Running the policy-guided synthesis algorithm'
     
     declareTemplateVars(attrs, graph)
+    
     
     s = Solver()
     for req in reqs:
@@ -86,7 +91,7 @@ def policyGuidedSynth(graph, reqs, attrs):
         print 'Q =', reqProp
         print 'CTL =', reqCTL
         
-        formula = encodeFormula(graph, req, INIT_RESOURCE, policyGuidedPathCondition)
+        formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)
         s.add(ForAll([ATTR_VARS[attr] for attr in ATTR_VARS.keys()], Implies(strToZ3(reqProp), formula)))        
     
     

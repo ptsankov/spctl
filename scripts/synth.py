@@ -13,13 +13,14 @@ import networkx as nx
 import sys
 import os
 from ctl import ctl_grammar
-from policy_guided_synth import policyGuidedSynth
-from decompose_synth import decomposeSynth
-from negative_synth import negativeSynth
+import boolean_policy_synth
+import policy_synth
+import decompose_synth
+import negative_synth
 
 
 if __name__ == '__main__':
-    if len(sys.argv) not in [4,5]:
+    if len(sys.argv) != 5:
         print 'Usage: {} <graph file> <attributes file> <requirements> [<algorithm>]'.format(sys.argv[0])
         sys.exit(-1)
     graphFilename = sys.argv[1]
@@ -31,11 +32,10 @@ if __name__ == '__main__':
             print filename, 'is not a file'
             sys.exit(-1)
             
-    if len(sys.argv) == 5:
-        algorithm = sys.argv[4]
-        if algorithm not in ['policy-guided', 'decompose', 'negative']:
-            print 'Unsupported algorithm. The supported ones are: policy-guided, decompose, negative'
-            sys.exit(-1)
+    algorithm = sys.argv[4]
+    if algorithm not in ['boolean-policy', 'decompose', 'negative', 'policy']:
+        print 'Unsupported algorithm. The supported ones are: decompose, negative, boolean-policy, policy'
+        sys.exit(-1)
             
     print 'Resource graph filename:', graphFilename
     print 'Attributes filename:', attributesFilename
@@ -63,11 +63,13 @@ if __name__ == '__main__':
     policy = None
     
     if algorithm == 'decompose':
-        policy = decomposeSynth(graph, reqs)
+        policy = decompose_synth.synth(graph, reqs)
     elif algorithm == 'negative':
-        policy = negativeSynth(graph, reqs)
+        policy = negative_synth.synth(graph, reqs)
+    elif algorithm == 'boolean-policy':
+        policy = boolean_policy_synth.synth(graph, reqs, attrs)
     else:
-        policy = policyGuidedSynth(graph, reqs, attrs)
+        policy = policy_synth.synth(graph, reqs, attrs)
         
     if policy == unsat:
         print 'No solution was found'

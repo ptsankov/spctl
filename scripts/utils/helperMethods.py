@@ -1,12 +1,18 @@
-from z3 import Bool, Not, And, Or, Implies
+from z3 import Bool, Not, And, Or, Implies, Int
 
 INIT_RESOURCE = 'out'
-ATTR_VARS = {}
+ATTR_BOOL_VARS = {}
+ATTR_NUMERIC_VARS = {}
 EDGE_VARS = {}
 
 def setAttrVars(attrs):
     for attr in attrs:
-        ATTR_VARS[attr] = Bool(attr)
+        name = attr.split(':')[0].strip()
+        type = attr.split(':')[1].strip()
+        if type == 'boolean':
+            ATTR_BOOL_VARS[attr] = Bool(attr)
+        elif type == 'numeric':
+            ATTR_NUMERIC_VARS[attr] = Int(attr)
 
 def setEdgeVars(graph):
     # declare variables for all edges
