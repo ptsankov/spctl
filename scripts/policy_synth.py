@@ -49,15 +49,12 @@ def declareTemplateVars(attrs, graph):
             index += 1
 
 def enumTemplate(enumTempVar, index):
-    print enumTempVar, index
     if index < len(ENUM_INDEX.keys()):
         if not isinstance(ENUM_INDEX[index], list):
             boolVar = ENUM_INDEX[index]
-            print 'boolVar', boolVar
             return If(enumTempVar == index, boolVar, enumTemplate(enumTempVar, index+1))
         else:
             [enumVar, val] = ENUM_INDEX[index]
-            print 'enumVar, val', enumVar, val
             return If(enumTempVar == index, enumVar == val, enumTemplate(enumTempVar, index+1))
     elif index >= len(ENUM_INDEX.keys()) and index < 2*len(ENUM_INDEX.keys()):
         if not isinstance(ENUM_INDEX[index - len(ENUM_INDEX)], list):
@@ -66,8 +63,10 @@ def enumTemplate(enumTempVar, index):
         else:
             [enumVar, val] = ENUM_INDEX[index - len(ENUM_INDEX)]
             return If(enumTempVar == index, enumVar != val, enumTemplate(enumTempVar, index+1))
-    else:
+    elif index == 2 * len(ENUM_INDEX.keys()):
         return If(enumTempVar == index, True, False)
+    else:
+        raise NameError('not reachable')
 
 def numTemplate(minVar, maxVar):
     return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)
@@ -82,7 +81,10 @@ def policyTemplateForEdge(edge):
             conjunctions.append(enumTemplate(TEMPLATE_ENUM_VARS[edge][or_id][enum_id], 0))
         for num_id in range(NUM_NUMERIC):
             # hardcoding one numeric variable for now!
-            conjunctions.append(numTemplate(TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min'], TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']))
+            minVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min']
+            maxVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']
+            conjunctions.append(NUM_VAR >= minVar)
+            conjunctions.append(NUM_VAR <= maxVar)                                 
         disjunctions.append(And(conjunctions))
     return Or(disjunctions)
 
@@ -103,7 +105,7 @@ def instantiatePolicyTemplateForEdge(edge, model):
                 else:
                     [enumVar, val] = ENUM_INDEX[synthVal]
                     conjunctions.append(enumVar == val)
-            elif synthVal >= len*ENUM_INDEX.keys() and synthVal < 2 * len(ENUM_INDEX.keys()):                
+            elif synthVal >= len(ENUM_INDEX.keys()) and synthVal < 2 * len(ENUM_INDEX.keys()):                
                 if not isinstance(ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())], list):
                     boolVar = ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())]
                     conjunctions.append(Not(boolVar))
@@ -111,9 +113,9 @@ def instantiatePolicyTemplateForEdge(edge, model):
                     [enumVar, val] = ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())]
                     conjunctions.append(enumVar != val)
             elif synthVal == 2 * len(ENUM_INDEX.keys()):
-                return True
+                conjunctions.append(True)
             else:
-                return False
+                conjunctions.append(False)
         for num_id in range(NUM_NUMERIC):
             numRangeConstraint = []
             minVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min']
@@ -123,11 +125,11 @@ def instantiatePolicyTemplateForEdge(edge, model):
             if model[maxVar] is not None:
                 numRangeConstraint.append(NUM_VAR <= model[maxVar].as_long())
             if len(numRangeConstraint) == 0:
-                return True
+                conjunctions.append(True)
             elif len(numRangeConstraint) == 1:
-                return numRangeConstraint[0]
+                conjunctions.append(numRangeConstraint[0])
             else:
-                return simplify(And(numRangeConstraint))
+                conjunctions.append(simplify(And(numRangeConstraint)))
         disjunctions.append(simplify(And(conjunctions)))
     return simplify(Or(disjunctions))
             
@@ -135,7 +137,7 @@ def pathCondition(graph, path, req):
     if len(path) < 2:
         return True
     reqProp = req[0]
-    edgePath = nodePathToEdgePath(graph, path)  
+    edgePath = nodePathToEdgePath(graph, path)
     edgeTemplates = [policyTemplateForEdge(e) for e in edgePath]   
     pathCondition = Implies(strToZ3(reqProp), And(edgeTemplates))
     return pathCondition
@@ -156,12 +158,21 @@ def synth(graph, reqs, attrs):
         print 'CTL =', reqCTL
         
         formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)
-        s.add(ForAll([BOOL_VARS[attr] for attr in BOOL_VARS.keys()], Implies(strToZ3(reqProp), formula)))        
-    
+        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(strToZ3(reqProp), formula)))        
+
+
+#    for e in graph.edges():
+#        print 'policy template for edge', e
+#        print '-----------------------------------------------------------------------'
+#        print policyTemplateForEdge(e)    
+#        print '-----------------------------------------------------------------------'
     
     policy = {}
+
+    print 'Checking if the requirements are satisfiable.'
     
     if s.check() == sat:
+        print ' Requirements are satisfiable, extracting a solution.'
         m = s.model()
         print m
         for edge in graph.edges():
