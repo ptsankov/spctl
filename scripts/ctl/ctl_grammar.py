@@ -4,11 +4,11 @@ class CTLGrammar:
     left = Literal('(').suppress()
     right = Literal(')').suppress()
     comma = Literal(',').suppress()
-    _in = Literal('in').suppress()
+    _in = Literal('in')
     leftCurly = Literal('{').suppress()
     rightCurly = Literal('}').suppress()
-    leftSquare = Literal('{').suppress()
-    rightSquare = Literal('}').suppress()
+    leftSquare = Literal('[').suppress()
+    rightSquare = Literal(']').suppress()
     
     neg = Literal('not')    
     ax = Literal('AX')
@@ -27,6 +27,7 @@ class CTLGrammar:
     true = Literal('true')
     false = Literal('false')
     word = Word(srange("[A-Za-z0-9_]"))
+    nums = Word(srange("[0-9]"))
                        
     unaryPropositionalOperator = neg
     binaryPropositionalOperator = conj | disj | impl
@@ -34,13 +35,13 @@ class CTLGrammar:
     unaryCTLOperator = neg | ax | ex | af | ef | ag | eg
     binaryCTLOperator = conj | disj | impl | au | eu
     
-    atomic = word | word + _in + leftCurly + Group(OneOrMore(word)) + rightCurly | word + _in + leftSquare + Group(OneOrMore(word)) + rightSquare
+    atomic = word | Group(left + word + _in + leftCurly + Group(OneOrMore(word)) + rightCurly + right) | Group(left + word + _in + leftSquare + Group(nums + comma + nums) + rightSquare + right)
     
     policy = Forward()
     policy << Or([true, false, atomic, Group(left + unaryPropositionalOperator + policy + right), Group(left + binaryPropositionalOperator + policy + OneOrMore(policy) + right)])    
     
     ctlFormula = Forward()
-    ctlFormula << Or([policy, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
+    ctlFormula << Or([word, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
     
     req = Group(left + policy + comma + ctlFormula + right)
         

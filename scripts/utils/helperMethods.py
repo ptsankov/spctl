@@ -26,31 +26,37 @@ def setAttrVars(attrs):
         else:
             raise NameError('unknown attribute type: '+ attrType)
         
-    print BOOL_VARS
-    print ENUM_VARS
-    print ENUM_VALUES
-    print NUMERIC_VARS
-
 def setEdgeVars(graph):
     # declare variables for all edges
     for e in graph.edges():
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
 
 
-def strToZ3(propFormula):
-    if propFormula in BOOL_VARS.keys():
-        return BOOL_VARS[propFormula]
-    elif propFormula[0] == 'not':
-        return Not(strToZ3(propFormula[1]))
-    elif propFormula[0] == 'and':
-        return And([strToZ3(x) for x in propFormula[1:]])
-    elif propFormula[0] == 'or':
-        return Or([strToZ3(x) for x in propFormula[1:]])
-    elif propFormula[0] == '=>':
-        return Implies(strToZ3(propFormula[1]), strToZ3(propFormula[2]))
-    elif propFormula == 'true':
+def strToZ3(policy):
+    if policy in BOOL_VARS.keys():
+        return BOOL_VARS[policy]
+    elif policy[0] in ENUM_VARS.keys():
+        var = ENUM_VARS[policy[0]] 
+        disjunctions = []
+        for val in policy[2]:
+            disjunctions.add(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
+        return Or(disjunctions)
+    elif policy[0] in NUMERIC_VARS.keys():
+        var = NUMERIC_VARS[policy[0]]
+        _min = int(policy[2][0])
+        _max = int(policy[2][1] )       
+        return And(var >= _min, var <= _max)
+    elif policy[0] == 'not':
+        return Not(strToZ3(policy[1]))
+    elif policy[0] == 'and':
+        return And([strToZ3(x) for x in policy[1:]])
+    elif policy[0] == 'or':
+        return Or([strToZ3(x) for x in policy[1:]])
+    elif policy[0] == '=>':
+        return Implies(strToZ3(policy[1]), strToZ3(policy[2]))
+    elif policy == 'true':
         return True
-    elif propFormula == 'false':
+    elif policy == 'false':
         return False
     else:
         raise NameError('could not convert propositional formula to the Z3 format')

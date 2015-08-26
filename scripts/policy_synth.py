@@ -4,68 +4,129 @@ Created on Aug 11, 2015
 @author: ptsankov
 '''
 from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify
-from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS
+from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
+    ENUM_VARS
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 
 NUM_ORS = 2
-NUM_BOOLS = 3
+NUM_ENUMS = 3
 NUM_NUMERIC = 1
 
-BOOL_ATTRS = []
-NUMERIC_ATTRS = []
+TEMPLATE_ENUM_VARS = {}
+TEMPLATE_NUMERIC_VARS =[]
 
-TEMPLATE_VARS = {}
+ENUM_INDEX = {}
 
-def declareTemplateVars(attrs, graph):    
+NUM_VAR = Int('time')
+
+def declareTemplateVars(attrs, graph):
+    global ENUM_RANGE    
+    
     for edge in graph.edges():
+        TEMPLATE_ENUM_VARS[edge] = {}
+        TEMPLATE_NUMERIC_VARS[edge] = {}
         if edge[0] == edge[1]:
             continue
-        for position in range(NUM_ORS * NUM_BOOLS):
-            TEMPLATE_VARS[edge, position] = Int(edge[0] + '_' + edge[1] + '_' + str(position))
+        for or_id in range(NUM_ORS):
+            TEMPLATE_ENUM_VARS[edge][or_id] = {}
+            TEMPLATE_NUMERIC_VARS[edge][or_id] = {}        
+            for enum_id in range(NUM_ENUMS):
+                TEMPLATE_ENUM_VARS[edge][or_id][enum_id] = Int(edge[0] + '_' + edge[1] + '_or' + str(or_id) + '_enum' + str(enum_id))
+            for num_id in range(NUM_NUMERIC):
+                TEMPLATE_NUMERIC_VARS[edge][or_id][num_id] = {}
+                TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min'] = Int(edge[0] + '_' + edge[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_min')
+                TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max'] = Int(edge[0] + '_' + edge[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_max')
+                
+    index = 0
+    for boolVarName in BOOL_VARS.keys():
+        ENUM_INDEX[index] = BOOL_VARS[boolVarName]                
+        index += 1
+    for enumVarName in ENUM_VARS.keys():
+        enumVar = ENUM_VARS[enumVarName]
+        for valName in ENUM_VALUES[enumVarName].keys():
+            val = ENUM_VALUES[enumVarName][valName]
+            ENUM_INDEX[index] = [enumVar, val]
+            index += 1
 
-def attrTemplate(templateIntVar, index):
-    numAttrs = len(BOOL_VARS.keys())
-    if index in range(numAttrs):
-        attr = BOOL_VARS.keys()[index]
-        return If(templateIntVar == index, BOOL_VARS[attr], attrTemplate(templateIntVar, index+1))
-    elif index in range(numAttrs, numAttrs*2):
-        attr = BOOL_VARS.keys()[index - numAttrs]
-        return If(templateIntVar == index, Not(BOOL_VARS[attr]), attrTemplate(templateIntVar, index+1))
+def enumTemplate(enumVar, index):
+    if index < len(ENUM_INDEX.keys()):
+        if not isinstance(ENUM_INDEX[index], list):
+            boolVar = ENUM_INDEX[index]
+            return If(enumVar == index, boolVar, enumTemplate(enumVar, index+1))
+        else:
+            [enumVar, val] = ENUM_INDEX[index]
+            return If(enumVar == index, enumVar == val, enumTemplate(enumVar, index+1))
+    elif index >= len(ENUM_INDEX.keys()) and index < 2*len(ENUM_INDEX.keys()):
+        if not isinstance(ENUM_INDEX[index - len(ENUM_INDEX)], list):
+            boolVar = ENUM_INDEX[index - len(ENUM_INDEX)]
+            return If(enumVar == index, Not(boolVar), enumTemplate(enumVar, index+1))
+        else:
+            [enumVar, val] = ENUM_INDEX[index - len(ENUM_INDEX)]
+            return If(enumVar == index, enumVar != val, enumTemplate(enumVar, index+1))
     else:
-        return True
+        return If(enumVar == index, True, False)
+
+def numTemplate(minVar, maxVar):
+    return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)
 
 def policyTemplateForEdge(edge):
     if edge[0] == edge[1]:
         return True    
-    conjunctions = []    
-    for i in range(NUM_BOOLS):
-        disjunctions = []        
-        for j in range(NUM_ORS):            
-            pos = i * NUM_ANDS + j
-            disjunctions.append(attrTemplate(TEMPLATE_VARS[edge, pos], 0))
-        conjunctions.append(Or(disjunctions))
-    return And(conjunctions)
+    disjunctions = []    
+    for or_id in range(NUM_ORS):
+        conjunctions = []        
+        for enum_id in range(NUM_ENUMS):                        
+            conjunctions.append(enumTemplate(TEMPLATE_ENUM_VARS[edge][or_id][enum_id], 0))
+        for num_id in range(NUM_NUMERIC):
+            # hardcoding one numeric variable for now!
+            conjunctions.append(numTemplate(TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min'], TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']))
+        disjunctions.append(And(conjunctions))
+    return Or(disjunctions)
 
 def instantiatePolicyTemplateForEdge(edge, model):
-    numAttrs = len(BOOL_VARS.keys())
-    conjunctions = []
-    for i in range(NUM_ANDS):
-        disjunctions = []
-        for j in range(NUM_ORS):
-            pos = i * NUM_ANDS + j
-            if model[TEMPLATE_VARS[edge, pos]] is not None:
-                synthVal = model[TEMPLATE_VARS[edge, pos]].as_long()
+    disjunctions = []
+    for or_id in range(NUM_ORS):
+        conjunctions = []
+        for enum_id in range(NUM_ENUMS):
+            enumVar = TEMPLATE_ENUM_VARS[edge][or_id][enum_id]
+            if model[enumVar] is not None:
+                synthVal = model[enumVar].as_long()
             else:
                 synthVal = -1
-            attr = BOOL_VARS.keys()[synthVal % numAttrs]
-            if synthVal in range(numAttrs):
-                disjunctions.append(BOOL_VARS[attr])
-            elif synthVal in range(numAttrs, numAttrs*2):
-                disjunctions.append(Not(BOOL_VARS[attr]))
+            if synthVal >= 0 and synthVal < len(ENUM_INDEX.keys()):                
+                if not isinstance(ENUM_INDEX[synthVal], list):
+                    boolVar = ENUM_INDEX[synthVal]
+                    conjunctions.append(boolVar)
+                else:
+                    [enumVar, val] = ENUM_INDEX[synthVal]
+                    conjunctions.append(enumVar == val)
+            elif synthVal >= len*ENUM_INDEX.keys() and synthVal < 2 * len(ENUM_INDEX.keys()):                
+                if not isinstance(ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())], list):
+                    boolVar = ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())]
+                    conjunctions.append(Not(boolVar))
+                else:
+                    [enumVar, val] = ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())]
+                    conjunctions.append(enumVar != val)
+            elif synthVal == 2 * len(ENUM_INDEX.keys()):
+                return True
             else:
-                disjunctions.append(True)
-        conjunctions.append(simplify(Or(disjunctions)))
-    return simplify(And(conjunctions))
+                return False
+        for num_id in range(NUM_NUMERIC):
+            numRangeConstraint = []
+            minVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min']
+            if model[minVar] is not None:
+                numRangeConstraint.append(NUM_VAR >= model[minVar].as_long())            
+            maxVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']
+            if model[maxVar] is not None:
+                numRangeConstraint.append(NUM_VAR <= model[maxVar].as_long())
+            if len(numRangeConstraint) == 0:
+                return True
+            elif len(numRangeConstraint) == 1:
+                return numRangeConstraint[0]
+            else:
+                return simplify(And(numRangeConstraint))
+        disjunctions.append(simplify(And(conjunctions)))
+    return simplify(Or(disjunctions))
             
 def pathCondition(graph, path, req):
     if len(path) < 2:
