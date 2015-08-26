@@ -109,10 +109,10 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                 if s.check() == unsat:
                     continue            
             subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
-            s = Solver()
-            s.add(subFormula)
-            if s.check() != sat:
-                continue
+#            s = Solver()
+#            s.add(subFormula)
+#            if s.check() != sat:
+#                continue
             if targetResource == resource:
                 conjuncts.append(subFormula)
             else:
@@ -121,7 +121,10 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                     pathCondition = pathConditionFunction(graph, path, req)
                     edgePathConditions.append(pathCondition)                    
                 pathExists = Or(edgePathConditions)
-                conjuncts.append(Implies(pathExists, subFormula))
+                s = Solver()
+                s.add(pathExists)
+                if s.check() == sat:                    
+                    conjuncts.append(Implies(pathExists, subFormula))
         return And(conjuncts)
     else:
         raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(reqCTL))

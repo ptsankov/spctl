@@ -8,8 +8,8 @@ from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
     ENUM_VARS
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 
-NUM_ORS = 2
-NUM_ENUMS = 3
+NUM_ORS = 1
+NUM_ENUMS = 2
 NUM_NUMERIC = 1
 
 TEMPLATE_ENUM_VARS = {}
@@ -131,21 +131,23 @@ def instantiatePolicyTemplateForEdge(edge, model):
             else:
                 conjunctions.append(simplify(And(numRangeConstraint)))
         disjunctions.append(simplify(And(conjunctions)))
-    return simplify(Or(disjunctions))
+    return simplify(Implies(And(NUM_VAR >= 0, NUM_VAR <= 24), Or(disjunctions)))
             
 def pathCondition(graph, path, req):
     if len(path) < 2:
         return True
+    if path[0] == path[-1]:
+        return True
     reqProp = req[0]
     edgePath = nodePathToEdgePath(graph, path)
     edgeTemplates = [policyTemplateForEdge(e) for e in edgePath]   
-    pathCondition = Implies(strToZ3(reqProp), And(edgeTemplates))
-    return pathCondition
+    cond = Implies(strToZ3(reqProp), And(edgeTemplates))
+    return cond
     
     
 
 def synth(graph, reqs, attrs):
-    print 'Running the policy-guided synthesis algorithm'
+    print 'Running the policy synthesis algorithm'
     
     declareTemplateVars(attrs, graph)
     
@@ -158,7 +160,8 @@ def synth(graph, reqs, attrs):
         print 'CTL =', reqCTL
         
         formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)
-        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(strToZ3(reqProp), formula)))        
+        #s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))        
+        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 
 
 #    for e in graph.edges():
@@ -168,11 +171,8 @@ def synth(graph, reqs, attrs):
 #        print '-----------------------------------------------------------------------'
     
     policy = {}
-
-    print 'Checking if the requirements are satisfiable.'
     
     if s.check() == sat:
-        print ' Requirements are satisfiable, extracting a solution.'
         m = s.model()
         print m
         for edge in graph.edges():
