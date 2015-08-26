@@ -4,7 +4,11 @@ class CTLGrammar:
     left = Literal('(').suppress()
     right = Literal(')').suppress()
     comma = Literal(',').suppress()
-    
+    _in = Literal('in').suppress()
+    leftCurly = Literal('{').suppress()
+    rightCurly = Literal('}').suppress()
+    leftSquare = Literal('{').suppress()
+    rightSquare = Literal('}').suppress()
     
     neg = Literal('not')    
     ax = Literal('AX')
@@ -14,7 +18,7 @@ class CTLGrammar:
     ag = Literal('AG')
     eg = Literal('EG')
     
-    conj = Literal('and')
+    conj = Literal('and')    
     disj = Literal('or')
     impl = Literal('=>')
     au = Literal('AU')
@@ -22,7 +26,7 @@ class CTLGrammar:
         
     true = Literal('true')
     false = Literal('false')
-    proposition = Word(srange("[A-Za-z0-9_]"))
+    word = Word(srange("[A-Za-z0-9_]"))
                        
     unaryPropositionalOperator = neg
     binaryPropositionalOperator = conj | disj | impl
@@ -30,19 +34,21 @@ class CTLGrammar:
     unaryCTLOperator = neg | ax | ex | af | ef | ag | eg
     binaryCTLOperator = conj | disj | impl | au | eu
     
-    propositionalFormula = Forward()
-    propositionalFormula << Or([true, false, proposition, Group(left + unaryPropositionalOperator + propositionalFormula + right), Group(left + binaryPropositionalOperator + propositionalFormula + OneOrMore(propositionalFormula) + right)])    
+    atomic = word | word + _in + leftCurly + Group(OneOrMore(word)) + rightCurly | word + _in + leftSquare + Group(OneOrMore(word)) + rightSquare
+    
+    policy = Forward()
+    policy << Or([true, false, atomic, Group(left + unaryPropositionalOperator + policy + right), Group(left + binaryPropositionalOperator + policy + OneOrMore(policy) + right)])    
     
     ctlFormula = Forward()
-    ctlFormula << Or([propositionalFormula, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
+    ctlFormula << Or([policy, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
     
-    req = Group(left + propositionalFormula + comma + ctlFormula + right)
+    req = Group(left + policy + comma + ctlFormula + right)
         
 def parseRequirement(string):
     return CTLGrammar.req.parseString(string, parseAll = True)[0]
 
-def parsePropositionalFormula(string):
-    return CTLGrammar.propositionalFormula.parseString(string, parseAll = True)[0]
+def parsePolicyFormula(string):
+    return CTLGrammar.policy.parseString(string, parseAll = True)[0]
 
 def parseCTLFormula(string):
     return CTLGrammar.ctlFormula.parseString(string, parseAll = True)[0]

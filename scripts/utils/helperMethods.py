@@ -1,27 +1,45 @@
-from z3 import Bool, Not, And, Or, Implies, Int
+from z3 import Bool, Not, And, Or, Implies, Int, EnumSort, Const
 
 INIT_RESOURCE = 'out'
-ATTR_BOOL_VARS = {}
-ATTR_NUMERIC_VARS = {}
+BOOL_VARS = {}
+ENUM_VARS = {}
+ENUM_VALUES = {}
+NUMERIC_VARS = {}
 EDGE_VARS = {}
 
 def setAttrVars(attrs):
     for attr in attrs:
-        name = attr.split(':')[0].strip()
-        type = attr.split(':')[1].strip()
-        if type == 'boolean':
-            ATTR_BOOL_VARS[attr] = Bool(attr)
-        elif type == 'numeric':
-            ATTR_NUMERIC_VARS[attr] = Int(attr)
+        attrName = attr.split(':')[0].strip()
+        attrType = attr.split(':')[1].strip()
+        if attrType == 'bool':
+            BOOL_VARS[attrName] = Bool(attrName)
+        elif attrType == 'enum':
+            values = attr.split(':')[2].strip().split(',')
+            newEnumSort = EnumSort(attrName, values)
+            ENUM_VARS[attrName] = Const(attrName, newEnumSort[0])
+            ENUM_VALUES[attrName] = {}
+            for enumVal in newEnumSort[1]:
+                ENUM_VALUES[attrName][str(enumVal)] = enumVal                
+        elif attrType == 'numeric':
+            print 'numeric type', attrName
+            NUMERIC_VARS[attrName] = Int(attrName)
+        else:
+            raise NameError('unknown attribute type: '+ attrType)
+        
+    print BOOL_VARS
+    print ENUM_VARS
+    print ENUM_VALUES
+    print NUMERIC_VARS
 
 def setEdgeVars(graph):
     # declare variables for all edges
     for e in graph.edges():
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
 
+
 def strToZ3(propFormula):
-    if propFormula in ATTR_VARS.keys():
-        return ATTR_VARS[propFormula]
+    if propFormula in BOOL_VARS.keys():
+        return BOOL_VARS[propFormula]
     elif propFormula[0] == 'not':
         return Not(strToZ3(propFormula[1]))
     elif propFormula[0] == 'and':
@@ -38,7 +56,7 @@ def strToZ3(propFormula):
         raise NameError('could not convert propositional formula to the Z3 format')
 
 def Z3toStr(z3Formula):
-    if z3Formula.decl().name() in ATTR_VARS.keys():
+    if z3Formula.decl().name() in BOOL_VARS.keys():
         return z3Formula.decl().name()
     elif z3Formula.decl().name() == 'not':
         return ['not', Z3toStr(z3Formula.arg(0))]

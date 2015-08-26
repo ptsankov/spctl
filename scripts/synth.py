@@ -60,6 +60,7 @@ if __name__ == '__main__':
         else:
             reqs.append(ctl_grammar.parseRequirement(reqStr))
     
+    print reqs
     policy = None
     
     if algorithm == 'decompose':

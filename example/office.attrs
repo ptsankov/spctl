@@ -1,4 +1,3 @@
-visitor: boolean
-employee: boolean
-validPin: boolean
-time: numeric
+role:enum:visitor,employee
+validPin:bool
+time:numeric
