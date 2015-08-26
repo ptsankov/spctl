@@ -13,7 +13,7 @@ NUM_ENUMS = 3
 NUM_NUMERIC = 1
 
 TEMPLATE_ENUM_VARS = {}
-TEMPLATE_NUMERIC_VARS =[]
+TEMPLATE_NUMERIC_VARS = {}
 
 ENUM_INDEX = {}
 
@@ -48,23 +48,26 @@ def declareTemplateVars(attrs, graph):
             ENUM_INDEX[index] = [enumVar, val]
             index += 1
 
-def enumTemplate(enumVar, index):
+def enumTemplate(enumTempVar, index):
+    print enumTempVar, index
     if index < len(ENUM_INDEX.keys()):
         if not isinstance(ENUM_INDEX[index], list):
             boolVar = ENUM_INDEX[index]
-            return If(enumVar == index, boolVar, enumTemplate(enumVar, index+1))
+            print 'boolVar', boolVar
+            return If(enumTempVar == index, boolVar, enumTemplate(enumTempVar, index+1))
         else:
             [enumVar, val] = ENUM_INDEX[index]
-            return If(enumVar == index, enumVar == val, enumTemplate(enumVar, index+1))
+            print 'enumVar, val', enumVar, val
+            return If(enumTempVar == index, enumVar == val, enumTemplate(enumTempVar, index+1))
     elif index >= len(ENUM_INDEX.keys()) and index < 2*len(ENUM_INDEX.keys()):
         if not isinstance(ENUM_INDEX[index - len(ENUM_INDEX)], list):
             boolVar = ENUM_INDEX[index - len(ENUM_INDEX)]
-            return If(enumVar == index, Not(boolVar), enumTemplate(enumVar, index+1))
+            return If(enumTempVar == index, Not(boolVar), enumTemplate(enumTempVar, index+1))
         else:
             [enumVar, val] = ENUM_INDEX[index - len(ENUM_INDEX)]
-            return If(enumVar == index, enumVar != val, enumTemplate(enumVar, index+1))
+            return If(enumTempVar == index, enumVar != val, enumTemplate(enumTempVar, index+1))
     else:
-        return If(enumVar == index, True, False)
+        return If(enumTempVar == index, True, False)
 
 def numTemplate(minVar, maxVar):
     return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)

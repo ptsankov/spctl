@@ -39,7 +39,7 @@ def strToZ3(policy):
         var = ENUM_VARS[policy[0]] 
         disjunctions = []
         for val in policy[2]:
-            disjunctions.add(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
+            disjunctions.append(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
         return Or(disjunctions)
     elif policy[0] in NUMERIC_VARS.keys():
         var = NUMERIC_VARS[policy[0]]
@@ -62,6 +62,7 @@ def strToZ3(policy):
         raise NameError('could not convert propositional formula to the Z3 format')
 
 def Z3toStr(z3Formula):
+    raise NameError('fix the Z3toStr method')
     if z3Formula.decl().name() in BOOL_VARS.keys():
         return z3Formula.decl().name()
     elif z3Formula.decl().name() == 'not':
