@@ -8,8 +8,8 @@ from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
     ENUM_VARS
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 
-NUM_ORS = 1
-NUM_ENUMS = 2
+NUM_ORS = 2
+NUM_ENUMS = 1
 NUM_NUMERIC = 1
 
 TEMPLATE_ENUM_VARS = {}
@@ -117,21 +117,14 @@ def instantiatePolicyTemplateForEdge(edge, model):
             else:
                 conjunctions.append(False)
         for num_id in range(NUM_NUMERIC):
-            numRangeConstraint = []
             minVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min']
             if model[minVar] is not None:
-                numRangeConstraint.append(NUM_VAR >= model[minVar].as_long())            
+                conjunctions.append(NUM_VAR >= model[minVar].as_long())            
             maxVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']
             if model[maxVar] is not None:
-                numRangeConstraint.append(NUM_VAR <= model[maxVar].as_long())
-            if len(numRangeConstraint) == 0:
-                conjunctions.append(True)
-            elif len(numRangeConstraint) == 1:
-                conjunctions.append(numRangeConstraint[0])
-            else:
-                conjunctions.append(simplify(And(numRangeConstraint)))
+                conjunctions.append(NUM_VAR <= model[maxVar].as_long())
         disjunctions.append(simplify(And(conjunctions)))
-    return simplify(Implies(And(NUM_VAR >= 0, NUM_VAR <= 24), Or(disjunctions)))
+    return simplify(Or(disjunctions))
             
 def pathCondition(graph, path, req):
     if len(path) < 2:
@@ -171,15 +164,14 @@ def synth(graph, reqs, attrs):
 #        print '-----------------------------------------------------------------------'
     
     policy = {}
-    
     if s.check() == sat:
         m = s.model()
         print m
         for edge in graph.edges():
             if edge[0] == edge[1]:
                 policy[edge] = True
-                continue
-            policy[edge] = instantiatePolicyTemplateForEdge(edge, m)
+                continue            
+            policy[edge] = instantiatePolicyTemplateForEdge(edge, m) 
         return policy
     else:    
         return unsat

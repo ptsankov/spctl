@@ -1,0 +1,4 @@
+visitor:bool
+employee:bool
+validPin:bool
+time:numeric
