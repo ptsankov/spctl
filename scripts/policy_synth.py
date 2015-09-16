@@ -7,8 +7,9 @@ from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simpli
 from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
     ENUM_VARS
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
+import time
 
-NUM_ORS = 2
+NUM_ORS = 1
 NUM_ENUMS = 1
 NUM_NUMERIC = 1
 
@@ -145,6 +146,7 @@ def synth(graph, reqs, attrs):
     declareTemplateVars(attrs, graph)
     
     
+    start = time.time()
     s = Solver()
     for req in reqs:
         reqProp = req[0]
@@ -162,10 +164,15 @@ def synth(graph, reqs, attrs):
 #        print '-----------------------------------------------------------------------'
 #        print policyTemplateForEdge(e)    
 #        print '-----------------------------------------------------------------------'
+    timeToTranslate = time.time() - start    
+    print 'Time for the translation took: ' + str(timeToTranslate)
     
     policy = {}
-    if s.check() == sat:
+    start = time.time()
+    if s.check() == sat:        
         m = s.model()
+        timeToSolve = time.time() - start
+        print 'Time for the solving: ' + str(timeToSolve)
         print m
         for edge in graph.edges():
             if edge[0] == edge[1]:

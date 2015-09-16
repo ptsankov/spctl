@@ -53,3 +53,6 @@ def parsePolicyFormula(string):
 
 def parseCTLFormula(string):
     return CTLGrammar.ctlFormula.parseString(string, parseAll = True)[0]
+
+
+print parseRequirement('((and (role in {visitor hr researcher it}) (time in [8,20])), (EF lob))')
