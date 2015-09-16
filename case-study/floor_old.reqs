@@ -1,13 +1,53 @@
-((and visitor workhours), (EF mr))
-((not (or workhours pin)), (AG out))
-((and visitor workhours), (EF lob))
-((and researcher workhours), (EF cor1))
-((and it workhours), (EF cor1))
-((and hr workhours), (EF cor1))
-(true, (AG (=> mr (EF (or wc1 wc2)))))
-((not visitor), (not (EF (or bur1 (or bur6 bur7)))))
-(hr, (EF bur6))
-((or postman hr), (EF elev))
-((not (or postman hr)), (not (EF elev)))
-((and (or postman hr) workhours), (EF post))
-((and it workhours), (EF serv))
+R1: Noone can access without a PIN code outside of the workhours
+((and (not pin) (not workhours)), (not (EF (not out))))
+
+R2: Visitors can access the meeting rooms
+((and workhours visitor), (EF mr1))
+((and workhours visitor), (EF mr2))
+((and workhours visitor), (EF mr3))
+
+R3: Visitors and employees can access the lobby during workhours
+((and workhours (or visitor (or hr (or it researcher)))), (EF lob))
+
+R4: Visitors and employees can access the lobby outside of workhours with their PIN
+((and (and (not workhours) pin) (or visitor (or hr (or it researcher)))), (EF lob))
+
+R5: Visitors can access one of the restrooms if they have access to a meeting room
+((and (not postman) visitor), (AG (=> (EF mr1) (EF (or wc1 wc2)))))
+((and (not postman) visitor), (AG (=> (EF mr2) (EF (or wc1 wc2)))))
+((and (not postman) visitor), (AG (=> (EF mr3) (EF (or wc1 wc2)))))
+
+R7: Visitors can exit/enter only through the lobby
+(visitor, (=> (EF mr1) (not (EU (not lob) mr1))))
+(visitor, (=> (EF mr2) (not (EU (not lob) mr2))))
+(visitor, (=> (EF mr3) (not (EU (not lob) mr3))))
+
+R8: Visitors (who are not employees) cannot access any office
+((and visitor (not (or hr (or it researcher)))), (not (EF bur1)))
+((and visitor (not (or hr (or it researcher)))), (not (EF bur2)))
+((and visitor (not (or hr (or it researcher)))), (not (EF bur3)))
+((and visitor (not (or hr (or it researcher)))), (not (EF bur4)))
+((and visitor (not (or hr (or it researcher)))), (not (EF bur5)))
+((and visitor (not (or hr (or it researcher)))), (not (EF bur_staff)))
+((and visitor (not (or hr (or it researcher)))), (not (EF bur7)))
+
+R9: Only HR employees can access the staff management office (bur_staff)
+((not hr), (not (EF bur_staff)))
+HR employees can access the staff management office during workhours
+((and workhours hr), (EF bur_staff))
+
+R10: The postman can access the post office
+((and postman workhours), (EF post))
+
+R11: The postman cannot access the employee corridor (cor1)
+Refined to: unless he is an employee
+((and postman (not (or hr (or it researcher)))), (not (EF cor1)))
+
+R12: The postman can access the elevator from the post office
+(postman, (=> post (EF elev)))
+
+R14: IT and researcher emplyees cannot access the post office
+((and (not (or postman hr)) (or it researcher)), (not (EF post)))
+
+R15: Only IT can access the server room
+((not it), (not (EF serv)))
