@@ -65,7 +65,11 @@ if __name__ == '__main__':
             resId = attrPair.split(':')[0]
             attrVal = attrPair.split(':')[1]            
             resAttrMap[resId] = attrVal
-        set_node_attributes(graph, attrName, resAttrMap) 
+        set_node_attributes(graph, attrName, resAttrMap)
+    resAttrMap = {}
+    for n in graph.nodes():
+        resAttrMap[n] = n
+    set_node_attributes(graph, 'room_id', resAttrMap)
 
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]

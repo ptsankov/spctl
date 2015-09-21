@@ -1,4 +1,5 @@
-from pyparsing import Word, Literal, srange, Forward, Group, Or, OneOrMore
+from pyparsing import Word, Literal, srange, Forward, Group, Or, OneOrMore,\
+    ParseException
 
 class CTLGrammar:
     left = Literal('(').suppress()
@@ -37,22 +38,22 @@ class CTLGrammar:
     
     atomic = word | Group(left + word + _in + leftCurly + Group(OneOrMore(word)) + rightCurly + right) | Group(left + word + _in + leftSquare + Group(nums + comma + nums) + rightSquare + right)
     
-    policy = Forward()
-    policy << Or([true, false, atomic, Group(left + unaryPropositionalOperator + policy + right), Group(left + binaryPropositionalOperator + policy + OneOrMore(policy) + right)])    
+    constranit = Forward()
+    constranit << Or([true, false, atomic, Group(left + unaryPropositionalOperator + constranit + right), Group(left + binaryPropositionalOperator + constranit + OneOrMore(constranit) + right)])    
     
     ctlFormula = Forward()
     ctlFormula << Or([atomic, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
     
-    req = Group(left + policy + comma + ctlFormula + right)
+    req = Group(left + constranit + comma + ctlFormula + right)
         
 def parseRequirement(string):
+    print string
     return CTLGrammar.req.parseString(string, parseAll = True)[0]
 
-def parsePolicyFormula(string):
-    return CTLGrammar.policy.parseString(string, parseAll = True)[0]
+def parseConstraint(string):
+    print string
+    return CTLGrammar.constranit.parseString(string, parseAll = True)[0]
 
 def parseCTLFormula(string):
     return CTLGrammar.ctlFormula.parseString(string, parseAll = True)[0]
 
-
-print parseRequirement('((and (not pin) (not (time in [8,20])) (role in {visitor hr researcher it})), (not (EF (zone in {lobby}))))')

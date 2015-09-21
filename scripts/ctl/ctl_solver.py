@@ -22,14 +22,35 @@ def simplePathConditionFunction(graph, path, req):
     edgeVars = [EDGE_VARS[e] for e in edgePath]
     return And(edgeVars)
 
-def stateFormula(graph, formula):
-    if formula in graph.nodes() or formula in ['true', 'false']:
-        return True
+def isConstraint(formula):
     if formula[0] == 'not':
-        return stateFormula(graph, formula[1])
-    if formula[0] in ['and', 'or', '=>']:
-        return stateFormula(graph, formula[1]) and stateFormula(graph, formula[2])
-    return False
+        return isConstraint(formula[1])
+    elif formula[0] == 'and':
+        return isConstraint(formula[1]) and isConstraint(formula[2])
+    elif formula[0] == '=>':
+        return (not isConstraint(formula[1])) and isConstraint(formula[2])
+    elif formula[0] == 'or':
+        return (isConstraint(formula[1])) or isConstraint(formula[2])
+    else:
+        if len(formula) == 3 and formula[1] == 'in':
+            return True
+        return False
+
+def evalResourceConstraint(graph, resource, constraint):
+    if constraint[0] == 'not':
+        return not evalResourceConstraint(graph, resource, constraint[1])
+    elif constraint[0] == 'and':
+        return evalResourceConstraint(graph, resource, constraint[1]) and evalResourceConstraint(graph, resource, constraint[2])
+    elif constraint[0] == '=>':
+        return (not evalResourceConstraint(graph, resource, constraint[1])) and evalResourceConstraint(graph, resource, constraint[2])
+    elif constraint[0] == 'or':
+        return evalResourceConstraint(graph, resource, constraint[1]) or evalResourceConstraint(graph, resource, constraint[2])
+    else:
+        assert isConstraint(constraint)
+        attrName = constraint[0]
+        attrVals = constraint[2]
+        return graph.node[resource][attrName] in attrVals
+        
 
 def encodeFormula(graph, req, resource, pathConditionFunction):
     reqProp = req[0]
@@ -56,21 +77,15 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
             return Or(subFormulaLeft, subFormulaRight)
         elif reqCTL[0] == '=>':
             return Implies(subFormulaLeft, subFormulaRight)
-    elif reqCTL[0] == 'EF':
-        if reqCTL[1] in graph.nodes():
-            targetResource = reqCTL[1]
-            pathDisjuncts = []
-            for path in nx.all_simple_paths(graph, resource, targetResource):
-                pathCondition = pathConditionFunction(graph, path, req)
-                pathDisjuncts.append(pathCondition)
-            return Or(pathDisjuncts)                                
-        elif stateFormula(graph, reqCTL[1]):
+    elif reqCTL[0] == 'EF':                                
+        if isConstraint(reqCTL[1]):
             pathDisjuncts = []
             for targetResource in graph.nodes():
-                s = Solver()
-                stateCond = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
-                s.add(stateCond)
-                if s.check() == unsat:
+                #s = Solver()
+                #stateCond = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
+                #s.add(stateCond)
+                #if s.check() == unsat:
+                if evalResourceConstraint(graph, resource, reqCTL[1]) == False:
                     continue
                 for path in nx.all_simple_paths(graph, resource, targetResource):
                     pathCondition = pathConditionFunction(graph, path, req)
@@ -102,11 +117,12 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
     elif reqCTL[0] == 'AG':
         conjuncts = []        
         for targetResource in graph.nodes():
-            if reqCTL[1][0] == '=>' and stateFormula(graph, reqCTL[1][1]):               
-                stateCond = encodeFormula(graph, [req[0], reqCTL[1][1]], targetResource, pathConditionFunction)
-                s = Solver()
-                s.add(stateCond)
-                if s.check() == unsat:
+            if reqCTL[1][0] == '=>' and isConstraint(reqCTL[1][1]):               
+                #stateCond = encodeFormula(graph, [req[0], reqCTL[1][1]], targetResource, pathConditionFunction)
+                #s = Solver()
+                #s.add(stateCond)
+                #if s.check() == unsat:
+                if evalResourceConstraint(graph, targetResource, reqCTL[1][1]) == False:
                     continue            
             subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
 #            s = Solver()
@@ -127,7 +143,18 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                     conjuncts.append(Implies(pathExists, subFormula))
         return And(conjuncts)
     else:
-        raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(reqCTL))
+        # it must be an atomic constraint
+        assert isConstraint(reqCTL)
+        attrName = reqCTL[0]
+        attrVals = reqCTL[2]
+        print 'attrName', attrName
+        print 'attrVals', attrVals
+        print 'resource', resource
+        print 'graph.node[resource][attrName]', graph.node[resource][attrName]
+        print 'graph.node[resource][attrName] in attrVals', graph.node[resource][attrName] in attrVals
+        return graph.node[resource][attrName] in attrVals
+        
+        #raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(reqCTL))
             
                      
 # graph - a directed graph
