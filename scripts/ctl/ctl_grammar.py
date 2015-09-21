@@ -41,7 +41,7 @@ class CTLGrammar:
     policy << Or([true, false, atomic, Group(left + unaryPropositionalOperator + policy + right), Group(left + binaryPropositionalOperator + policy + OneOrMore(policy) + right)])    
     
     ctlFormula = Forward()
-    ctlFormula << Or([word, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
+    ctlFormula << Or([atomic, Group(left + unaryCTLOperator + ctlFormula + right), Group(left + binaryCTLOperator + ctlFormula + ctlFormula + right)])
     
     req = Group(left + policy + comma + ctlFormula + right)
         
@@ -55,4 +55,4 @@ def parseCTLFormula(string):
     return CTLGrammar.ctlFormula.parseString(string, parseAll = True)[0]
 
 
-print parseRequirement('((and (role in {visitor hr researcher it}) (time in [8,20])), (EF lob))')
+print parseRequirement('((and (not pin) (not (time in [8,20])) (role in {visitor hr researcher it})), (not (EF (zone in {lobby}))))')
