@@ -4,10 +4,10 @@ R1: Noone can access without a PIN code outside of the (time in [8,20])
 R2: Visitors can access the meeting rooms
 ((and (role in {visitor}) (time in [8,20])), (EF (zone in {meeting_room})))
 
-R3: Visitors and employees can access the lobby during (time in [8,20])
+R3: Visitors and employees can access the lobby during workhours
 ((and (role in {visitor hr researcher it}) (time in [8,20])), (EF (zone in {lobby})))
 
-R3: Visitors and employees cannot access the lobby during without their pin from midnight until 7am
+R3: Visitors and employees cannot access the lobby without their pin from midnight outside of workhours
 ((and (not pin) (not (time in [8,20])) (role in {visitor hr researcher it})), (not (EF (zone in {lobby}))))
 
 R4: Employees can always access the lobby with their PIN
@@ -16,9 +16,8 @@ R4: Employees can always access the lobby with their PIN
 R5: Visitors can access one of the restrooms if they have access to a meeting room
 ((role in {visitor}), (AG (=> (zone in {meeting_room}) (EF (zone in {restroom})))))
 
-R7: Visitors can enter only through the lobby
+R7: Visitors must pass through the lobby to access the meeting rooms
 ((role in {visitor}), (not (EU (not (zone in {lobby})) (zone in {meeting_room}))))
-((and (role in {visitor}) (time in [8,20])), (EF (zone in {meeting_room})))
 
 R8: Non employees cannot access any office
 ((role in {visitor postman}), (not (EF (zone in {bureau}))))
@@ -28,7 +27,7 @@ R9: Non-HR employees cannot access the staff management office (bur_staff)
 HR employees can access the staff management office during (time in [8,20])
 ((and (time in [8,20]) (role in {hr})), (EF (room_id in {bur_staff})))
 
-R10: The postman and the HR can access the post office
+R10: The postman and the HR can access the post office during workhours
 ((and (role in {postman hr}) (time in [8,20])), (EF (zone in {post})))
 
 R11: The postman cannot access the employee corridor (cor1)
