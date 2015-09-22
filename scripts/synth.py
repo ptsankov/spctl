@@ -19,30 +19,33 @@ import decompose_synth
 import negative_synth
 from networkx.classes.function import set_node_attributes
 
-
 if __name__ == '__main__':
-    if len(sys.argv) != 6:
-        print 'Usage: {} <graph file> <attributes file> <resources file> <requirements> [<algorithm>]'.format(sys.argv[0])
+    
+    if len(sys.argv) != 8:
+        print 'Usage: {} <graph file> <attributes file> <resources file> <requirements> <num ors> <# enums> <# numeric>'.format(sys.argv[0])
         sys.exit(-1)
     graphFilename = sys.argv[1]
     attributesFilename = sys.argv[2]
     resourcesFilename = sys.argv[3]
     reqsFilename = sys.argv[4]
+
+    policy_synth.setTemplateSize(int(sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]))    
     
     for filename in [graphFilename, attributesFilename, resourcesFilename, reqsFilename]:
         if not os.path.isfile(filename):
             print filename, 'is not a file'
             sys.exit(-1)
             
-    algorithm = sys.argv[5]
-    if algorithm not in ['boolean-policy', 'decompose', 'negative', 'policy']:
-        print 'Unsupported algorithm. The supported ones are: decompose, negative, boolean-policy, policy'
-        sys.exit(-1)
+#    algorithm = sys.argv[5]
+#    if algorithm not in ['boolean-policy', 'decompose', 'negative', 'policy']:
+#        print 'Unsupported algorithm. The supported ones are: decompose, negative, boolean-policy, policy'
+#        sys.exit(-1)
             
     print 'Resource graph filename:', graphFilename
     print 'Attributes filename:', attributesFilename
     print 'Resources  filename:', resourcesFilename
     print 'Requirements filename:', reqsFilename
+    
     
     graph = nx.read_adjlist(graphFilename, create_using = nx.DiGraph())    
     print 'Resources in the resource graph:', graph.nodes()    
@@ -81,9 +84,9 @@ if __name__ == '__main__':
         else:
             reqs.append(ctl_grammar.parseRequirement(reqStr))
     
-    print reqs
     policy = None
-    
+
+    '''    
     if algorithm == 'decompose':
         policy = decompose_synth.synth(graph, reqs)
     elif algorithm == 'negative':
@@ -91,7 +94,8 @@ if __name__ == '__main__':
     elif algorithm == 'boolean-policy':
         policy = boolean_policy_synth.synth(graph, reqs, attrs)
     else:
-        policy = policy_synth.synth(graph, reqs, attrs)
+    '''
+    policy = policy_synth.synth(graph, reqs, attrs)
         
     if policy == unsat:
         print 'No solution was found'

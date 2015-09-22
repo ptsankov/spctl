@@ -124,11 +124,8 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                 for path in nx.all_simple_paths(graph, resource, targetResource):                    
                     pathCondition = pathConditionFunction(graph, path, req)
                     edgePathConditions.append(pathCondition)                    
-                pathExists = Or(edgePathConditions)
-                s = Solver()
-                s.add(pathExists)
-                if s.check() == sat:                    
-                    conjuncts.append(Implies(pathExists, subFormula))
+                pathExists = Or(edgePathConditions)                  
+                conjuncts.append(Implies(pathExists, subFormula))
         return And(conjuncts)
     else:
         # it must be an atomic constraint

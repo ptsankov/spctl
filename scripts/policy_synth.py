@@ -9,16 +9,22 @@ from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
 from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
 import time
 
-NUM_ORS = 1
-NUM_ENUMS = 1
-NUM_NUMERIC = 1
-
 TEMPLATE_ENUM_VARS = {}
 TEMPLATE_NUMERIC_VARS = {}
 
 ENUM_INDEX = {}
 
+NUM_ORS = None
+NUM_ENUMS = None
+NUM_NUMERIC = None
+
 NUM_VAR = Int('time')
+
+def setTemplateSize(numOrs, numEnums, numNumeric):
+    global NUM_ORS, NUM_ENUMS, NUM_NUMERIC
+    NUM_ORS = numOrs
+    NUM_ENUMS = numEnums
+    NUM_NUMERIC = numNumeric
 
 def declareTemplateVars(attrs, graph):
     global ENUM_RANGE    
@@ -141,7 +147,7 @@ def pathCondition(graph, path, req):
     
 
 def synth(graph, reqs, attrs):
-    print 'Running the policy synthesis algorithm'
+    print 'Translating requirements to SMT'
     
     declareTemplateVars(attrs, graph)
     
@@ -149,11 +155,9 @@ def synth(graph, reqs, attrs):
     start = time.time()
     s = Solver()
     for req in reqs:
+        print 'Translating requirement', req
         reqProp = req[0]
-        reqCTL = req[1]
-        print 'Q =', reqProp
-        print 'CTL =', reqCTL
-        
+       
         formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)      
         s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 
@@ -161,6 +165,9 @@ def synth(graph, reqs, attrs):
     print 'Time for the translation took: ' + str(timeToTranslate)
     
     policy = {}
+    
+    print 'SMT Solving'
+    
     start = time.time()
     if s.check() == sat:        
         m = s.model()
