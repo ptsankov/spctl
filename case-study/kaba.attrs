@@ -1,4 +1,3 @@
 role:enum:visitor,hr,researcher,it,postman
 pin:bool
 time:numeric
-zone:enum:bureau,inside,elevator,lobby,meeting_room,entry,post,servers,restroom
