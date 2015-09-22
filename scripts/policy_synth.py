@@ -154,16 +154,9 @@ def synth(graph, reqs, attrs):
         print 'Q =', reqProp
         print 'CTL =', reqCTL
         
-        formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)
-        #s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))        
+        formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)      
         s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 
-
-#    for e in graph.edges():
-#        print 'policy template for edge', e
-#        print '-----------------------------------------------------------------------'
-#        print policyTemplateForEdge(e)    
-#        print '-----------------------------------------------------------------------'
     timeToTranslate = time.time() - start    
     print 'Time for the translation took: ' + str(timeToTranslate)
     

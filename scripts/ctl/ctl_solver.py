@@ -56,7 +56,6 @@ def evalResourceConstraint(graph, resource, constraint):
 def encodeFormula(graph, req, resource, pathConditionFunction):
     reqProp = req[0]
     reqCTL = req[1]
-    #print 'encode', ctlFormula, 'for state', resource
     if reqCTL in graph.nodes():
         if reqCTL == resource:
             return True
@@ -69,7 +68,7 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
     elif reqCTL[0] == 'not':
         subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
         return Not(subFormula)
-    elif reqCTL[0] in ['and', 'or', '=>']:
+    elif any(reqCTL[0] == x for x in ['and', 'or', '=>']):
         subFormulaLeft = encodeFormula(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
         subFormulaRight = encodeFormula(graph, [reqProp, reqCTL[2]], resource, pathConditionFunction)
         if reqCTL[0] == 'and':
