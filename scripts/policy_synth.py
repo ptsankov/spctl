@@ -173,8 +173,6 @@ def synth(graph, reqs, attrs):
         m = s.model()
         timeToSolve = time.time() - start
         print 'Time for the solving: ' + str(timeToSolve)
-        print s.statistics()
-        print m
         for edge in graph.edges():
             if edge[0] == edge[1]:
                 policy[edge] = True

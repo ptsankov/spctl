@@ -50,9 +50,7 @@ def evalResourceConstraint(graph, resource, constraint):
         attrName = constraint[0]
         attrVals = constraint[2]
         attrVal = graph.node[resource][attrName]
-        if any(attrVal == x for x in attrVals):
-            return True
-        return False
+        return any(attrVal == x for x in attrVals)
         
 
 def encodeFormula(graph, req, resource, pathConditionFunction):
@@ -117,7 +115,7 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
         conjuncts = []        
         for targetResource in graph.nodes():
             if reqCTL[1][0] == '=>' and isConstraint(reqCTL[1][1]):               
-                if evalResourceConstraint(graph, targetResource, reqCTL[1][1]) == False:
+                if not evalResourceConstraint(graph, targetResource, reqCTL[1][1]):
                     continue            
             subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
             if targetResource == resource:
@@ -138,12 +136,8 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
         assert isConstraint(reqCTL)
         attrName = reqCTL[0]
         attrVals = reqCTL[2]
-        print 'attrName', attrName
-        print 'attrVals', attrVals
-        print 'resource', resource
-        print 'graph.node[resource][attrName]', graph.node[resource][attrName]
-        print 'graph.node[resource][attrName] in attrVals', graph.node[resource][attrName] in attrVals
-        return graph.node[resource][attrName] in attrVals
+        attrVal = graph.node[resource][attrName]
+        return any(attrVal == x for x in attrVals)
         
         #raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(reqCTL))
             
