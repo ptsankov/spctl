@@ -1,0 +1,1 @@
+zone|bur1:bureau,bur2:bureau,bur3:bureau,bur4:bureau,bur5:bureau,bur7:bureau,bur_staff:bureau,cor1:inside,cor2:inside,cor3:inside,elev:elevator,lob:lobby,mr1:meeting_room,mr2:meeting_room,mr3:meeting_room,out:entry,post:post,serv:servers,wc1:restroom,wc2:restroom

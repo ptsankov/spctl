@@ -101,3 +101,75 @@ ors 2, enums 2, numeric 4
 Time for the translation took: 32.6519839764
 Time for the solving: 97.0352549553
 ors 2, enums 2, numeric 5
+Time for the translation took: 35.4512929916
+Time for the solving: 466.895900011
+ors 2, enums 3, numeric 1
+Time for the translation took: 47.8654181957
+Time for the solving: 6.07565999031
+ors 2, enums 3, numeric 2
+Time for the translation took: 47.9574799538
+Time for the solving: 28.2202539444
+ors 2, enums 3, numeric 3
+Time for the translation took: 46.3235960007
+Time for the solving: 21.4834070206
+ors 2, enums 3, numeric 4
+Time for the translation took: 46.3272051811
+Time for the solving: 123.622354031
+ors 2, enums 3, numeric 5
+Time for the translation took: 45.8501420021
+Time for the solving: 617.893204927
+ors 2, enums 4, numeric 1
+Time for the translation took: 56.4300320148
+Time for the solving: 6.29123997688
+ors 2, enums 4, numeric 2
+Time for the translation took: 58.3238530159
+Time for the solving: 28.8451480865
+ors 2, enums 4, numeric 3
+Time for the translation took: 57.811455965
+Time for the solving: 65.9073190689
+ors 2, enums 4, numeric 4
+Time for the translation took: 58.6090049744
+Time for the solving: 170.160501003
+ors 2, enums 4, numeric 5
+Time for the translation took: 58.0811700821
+Time for the solving: 53.0169398785
+ors 2, enums 5, numeric 1
+Time for the translation took: 69.2358930111
+Time for the solving: 5.12236213684
+ors 2, enums 5, numeric 2
+Time for the translation took: 68.7742278576
+Time for the solving: 17.92116189
+ors 2, enums 5, numeric 3
+Time for the translation took: 72.4368100166
+Time for the solving: 106.350903034
+ors 2, enums 5, numeric 4
+Time for the translation took: 71.5519878864
+Time for the solving: 203.668213129
+ors 2, enums 5, numeric 5
+Time for the translation took: 74.9813010693
+Time for the solving: 447.700471878
+ors 3, enums 1, numeric 1
+Time for the translation took: 22.1830570698
+Time for the solving: 8.56010103226
+ors 3, enums 1, numeric 2
+Time for the translation took: 24.0146420002
+Time for the solving: 57.7674820423
+ors 3, enums 1, numeric 3
+Time for the translation took: 25.1123828888
+Time for the solving: 430.561424017
+ors 3, enums 1, numeric 4
+Time for the translation took: 26.6411311626
+Time for the solving: 721.647065878
+ors 3, enums 1, numeric 5
+Time for the translation took: 27.5644750595
+Time for the solving: 65.5761458874
+ors 3, enums 2, numeric 1
+Time for the translation took: 42.3421888351
+Time for the solving: 22.6060438156
+ors 3, enums 2, numeric 2
+Time for the translation took: 43.0778079033
+Time for the solving: 19.6434140205
+ors 3, enums 2, numeric 3
+Time for the translation took: 45.0010340214
+Time for the solving: 355.809648037
+ors 3, enums 2, numeric 4
