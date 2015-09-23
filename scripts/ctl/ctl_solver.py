@@ -105,7 +105,6 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                     for j in range(0, i):
                         conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
                     s = Solver()
-                    print conjuncts
                     s.add(And(conjuncts))
                     # add only if the condition is feasible
                     if s.check() == sat:                                        
@@ -130,6 +129,7 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
         return And(conjuncts)
     else:
         # it must be an atomic constraint
+        #print reqCTL
         assert isConstraint(reqCTL)
         attrName = reqCTL[0]
         attrVals = reqCTL[2]
