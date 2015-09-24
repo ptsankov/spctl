@@ -280,4 +280,3 @@ Time for the solving: 379.695457935
 ors 4, enums 4, numeric 4
 Time for the translation took: 53.0876700878
 Time for the solving: 585.083462954
-ors 4, enums 4, numeric 5
