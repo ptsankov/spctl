@@ -96,6 +96,7 @@ if __name__ == '__main__':
     else:
     '''
     policy = policy_synth.synth(graph, reqs, attrs)
+    #policy = decompose_synth.synth(graph, reqs)
         
     if policy == unsat:
         print 'No solution was found'
