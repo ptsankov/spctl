@@ -20,6 +20,6 @@ with open(sys.argv[1]) as f:
          
 print 'size,time'
 for size in map_size_times:
-    print size,
+    print size * 42,
     times = map_size_times[size]
     print reduce(lambda x, y: x + y, times) / len(times)
