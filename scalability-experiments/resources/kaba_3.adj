@@ -1,0 +1,58 @@
+out out lob_0 cor2_0 cor3_0 
+lob_0 lob_0 mr1_0 mr2_0 mr3_0 cor1_0 
+cor1_0 cor1_0 out cor3_0 lob_0 bur1_0 bur2_0 bur3_0 bur4_0 bur5_0 bur_staff_0 bur7_0 post_0 wc1_0 wc2_0 elev 
+cor2_0 cor2_0 out serv_0 elev post_0 
+cor3_0 cor3_0 out cor1_0 
+post_0 post_0 cor1_0 cor2_0 
+serv_0 serv_0 cor2_0 
+bur1_0 bur1_0 cor1_0 
+bur2_0 bur2_0 cor1_0 
+bur3_0 bur3_0 cor1_0 
+bur4_0 bur4_0 cor1_0 
+bur5_0 bur5_0 cor1_0 
+bur_staff_0 bur_staff_0 cor1_0 
+bur7_0 bur7_0 cor1_0 
+mr1_0 mr1_0 lob_0 
+mr2_0 mr2_0 lob_0 
+mr3_0 mr3_0 lob_0 
+wc1_0 wc1_0 cor1_0 
+wc2_0 wc2_0 cor1_0 
+lob_1 cor2_1 cor3_1 
+lob_1 lob_1 mr1_1 mr2_1 mr3_1 cor1_1 
+cor1_1 cor1_1 cor3_1 lob_1 bur1_1 bur2_1 bur3_1 bur4_1 bur5_1 bur_staff_1 bur7_1 post_1 wc1_1 wc2_1 elev 
+cor2_1 cor2_1 serv_1 elev post_1 
+cor3_1 cor3_1 cor1_1 
+post_1 post_1 cor1_1 cor2_1 
+serv_1 serv_1 cor2_1 
+bur1_1 bur1_1 cor1_1 
+bur2_1 bur2_1 cor1_1 
+bur3_1 bur3_1 cor1_1 
+bur4_1 bur4_1 cor1_1 
+bur5_1 bur5_1 cor1_1 
+bur_staff_1 bur_staff_1 cor1_1 
+bur7_1 bur7_1 cor1_1 
+mr1_1 mr1_1 lob_1 
+mr2_1 mr2_1 lob_1 
+mr3_1 mr3_1 lob_1 
+wc1_1 wc1_1 cor1_1 
+wc2_1 wc2_1 cor1_1 
+lob_2 cor2_2 cor3_2 
+lob_2 lob_2 mr1_2 mr2_2 mr3_2 cor1_2 
+cor1_2 cor1_2 cor3_2 lob_2 bur1_2 bur2_2 bur3_2 bur4_2 bur5_2 bur_staff_2 bur7_2 post_2 wc1_2 wc2_2 elev 
+cor2_2 cor2_2 serv_2 elev post_2 
+cor3_2 cor3_2 cor1_2 
+post_2 post_2 cor1_2 cor2_2 
+serv_2 serv_2 cor2_2 
+bur1_2 bur1_2 cor1_2 
+bur2_2 bur2_2 cor1_2 
+bur3_2 bur3_2 cor1_2 
+bur4_2 bur4_2 cor1_2 
+bur5_2 bur5_2 cor1_2 
+bur_staff_2 bur_staff_2 cor1_2 
+bur7_2 bur7_2 cor1_2 
+mr1_2 mr1_2 lob_2 
+mr2_2 mr2_2 lob_2 
+mr3_2 mr3_2 lob_2 
+wc1_2 wc1_2 cor1_2 
+wc2_2 wc2_2 cor1_2 
+elev cor1_0 cor1_1 cor1_2 

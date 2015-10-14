@@ -1,0 +1,90 @@
+floors 1
+Time for the translation took: 4.66737604141
+Time for the solving: 0.212756872177
+floors 2
+Time for the translation took: 21.3719069958
+Time for the solving: 1.67558312416
+floors 3
+Time for the translation took: 40.0848858356
+Time for the solving: 4.48080015182
+floors 4
+Time for the translation took: 62.0112109184
+Time for the solving: 9.50580620766
+floors 5
+Time for the translation took: 80.2883338928
+Time for the solving: 13.3645508289
+floors 6
+Time for the translation took: 102.693938017
+Time for the solving: 51.138944149
+floors 7
+Time for the translation took: 124.941313028
+Time for the solving: 87.4603059292
+floors 8
+Time for the translation took: 151.254625082
+Time for the solving: 66.439800024
+floors 9
+Time for the translation took: 176.636137009
+Time for the solving: 36.6278870106
+floors 10
+Time for the translation took: 202.787626982
+Time for the solving: 173.213340044
+floors 11
+Time for the translation took: 233.531435966
+Time for the solving: 106.484915972
+floors 12
+Time for the translation took: 260.45528698
+Time for the solving: 143.183671951
+floors 13
+Time for the translation took: 291.796025038
+Time for the solving: 317.144002914
+floors 14
+Time for the translation took: 324.149067879
+Time for the solving: 1067.2198019
+floors 15
+Time for the translation took: 355.318295002
+Time for the solving: 546.500091076
+floors 16
+Time for the translation took: 409.469722033
+Time for the solving: 1812.81324911
+floors 17
+Time for the translation took: 437.228839874
+Time for the solving: 1250.38789797
+floors 18
+Time for the translation took: 467.763027906
+Time for the solving: 605.778982878
+floors 19
+Time for the translation took: 508.426790953
+Time for the solving: 4159.19137621
+floors 20
+Time for the translation took: 549.3053298
+Time for the solving: 254.169960022
+floors 21
+Time for the translation took: 622.894986153
+Time for the solving: 4110.40478706
+floors 22
+Time for the translation took: 638.900563002
+Time for the solving: 3410.62505913
+floors 23
+Time for the translation took: 679.604951859
+Time for the solving: 3617.63516903
+floors 24
+Time for the translation took: 748.45286417
+Time for the solving: 794.310461998
+floors 25
+Time for the translation took: 774.169061899
+Time for the solving: 7705.34877205
+floors 26
+Time for the translation took: 818.792177916
+Time for the solving: 5565.85652304
+floors 27
+Time for the translation took: 875.987411976
+Time for the solving: 5780.41303802
+floors 28
+Time for the translation took: 926.575052977
+Time for the solving: 4237.8191061
+floors 29
+Time for the translation took: 975.838891983
+Time for the solving: 15177.5581682
+floors 30
+Time for the translation took: 1030.73821998
+Time for the solving: 24848.9156451
