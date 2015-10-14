@@ -1,0 +1,5 @@
+role:enum:faculty,phd,maintenance,bot
+time:numeric
+admin:bool
+student:bool
+affiliation:group1,group2,bot

@@ -13,10 +13,7 @@ import networkx as nx
 import sys
 import os
 from ctl import ctl_grammar
-import boolean_policy_synth
 import policy_synth
-import decompose_synth
-import negative_synth
 from networkx.classes.function import set_node_attributes
 
 if __name__ == '__main__':
