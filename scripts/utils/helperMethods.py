@@ -1,5 +1,4 @@
 from z3 import Bool, Not, And, Or, Implies, Int, EnumSort, Const
-from ctl.ctl_solver import isConstraint
 
 INIT_RESOURCE = 'out'
 BOOL_VARS = {}
