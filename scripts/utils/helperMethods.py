@@ -1,4 +1,5 @@
 from z3 import Bool, Not, And, Or, Implies, Int, EnumSort, Const
+from ctl.ctl_solver import isConstraint
 
 INIT_RESOURCE = 'out'
 BOOL_VARS = {}
@@ -64,7 +65,7 @@ def strToZ3(policy):
 def Z3toStr(z3Formula):
     raise NameError('fix the Z3toStr method')
     if z3Formula.decl().name() in BOOL_VARS.keys():
-        return z3Formula.decl().name()
+        return z3Formula.decl().name()    
     elif z3Formula.decl().name() == 'not':
         return ['not', Z3toStr(z3Formula.arg(0))]
     elif z3Formula.decl().name() == 'and':
