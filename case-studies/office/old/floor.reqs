@@ -1,4 +1,0 @@
-(visitor, (-> (& visitor workhours) (EF mr)))
-(true, (-> (! (| workhours pin)) (AG out)))
-(visitor, (-> workhours (EF lob)))
-((!visitor), (! (EF (| bur1 (| bur6 bur7)))))
