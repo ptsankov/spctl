@@ -3,24 +3,8 @@ Created on Aug 12, 2015
 
 @author: ptsankov
 '''
-from z3 import Solver, Not, And, Or, Implies, sat, unsat
+from z3 import Solver, Not, And, Or, Implies, sat
 import networkx as nx
-from utils.helperMethods import EDGE_VARS, INIT_RESOURCE
-
-def nodePathToEdgePath(graph, nodePath):
-    edgePath = []
-    for i in range(0, len(nodePath)-1):
-        for e in graph.edges_iter(nodePath[i]):
-            if e[1] == nodePath[i+1]:
-                edgePath.append(e)                 
-    return edgePath
-
-def simplePathConditionFunction(graph, path, req):
-    if len(path) < 2:
-        return True
-    edgePath = nodePathToEdgePath(graph, path)
-    edgeVars = [EDGE_VARS[e] for e in edgePath]
-    return And(edgeVars)
 
 def isConstraint(formula):
     if formula[0] == 'not':
@@ -50,8 +34,7 @@ def evalResourceConstraint(graph, resource, constraint):
         attrName = constraint[0]
         attrVals = constraint[2]
         attrVal = graph.node[resource][attrName]
-        return any(attrVal == x for x in attrVals)
-        
+        return any(attrVal == x for x in attrVals)        
 
 def encodeFormula(graph, req, resource, pathConditionFunction):
     reqProp = req[0]
@@ -135,28 +118,4 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
         attrVals = reqCTL[2]
         attrVal = graph.node[resource][attrName]
         return any(attrVal == x for x in attrVals)
-        
-        #raise NameError('TODO: implement remaining CTL operators. Cannot handle ' + str(reqCTL))
-            
-                     
-# graph - a directed graph
-# req - a list of CTL formulas
-# returns the restricted graph that satisfies the formulas or unsat
-def restrictGraph(graph, req):    
-    s = Solver()
-    s.reset()
-    s.add(encodeFormula(graph, req, INIT_RESOURCE, simplePathConditionFunction))
-    
-    for e in graph.edges():
-        if e[0] == e[1]:
-            s.add(EDGE_VARS[e] == True)
-   
-    if s.check() == sat:
-        model = s.model()
-        restrictedGraph = graph.copy()
-        for e in graph.edges():
-            if model[EDGE_VARS[e]] is not None and model[EDGE_VARS[e]].sexpr() == 'false':
-                restrictedGraph.remove_edge(e[0], e[1])
-    else:
-        return unsat
-    return restrictedGraph
+

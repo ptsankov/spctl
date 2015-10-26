@@ -106,8 +106,8 @@ def synth(graph, reqs):
         
     
     policy = {}
-    for edge in graph.edges():
-        policy[edge] = True        
+    for enforcementPoint in graph.edges():
+        policy[enforcementPoint] = True        
            
     for req in decomposedReqs:
         propReq = req[0]

@@ -3,46 +3,65 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify
-from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
-    ENUM_VARS
-from core.solver import nodePathToEdgePath, encodeFormula
+from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify,\
+    Bool, EnumSort
+from utils.helperMethods import INIT_RESOURCE, nodePathToEdgePath
+from core.solver import encodeFormula
+from utils.helperMethods import log
 import time
+from compiler.ast import Const
 
 TEMPLATE_ENUM_VARS = {}
 TEMPLATE_NUMERIC_VARS = {}
 
 ENUM_INDEX = {}
-
-NUM_ORS = None
-NUM_ENUMS = None
-NUM_NUMERIC = None
-
 NUM_VAR = Int('time')
 
-def setTemplateSize(numOrs, numEnums, numNumeric):
-    global NUM_ORS, NUM_ENUMS, NUM_NUMERIC
-    NUM_ORS = numOrs
-    NUM_ENUMS = numEnums
-    NUM_NUMERIC = numNumeric
+BOOL_VARS = {}
+ENUM_VARS = {}
+ENUM_VALUES = {}
+NUMERIC_VARS = {}
 
-def declareTemplateVars(attrs, graph):
-    global ENUM_RANGE    
-    
-    for edge in graph.edges():
-        TEMPLATE_ENUM_VARS[edge] = {}
-        TEMPLATE_NUMERIC_VARS[edge] = {}
-        if edge[0] == edge[1]:
+def declareAttrVars(subjAttrs):
+    for attr in subjAttrs:
+        attrName = attr.split(':')[0].strip()
+        attrType = attr.split(':')[1].strip()
+        if attrType == 'bool':
+            BOOL_VARS[attrName] = Bool(attrName)
+        elif attrType == 'enum':
+            values = attr.split(':')[2].strip().split(',')
+            newEnumSort = EnumSort(attrName, values)
+            ENUM_VARS[attrName] = Const(attrName, newEnumSort[0])
+            ENUM_VALUES[attrName] = {}
+            for enumVal in newEnumSort[1]:
+                ENUM_VALUES[attrName][str(enumVal)] = enumVal                
+        elif attrType == 'numeric':
+            print 'numeric type', attrName
+            NUMERIC_VARS[attrName] = Int(attrName)
+        else:
+            raise NameError('unknown attribute type: '+ attrType)
+
+def declareTemplateVars(graph, num_ors, num_enums, num_numeric):
+    for enforcementPoint in graph.edges():
+        if enforcementPoint not in TEMPLATE_ENUM_VARS.keys():
+            TEMPLATE_ENUM_VARS[enforcementPoint] = {}
+        if enforcementPoint not in TEMPLATE_NUMERIC_VARS.keys():
+            TEMPLATE_NUMERIC_VARS[enforcementPoint] = {}
+        if enforcementPoint[0] == enforcementPoint[1]:
             continue
-        for or_id in range(NUM_ORS):
-            TEMPLATE_ENUM_VARS[edge][or_id] = {}
-            TEMPLATE_NUMERIC_VARS[edge][or_id] = {}        
-            for enum_id in range(NUM_ENUMS):
-                TEMPLATE_ENUM_VARS[edge][or_id][enum_id] = Int(edge[0] + '_' + edge[1] + '_or' + str(or_id) + '_enum' + str(enum_id))
-            for num_id in range(NUM_NUMERIC):
-                TEMPLATE_NUMERIC_VARS[edge][or_id][num_id] = {}
-                TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min'] = Int(edge[0] + '_' + edge[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_min')
-                TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max'] = Int(edge[0] + '_' + edge[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_max')
+        for or_id in range(num_ors):
+            if or_id not in TEMPLATE_ENUM_VARS[enforcementPoint].keys():
+                TEMPLATE_ENUM_VARS[enforcementPoint][or_id] = {}
+            if or_id not in TEMPLATE_NUMERIC_VARS[enforcementPoint].keys(): 
+                TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id] = {}        
+            for enum_id in range(num_enums):
+                if enum_id not in TEMPLATE_ENUM_VARS[enforcementPoint][or_id].keys(): 
+                    TEMPLATE_ENUM_VARS[enforcementPoint][or_id][enum_id] = Int(enforcementPoint[0] + '_' + enforcementPoint[1] + '_or' + str(or_id) + '_enum' + str(enum_id))
+            for num_id in range(num_numeric):
+                if num_id not in TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id].keys(): 
+                    TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id] = {}
+                    TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['min'] = Int(enforcementPoint[0] + '_' + enforcementPoint[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_min')
+                    TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['max'] = Int(enforcementPoint[0] + '_' + enforcementPoint[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_max')
                 
     index = 0
     for boolVarName in BOOL_VARS.keys():
@@ -54,6 +73,54 @@ def declareTemplateVars(attrs, graph):
             val = ENUM_VALUES[enumVarName][valName]
             ENUM_INDEX[index] = [enumVar, val]
             index += 1
+
+def strToZ3(policy):
+    if policy in BOOL_VARS.keys():
+        return BOOL_VARS[policy]
+    elif policy[0] in ENUM_VARS.keys():
+        var = ENUM_VARS[policy[0]] 
+        disjunctions = []
+        for val in policy[2]:
+            disjunctions.append(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
+        return Or(disjunctions)
+    elif policy[0] in NUMERIC_VARS.keys():
+        var = NUMERIC_VARS[policy[0]]
+        _min = int(policy[2][0])
+        _max = int(policy[2][1] )       
+        return And(var >= _min, var <= _max)
+    elif policy[0] == 'not':
+        return Not(strToZ3(policy[1]))
+    elif policy[0] == 'and':
+        return And([strToZ3(x) for x in policy[1:]])
+    elif policy[0] == 'or':
+        return Or([strToZ3(x) for x in policy[1:]])
+    elif policy[0] == '=>':
+        return Implies(strToZ3(policy[1]), strToZ3(policy[2]))
+    elif policy == 'true':
+        return True
+    elif policy == 'false':
+        return False
+    else:
+        raise NameError('could not convert propositional formula to the Z3 format')
+
+def Z3toStr(z3Formula):
+    raise NameError('fix the Z3toStr method')
+    if z3Formula.decl().name() in BOOL_VARS.keys():
+        return z3Formula.decl().name()    
+    elif z3Formula.decl().name() == 'not':
+        return ['not', Z3toStr(z3Formula.arg(0))]
+    elif z3Formula.decl().name() == 'and':
+        return ['and'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula.decl().name() == 'or':
+        return ['or'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula.decl().name() == '=>':
+        return ['=>'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula == True:
+        return ['true']
+    elif z3Formula == False:
+        return ['false']
+    else:
+        raise NameError('could not convert Z3 formula to string')
 
 def enumTemplate(enumTempVar, index):
     if index < len(ENUM_INDEX.keys()):
@@ -78,29 +145,29 @@ def enumTemplate(enumTempVar, index):
 def numTemplate(minVar, maxVar):
     return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)
 
-def policyTemplateForEdge(edge):
-    if edge[0] == edge[1]:
+def policyTemplateForEdge(enforcementPoint, num_ors, num_enums, num_numeric):
+    if enforcementPoint[0] == enforcementPoint[1]:
         return True    
     disjunctions = []    
-    for or_id in range(NUM_ORS):
+    for or_id in range(num_ors):
         conjunctions = []        
-        for enum_id in range(NUM_ENUMS):                        
-            conjunctions.append(enumTemplate(TEMPLATE_ENUM_VARS[edge][or_id][enum_id], 0))
-        for num_id in range(NUM_NUMERIC):
+        for enum_id in range(num_enums):                        
+            conjunctions.append(enumTemplate(TEMPLATE_ENUM_VARS[enforcementPoint][or_id][enum_id], 0))
+        for num_id in range(num_numeric):
             # hardcoding one numeric variable for now!
-            minVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min']
-            maxVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']
+            minVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['min']
+            maxVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['max']
             conjunctions.append(NUM_VAR >= minVar)
             conjunctions.append(NUM_VAR <= maxVar)                                 
         disjunctions.append(And(conjunctions))
     return Or(disjunctions)
 
-def instantiatePolicyTemplateForEdge(edge, model):
+def instantiatePolicyTemplateForEdge(enforcementPoint, model, num_ors, num_enums, num_numeric):
     disjunctions = []
-    for or_id in range(NUM_ORS):
+    for or_id in range(num_ors):
         conjunctions = []
-        for enum_id in range(NUM_ENUMS):
-            enumVar = TEMPLATE_ENUM_VARS[edge][or_id][enum_id]
+        for enum_id in range(num_enums):
+            enumVar = TEMPLATE_ENUM_VARS[enforcementPoint][or_id][enum_id]
             if model[enumVar] is not None:
                 synthVal = model[enumVar].as_long()
             else:
@@ -123,11 +190,11 @@ def instantiatePolicyTemplateForEdge(edge, model):
                 conjunctions.append(True)
             else:
                 conjunctions.append(False)
-        for num_id in range(NUM_NUMERIC):
-            minVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['min']
+        for num_id in range(num_numeric):
+            minVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['min']
             if model[minVar] is not None:
                 conjunctions.append(NUM_VAR >= model[minVar].as_long())            
-            maxVar = TEMPLATE_NUMERIC_VARS[edge][or_id][num_id]['max']
+            maxVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['max']
             if model[maxVar] is not None:
                 conjunctions.append(NUM_VAR <= model[maxVar].as_long())
         disjunctions.append(simplify(And(conjunctions)))
@@ -143,41 +210,67 @@ def pathCondition(graph, path, req):
     edgeTemplates = [policyTemplateForEdge(e) for e in edgePath]   
     cond = Implies(strToZ3(reqProp), And(edgeTemplates))
     return cond
-    
-    
 
-def synth(graph, reqs, attrs):
-    print 'Translating requirements to SMT'
+def synth(resStructure, reqs, subjAttrs):    
+    policy = unsat
+    numOrs = 1
+    numEnums = 0
+    numNumeric = 0
     
-    declareTemplateVars(attrs, graph)
+    declareAttrVars(subjAttrs)
     
+    while policy == unsat:
+        declareTemplateVars(resStructure, numOrs, numEnums, numNumeric)
+        min_size = min(numOrs, numEnums, numNumeric)
+        isIncremented = False
+        if not isIncremented and numOrs == min_size:
+            numOrs += 1
+            isIncremented = True
+        if not isIncremented and numEnums == min_size:
+            numEnums += 1
+            isIncremented = True
+        if not isIncremented and numNumeric == min_size:
+            numNumeric += 1
+            isIncremented = True
+        policy = solve(resStructure, reqs, subjAttrs, numOrs, numEnums, numNumeric)
+                    
+    return policy
+
+def synthFixedGrammar(resStructure, reqs, subjAttrs, numOrs, numEnums, numNumeric):
+    declareAttrVars(subjAttrs)
+    declareTemplateVars(resStructure, numOrs, numEnums, numNumeric)
+    return solve(resStructure, reqs, subjAttrs, numOrs, numEnums, numNumeric)    
+
+def solve(resStructure, reqs, subjAttrs, numOrs, numEnums, numNumeric):
+    log('Translating requirements to SMT')    
     
+        
     start = time.time()
     s = Solver()
     for req in reqs:
-        print 'Translating requirement', req
+        log('Translating requirement' + req)
         reqProp = req[0]
        
-        formula = encodeFormula(graph, req, INIT_RESOURCE, pathCondition)      
+        formula = encodeFormula(resStructure, req, INIT_RESOURCE, pathCondition)      
         s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 
     timeToTranslate = time.time() - start    
-    print 'Time for the translation took: ' + str(timeToTranslate)
+    log('Time for the translation took: ' + str(timeToTranslate))
     
     policy = {}
     
-    print 'SMT Solving'
+    log('SMT Solving')
     
     start = time.time()
     if s.check() == sat:        
         m = s.model()
         timeToSolve = time.time() - start
-        print 'Time for the solving: ' + str(timeToSolve)
-        for edge in graph.edges():
-            if edge[0] == edge[1]:
-                policy[edge] = True
+        log('Time for the solving: ' + str(timeToSolve))
+        for enforcementPoint in resStructure.edges():
+            if enforcementPoint[0] == enforcementPoint[1]:
+                policy[enforcementPoint] = True
                 continue            
-            policy[edge] = instantiatePolicyTemplateForEdge(edge, m) 
+            policy[enforcementPoint] = instantiatePolicyTemplateForEdge(enforcementPoint, m) 
         return policy
     else:    
         return unsat
