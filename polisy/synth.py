@@ -53,17 +53,21 @@ if __name__ == '__main__':
         print 'Usage: {} <configuration file>'.format(sys.argv[0])
         sys.exit(-1)
                
-    configFile = sys.argv[1]
-    assert os.path.isfile(configFile)         
+    configFilename = sys.argv[1]
+    assert os.path.isfile(configFilename)         
     config = ConfigParser.ConfigParser()
-    config.read(configFile)
+    config.read(configFilename)
+    
+    pathToFiles = os.path.dirname(os.path.realpath(configFilename))
         
-    graphFilename = config.get(SECTION_SYNTHESIS, OPTION_STRUCTURE)
-    subjectAttributesFilename = config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES)
-    resourceAttributesFilename = config.get(SECTION_SYNTHESIS, OPTION_RESOURCE_ATTRIBUTES)
-    reqsFilename = config.get(SECTION_SYNTHESIS, OPTION_REQUIREMENTS)
-    outputFilename = config.get(SECTION_SYNTHESIS, OPTION_OUTPUT)
+    graphFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_STRUCTURE))
+    subjectAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES))
+    resourceAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_RESOURCE_ATTRIBUTES))
+    reqsFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_REQUIREMENTS))
+    outputFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_OUTPUT))
     isGrammarFixed = config.getboolean(SECTION_SYNTHESIS, OPTION_FIXED_GRAMMAR)
+
+    setLogFile(outputFilename)
 
     log('Resource structure filename: ' + graphFilename)
     log('Subject attributes filename: ' + subjectAttributesFilename)
@@ -78,14 +82,13 @@ if __name__ == '__main__':
     with open(subjectAttributesFilename) as f:
         subjAttrs = f.readlines()
     subjAttrs = [a.strip() for a in subjAttrs]
-    log('Attributes:' + ', '.join(subjAttrs))
+    log('Attributes: ' + ', '.join(subjAttrs))
     
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
     reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]
-            
-    setLogFile(outputFilename)
+                
 
     if isGrammarFixed:
         num_ors = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS)

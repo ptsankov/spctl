@@ -3,7 +3,6 @@ INIT_RESOURCE = 'out'
 
 def setLogFile(filename):
     global outputFile
-    assert os.path.isfile(filename)
     outputFile = open(filename, 'w')
 
 def log(msg):

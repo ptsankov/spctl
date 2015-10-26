@@ -3,10 +3,9 @@ Created on Aug 11, 2015
 
 @author: ptsankov
 '''
-from z3 import Solver, Not, And, sat, simplify, unsat, Bool
-from core import requirments_grammar
-from core.solver import restrictGraph
-from utils.helperMethods import strToZ3, EDGE_VARS, setEdgeVars, Z3toStr
+from z3 import Solver, Not, And, sat, simplify, unsat
+from algorithms.smt import strToZ3, Z3toStr
+from algorithms.controller import restrictGraph, declareEdgeVars
 
   
     
@@ -95,7 +94,7 @@ def decomposeReqs(reqs):
 
 def synth(graph, reqs):
     print 'Running the decompose synthesis algorithm'    
-    setEdgeVars(graph)
+    declareEdgeVars(graph)
         
     decomposedReqs = decomposeReqs(reqs)
     print 'FINAL DECOMPOSED REQUIREMNETS'
