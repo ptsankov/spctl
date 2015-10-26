@@ -12,13 +12,10 @@ from tabulate import tabulate
 import networkx as nx
 import sys
 import os
-from ctl import ctl_grammar
+from core import requirments_grammar
 import algorithms.smt as smt
 import ConfigParser
-from static import SECTION_SYNTHESIS, OPTION_STRUCTURE,\
-    OPTION_SUBJECT_ATTRIBUTES, OPTION_RESOURCE_ATTRIBUTES, OPTION_REQUIREMENTS,\
-    OPTION_FIXED_GRAMMAR, SECTION_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS,\
-    OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES, OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES
+from static import *
 from networkx.classes.function import set_node_attributes
 
 
@@ -29,10 +26,11 @@ def solve_synthesis_instance(reqsStr, numOrs, numEnums, numNumeric):
         if not reqStr.startswith('('):
             print reqStr
         else:
-            reqs.append(ctl_grammar.parseRequirement(reqStr))    
+            reqs.append(requirments_grammar.parseRequirement(reqStr))    
     return smt.synth(graph, reqs, attrs)
 
 if __name__ == '__main__':
+    global outputFile
     
     if len(sys.argv) != 2:
         # <graph file> <attributes file> <resources file> <requirements> [<num ors> <# enums> <# numeric>]
@@ -48,12 +46,14 @@ if __name__ == '__main__':
     attributesFilename = config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES)
     resourcesFilename = config.get(SECTION_SYNTHESIS, OPTION_RESOURCE_ATTRIBUTES)
     reqsFilename = config.get(SECTION_SYNTHESIS, OPTION_REQUIREMENTS)
+    outputFilename = config.get(SECTION_SYNTHESIS, OPTION_OUTPUT)
     isGrammarFixed = config.getboolean(SECTION_SYNTHESIS, OPTION_FIXED_GRAMMAR)
 
     assert os.path.isfile(structureFilename)
     assert os.path.isfile(attributesFilename)
     assert os.path.isfile(resourcesFilename)
     assert os.path.isfile(reqsFilename)
+    assert os.path.isfile(outputFilename)
     
     print 'Resource structure filename:', structureFilename
     print 'Subject attributes filename:', attributesFilename
@@ -71,10 +71,7 @@ if __name__ == '__main__':
 
     with open(resourcesFilename) as f:
         resAttrsStr = f.readlines()
-    resAttrsStr = [x.strip() for x in resAttrsStr]    
-    
-    
-    
+    resAttrsStr = [x.strip() for x in resAttrsStr]        
     
     for resAttrs in resAttrsStr:
         resAttrMap = {}
@@ -92,6 +89,8 @@ if __name__ == '__main__':
 
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
+        
+    outputFile = open(outputFilename, 'w')
 
     if isGrammarFixed:
         num_ors = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS)
@@ -128,3 +127,5 @@ if __name__ == '__main__':
             check = policy[edge] if type(policy[edge]) == bool else policy[edge].sexpr()
             policyTable.append([edge[0], '->', edge[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])
+    
+    outputFile.close()

@@ -4,7 +4,7 @@ Created on Aug 11, 2015
 @author: ptsankov
 '''
 from z3 import unsat, Solver, sat, And, Not, simplify
-from ctl.ctl_solver import encodeFormula, restrictGraph,\
+from core.solver import encodeFormula, restrictGraph,\
     simplePathConditionFunction
 from utils.helperMethods import INIT_RESOURCE, EDGE_VARS, strToZ3, setEdgeVars
 

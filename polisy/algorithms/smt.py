@@ -6,7 +6,7 @@ Created on Aug 11, 2015
 from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify
 from utils.helperMethods import INIT_RESOURCE, strToZ3, BOOL_VARS, ENUM_VALUES,\
     ENUM_VARS
-from ctl.ctl_solver import nodePathToEdgePath, encodeFormula
+from core.solver import nodePathToEdgePath, encodeFormula
 import time
 
 TEMPLATE_ENUM_VARS = {}

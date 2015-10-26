@@ -4,8 +4,8 @@ Created on Aug 11, 2015
 @author: ptsankov
 '''
 from z3 import Solver, Not, And, sat, simplify, unsat, Bool
-from ctl import ctl_grammar
-from ctl.ctl_solver import restrictGraph
+from core import requirments_grammar
+from core.solver import restrictGraph
 from utils.helperMethods import strToZ3, EDGE_VARS, setEdgeVars, Z3toStr
 
   
@@ -22,13 +22,13 @@ def decomposeReqs(reqs):
     #for r in curReqs:
     #    print '========================'
     #    print 'q = ', r[0]
-    #    print 'ctl = ', r[1]
+    #    print 'core = ', r[1]
     
     for req in reqs:
         
         #print '===========TAKING FROMT THE QUEUE============='
         #print 'q = ', req[0]
-        #print 'ctl = ', req[1]
+        #print 'core = ', req[1]
         
         nextReqs = []
         depReqs = []
@@ -89,7 +89,7 @@ def decomposeReqs(reqs):
         #for r in curReqs:
         #    print '========================'
         #    print 'q = ', r[0]
-        #    print 'ctl = ', r[1]
+        #    print 'core = ', r[1]
         
     return curReqs
 
@@ -102,7 +102,7 @@ def synth(graph, reqs):
     for r in decomposedReqs:
         print '========================'
         print 'q = ', r[0]
-        print 'ctl = ', r[1]
+        print 'core = ', r[1]
         
     
     policy = {}
