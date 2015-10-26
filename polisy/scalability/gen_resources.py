@@ -1,5 +1,4 @@
 import sys
-import shutil
 from shutil import copyfile
 
 num_floors = int(sys.argv[1])

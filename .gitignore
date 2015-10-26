@@ -1,4 +1,4 @@
-scripts/.project
-scripts/.pydevproject
+*/.project
+*/.pydevproject
 *.swp
 *.pyc
