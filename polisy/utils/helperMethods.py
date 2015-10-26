@@ -5,6 +5,9 @@ def setLogFile(filename):
     global outputFile
     outputFile = open(filename, 'w')
 
+def closeLogFile():
+    outputFile.close()
+
 def log(msg):
     print msg
     outputFile.write(msg + '\n')

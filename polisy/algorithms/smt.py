@@ -84,7 +84,7 @@ def enumTemplate(enumTempVar, index):
             boolVar = ENUM_INDEX[index]
             return If(enumTempVar == index, boolVar, enumTemplate(enumTempVar, index+1))
         else:
-            [enumVar, val] = ENUM_INDEX[index]           
+            [enumVar, val] = ENUM_INDEX[index]
             return If(enumTempVar == index, enumVar == val, enumTemplate(enumTempVar, index+1))
     elif index >= len(ENUM_INDEX.keys()) and index < 2*len(ENUM_INDEX.keys()):
         if not isinstance(ENUM_INDEX[index - len(ENUM_INDEX)], list):

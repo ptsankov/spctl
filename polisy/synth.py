@@ -18,7 +18,7 @@ from static import OPTION_STRUCTURE, OPTION_SUBJECT_ATTRIBUTES,\
     OPTION_OUTPUT, OPTION_FIXED_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS,\
     SECTION_GRAMMAR, OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES,\
     OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES
-from utils.helperMethods import log, setLogFile
+from utils.helperMethods import log, setLogFile, closeLogFile
 from algorithms.smt import synthFixedGrammar, synth
 from core import requirments_grammar
 
@@ -73,6 +73,7 @@ if __name__ == '__main__':
     log('Subject attributes filename: ' + subjectAttributesFilename)
     log('Resource attributes filename: ' + resourceAttributesFilename)
     log('Requirements filename: ' + reqsFilename)
+    log('Output file: ' + outputFilename)
 
     assert os.path.isfile(graphFilename)
     assert os.path.isfile(resourceAttributesFilename)    
@@ -111,4 +112,4 @@ if __name__ == '__main__':
             policyTable.append([enforcementPoint[0], '->', enforcementPoint[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])
     
-    outputFile.close()
+    closeLogFile()
