@@ -1,4 +1,4 @@
-R1: Noone can access without a PIN code outside of the (time in [8,20])
+R1: Noone can access without a PIN code outside of workhours (time in [8,20])
 ((and (not pin) (not (time in [8,20]))), (AG (zone in {entry})))
 
 R2: Visitors can access the meeting rooms

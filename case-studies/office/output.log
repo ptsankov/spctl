@@ -21,6 +21,6 @@ Translating requirement: [['role', 'in', ['postman']], ['not', ['EF', ['room_id'
 Translating requirement: [['role', 'in', ['postman']], ['AG', ['=>', 'post', ['EF', ['zone', 'in', ['elevator']]]]]]
 Translating requirement: [['not', ['role', 'in', ['postman', 'hr']]], ['not', ['EF', ['zone', 'in', ['post']]]]]
 Translating requirement: [['not', ['role', 'in', ['it']]], ['not', ['EF', ['zone', 'in', ['servers']]]]]
-Time for the translation took: 8.97174787521
+Time for the translation took: 8.56761884689
 SMT Solving
-Time for the solving: 0.206165075302
+Time for the solving: 0.223509073257
