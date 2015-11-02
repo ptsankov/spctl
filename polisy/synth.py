@@ -112,4 +112,9 @@ if __name__ == '__main__':
             policyTable.append([enforcementPoint[0], '->', enforcementPoint[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])
     
+    log('DATA| Number of requirements: ' + str(len(reqs)))
+    log('DATA| Number of resources: ' + str(len(resStructure.nodes())))
+    log('DATA| Number of enforcement points: ' + str(len(resStructure.edges())))
+
+    
     closeLogFile()

@@ -17,7 +17,9 @@ R5: Visitors can access one of the restrooms if they have access to a meeting ro
 ((role in {visitor}), (AG (=> (zone in {meeting_room}) (EF (zone in {restroom})))))
 
 R7: Visitors must pass through the lobby to access the meeting rooms
-((role in {visitor}), (not (EU (not (zone in {lobby})) (zone in {meeting_room}))))
+((role in {visitor}), (not (EU (not (zone in {lobby})) (room_id in {mr1}))))
+((role in {visitor}), (not (EU (not (zone in {lobby})) (room_id in {mr2}))))
+((role in {visitor}), (not (EU (not (zone in {lobby})) (room_id in {mr3}))))
 
 R8: Non employees cannot access any office
 ((role in {visitor postman}), (not (EF (zone in {bureau}))))
@@ -41,3 +43,19 @@ R14: IT and researcher employees cannot access the post office
 
 R15: Only IT can access the server room
 ((not (role in {it})), (not (EF (zone in {servers}))))
+
+R16: Employees can always access the offices with their PIN
+((and pin (role in {hr researcher it})), (EF (room_id in {bur1})))
+((and pin (role in {hr researcher it})), (EF (room_id in {bur2})))
+((and pin (role in {hr researcher it})), (EF (room_id in {bur3})))
+((and pin (role in {hr researcher it})), (EF (room_id in {bur4})))
+((and pin (role in {hr researcher it})), (EF (room_id in {bur5})))
+((and pin (role in {hr researcher it})), (EF (room_id in {bur7})))
+
+R17: Employees can always access the office during workhours
+((and (time in [8,20]) (role in {hr researcher it})), (EF (room_id in {bur1})))
+((and (time in [8,20]) (role in {hr researcher it})), (EF (room_id in {bur2})))
+((and (time in [8,20]) (role in {hr researcher it})), (EF (room_id in {bur3})))
+((and (time in [8,20]) (role in {hr researcher it})), (EF (room_id in {bur4})))
+((and (time in [8,20]) (role in {hr researcher it})), (EF (room_id in {bur5})))
+((and (time in [8,20]) (role in {hr researcher it})), (EF (room_id in {bur7})))

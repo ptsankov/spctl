@@ -220,7 +220,7 @@ def solve(resStructure, reqs):
         s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 
     timeToTranslate = time.time() - start    
-    log('Time for the translation took: ' + str(timeToTranslate))
+    log('DATA| Translation time: ' + str(timeToTranslate))
     
     policy = {}
     
@@ -230,7 +230,7 @@ def solve(resStructure, reqs):
     if s.check() == sat:        
         m = s.model()
         timeToSolve = time.time() - start
-        log('Time for the solving: ' + str(timeToSolve))
+        log('DATA| SMT time: ' + str(timeToSolve))
         for enforcementPoint in resStructure.edges():
             if enforcementPoint[0] == enforcementPoint[1]:
                 policy[enforcementPoint] = True
