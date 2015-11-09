@@ -1,0 +1,43 @@
+Resource structure filename: /home/ptsankov/authz-synthesis.git/case-studies/office/structure.adj
+Subject attributes filename: /home/ptsankov/authz-synthesis.git/case-studies/office/subject.attrs
+Resource attributes filename: /home/ptsankov/authz-synthesis.git/case-studies/office/resource.attrs
+Requirements filename: /home/ptsankov/authz-synthesis.git/case-studies/office/requirements.ctl
+Output file: /home/ptsankov/authz-synthesis.git/case-studies/office/output.log
+Resources: lob, wc1, wc2, bur3, serv, bur_staff, bur2, mr1, mr2, mr3, bur5, bur4, bur7, elev, bur1, cor1, cor2, cor3, post, out
+Attributes: role:enum:visitor,hr,researcher,it,postman, pin:bool, time:numeric
+Translating requirements to SMT
+Translating requirement: [['and', ['not', 'pin'], ['not', ['time', 'in', ['8', '20']]]], ['AG', ['zone', 'in', ['entry']]]]
+Translating requirement: [['and', ['role', 'in', ['visitor']], ['time', 'in', ['8', '20']]], ['EF', ['zone', 'in', ['meeting_room']]]]
+Translating requirement: [['and', ['role', 'in', ['visitor', 'hr', 'researcher', 'it']], ['time', 'in', ['8', '20']]], ['EF', ['zone', 'in', ['lobby']]]]
+Translating requirement: [['and', ['not', 'pin'], ['not', ['time', 'in', ['8', '20']]], ['role', 'in', ['visitor', 'hr', 'researcher', 'it']]], ['not', ['EF', ['zone', 'in', ['lobby']]]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['zone', 'in', ['lobby']]]]
+Translating requirement: [['role', 'in', ['visitor']], ['AG', ['=>', ['zone', 'in', ['meeting_room']], ['EF', ['zone', 'in', ['restroom']]]]]]
+Translating requirement: [['role', 'in', ['visitor']], ['not', ['EU', ['not', ['zone', 'in', ['lobby']]], ['room_id', 'in', ['mr1']]]]]
+Translating requirement: [['role', 'in', ['visitor']], ['not', ['EU', ['not', ['zone', 'in', ['lobby']]], ['room_id', 'in', ['mr2']]]]]
+Translating requirement: [['role', 'in', ['visitor']], ['not', ['EU', ['not', ['zone', 'in', ['lobby']]], ['room_id', 'in', ['mr3']]]]]
+Translating requirement: [['role', 'in', ['visitor', 'postman']], ['not', ['EF', ['zone', 'in', ['bureau']]]]]
+Translating requirement: [['not', ['role', 'in', ['hr']]], ['not', ['EF', ['room_id', 'in', ['bur_staff']]]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr']]], ['EF', ['room_id', 'in', ['bur_staff']]]]
+Translating requirement: [['and', ['role', 'in', ['postman', 'hr']], ['time', 'in', ['8', '20']]], ['EF', ['zone', 'in', ['post']]]]
+Translating requirement: [['role', 'in', ['postman']], ['not', ['EF', ['room_id', 'in', ['cor1']]]]]
+Translating requirement: [['role', 'in', ['postman']], ['AG', ['=>', 'post', ['EF', ['zone', 'in', ['elevator']]]]]]
+Translating requirement: [['not', ['role', 'in', ['postman', 'hr']]], ['not', ['EF', ['zone', 'in', ['post']]]]]
+Translating requirement: [['not', ['role', 'in', ['it']]], ['not', ['EF', ['zone', 'in', ['servers']]]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur1']]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur2']]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur3']]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur4']]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur5']]]]
+Translating requirement: [['and', 'pin', ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur7']]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur1']]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur2']]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur3']]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur4']]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur5']]]]
+Translating requirement: [['and', ['time', 'in', ['8', '20']], ['role', 'in', ['hr', 'researcher', 'it']]], ['EF', ['room_id', 'in', ['bur7']]]]
+DATA| Translation time: 9.2496509552
+SMT Solving
+DATA| SMT time: 0.227029085159
+DATA| Number of requirements: 29
+DATA| Number of resources: 20
+DATA| Number of enforcement points: 60
