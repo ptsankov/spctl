@@ -54,8 +54,8 @@ def synth(graph, reqs):
             policy[removedEdge] = simplify(And(policy[removedEdge], Not(strToZ3(propReq))))
        '''
     
-    end = time.time() - start
-    log('DATA| Synthesis time: ' + str(end - start))
+    synthesisTime = time.time() - start
+    log('DATA| Synthesis time: ' + str(synthesisTime))
 
                    
     return policy
