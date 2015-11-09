@@ -11,7 +11,6 @@ from algorithms.smt import strToZ3
  
 def synth(graph, reqs):
     print 'Running the decompose synthesis algorithm'
-    print reqs
 
     reqs = set(reqs)
 
@@ -25,7 +24,6 @@ def synth(graph, reqs):
             continue
         
         target = simplify(And([simplify(strToZ3(req[0])) for req in subset] + [simplify(Not(strToZ3(req[0]))) for req in (reqs - set(subset))]))
-        print 'target', target
         
         ctl = ['true']
         
