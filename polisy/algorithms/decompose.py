@@ -8,7 +8,7 @@ from itertools import chain, combinations
 from z3 import And, Not, simplify
 from algorithms.smt import strToZ3
 import time
-from polisy.utils.helperMethods import log
+from utils.helperMethods import log
   
  
 def synth(graph, reqs):
