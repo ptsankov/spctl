@@ -30,7 +30,6 @@ def declareAttrVars(subjAttrs):
     global SUBJ_ATTRS
     SUBJ_ATTRS = subjAttrs
     for attr in SUBJ_ATTRS:
-        print attr
         attrName = attr.split(':')[0].strip()
         attrType = attr.split(':')[1].strip()
         if attrType == 'bool':
@@ -43,13 +42,9 @@ def declareAttrVars(subjAttrs):
             for enumVal in newEnumSort[1]:                  
                 ENUM_VALUES[attrName][str(enumVal)] = enumVal                
         elif attrType == 'numeric':
-            print 'numeric type', attrName
             NUMERIC_VARS[attrName] = Int(attrName)
         else:
             raise NameError('unknown attribute type: '+ attrType)
-    print 'done declaring'
-    print BOOL_VARS
-    print ENUM_VARS
 
 def declareTemplateVars(resStructure):
     for enforcementPoint in resStructure.edges():
@@ -248,9 +243,6 @@ def solve(resStructure, reqs):
 
 
 def strToZ3(policy):
-    print 'strToZ3', policy
-    print BOOL_VARS.keys()
-    print ENUM_VARS.keys()
     if policy in BOOL_VARS.keys():
         return BOOL_VARS[policy]
     elif policy[0] in ENUM_VARS.keys():
