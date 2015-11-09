@@ -90,7 +90,6 @@ if __name__ == '__main__':
         reqsStr = [x.strip() for x in f.readlines()]
     reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]
                 
-
     if isGrammarFixed:
         num_ors = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS)
         num_enum = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES)

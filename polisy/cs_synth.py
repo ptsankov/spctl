@@ -21,6 +21,8 @@ from static import OPTION_STRUCTURE, OPTION_SUBJECT_ATTRIBUTES,\
 from utils.helperMethods import log, setLogFile, closeLogFile
 from core import requirments_grammar
 from algorithms import decompose
+from algorithms.smt import declareAttrVars, BOOL_VARS, ENUM_VARS
+from algorithms.controller import declareEdgeVars
 
 def getResourceStructure(graphFilename, resourceAttributesFilename):
     resourceStructure = networkx.read_adjlist(graphFilename, create_using = networkx.DiGraph())    
@@ -61,11 +63,10 @@ if __name__ == '__main__':
     pathToFiles = os.path.dirname(os.path.realpath(configFilename))
         
     graphFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_STRUCTURE))
-    subjectAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES))
+    subjectAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES))    
     resourceAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_RESOURCE_ATTRIBUTES))
     reqsFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_REQUIREMENTS))
     outputFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_OUTPUT))
-    isGrammarFixed = config.getboolean(SECTION_SYNTHESIS, OPTION_FIXED_GRAMMAR)
 
     setLogFile(outputFilename)
 
@@ -84,6 +85,11 @@ if __name__ == '__main__':
         subjAttrs = f.readlines()
     subjAttrs = [a.strip() for a in subjAttrs]
     log('Attributes: ' + ', '.join(subjAttrs))
+    
+
+    declareAttrVars(subjAttrs)
+    declareEdgeVars(resStructure)
+
     
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:

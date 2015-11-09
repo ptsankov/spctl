@@ -4,6 +4,7 @@ from utils.helperMethods import INIT_RESOURCE, nodePathToEdgePath
 
 def declareEdgeVars(resStructure):
     global EDGE_VARS
+    EDGE_VARS = {}
     for e in resStructure.edges():
         EDGE_VARS[e] = Bool(e[0] + '_' + e[1])
 

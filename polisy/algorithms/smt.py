@@ -26,8 +26,11 @@ NUM_ENUMS = 0
 NUM_NUMERIC = 0
 SUBJ_ATTRS = []
 
-def declareAttrVars():
+def declareAttrVars(subjAttrs):
+    global SUBJ_ATTRS
+    SUBJ_ATTRS = subjAttrs
     for attr in SUBJ_ATTRS:
+        print attr
         attrName = attr.split(':')[0].strip()
         attrType = attr.split(':')[1].strip()
         if attrType == 'bool':
@@ -44,6 +47,9 @@ def declareAttrVars():
             NUMERIC_VARS[attrName] = Int(attrName)
         else:
             raise NameError('unknown attribute type: '+ attrType)
+    print 'done declaring'
+    print BOOL_VARS
+    print ENUM_VARS
 
 def declareTemplateVars(resStructure):
     for enforcementPoint in resStructure.edges():
@@ -176,7 +182,7 @@ def synth(resStructure, reqs, subjAttrs):
     NUM_ENUMS = 0
     NUM_NUMERIC = 0
     
-    declareAttrVars()
+    declareAttrVars(subjAttrs)
     
     while policy == unsat:
         declareTemplateVars(resStructure)
@@ -202,7 +208,7 @@ def synthFixedGrammar(resStructure, reqs, subjAttrs, numOrs, numEnums, numNumeri
     NUM_NUMERIC = numNumeric
     SUBJ_ATTRS = subjAttrs
     
-    declareAttrVars()
+    declareAttrVars(subjAttrs)
     declareTemplateVars(resStructure)
     return solve(resStructure, reqs)    
 
@@ -242,6 +248,9 @@ def solve(resStructure, reqs):
 
 
 def strToZ3(policy):
+    print 'strToZ3', policy
+    print BOOL_VARS.keys()
+    print ENUM_VARS.keys()
     if policy in BOOL_VARS.keys():
         return BOOL_VARS[policy]
     elif policy[0] in ENUM_VARS.keys():
