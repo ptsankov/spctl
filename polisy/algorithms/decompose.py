@@ -7,6 +7,8 @@ from algorithms.controller import restrictGraph, declareEdgeVars
 from itertools import chain, combinations
 from z3 import And, Not, simplify
 from algorithms.smt import strToZ3
+import time
+from utils.helperMethods import log
   
  
 def synth(graph, reqs):
@@ -18,6 +20,8 @@ def synth(graph, reqs):
     for e in graph.edges():
         policy[e] = True    
     
+    start = time.time()
+
     for subset in chain.from_iterable(combinations(reqs, r) for r in range(len(reqs)+1)):
         subset = set(subset)
         if len(subset) == 0:
@@ -49,5 +53,9 @@ def synth(graph, reqs):
         for removedEdge in list(set(graph.edges()) - set(restrictedGraph.edges())):
             policy[removedEdge] = simplify(And(policy[removedEdge], Not(strToZ3(propReq))))
        '''
-                        
+    
+    synthesisTime = time.time() - start
+    log('DATA| Synthesis time: ' + str(synthesisTime))
+
+                   
     return policy
