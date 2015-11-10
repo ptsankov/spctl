@@ -1,0 +1,5 @@
+zone|out:public,econ:presecured,pri:presecured,cor1:presecured,cor2:presecured,cor3:secured,sec1:presecured,sec2:presecured,sec3:presecured,sec4:presecured,elev1:secured,elev2:secured,shop:secured
+screening|out:bot,econ:bot,pri:bot,cor1:bot,cor2:bot,cor3:bot,sec1:true,sec2:bot,sec3:bot,sec4:bot,elev1:bot,elev2:bot,shop:bot
+shops|out:bot,econ:bot,pri:bot,cor1:bot,cor2:bot,cor3:bot,sec1:bot,sec2:bot,sec3:bot,sec4:bot,elev1:bot,elev2:bot,shop:true
+elevators|out:bot,econ:bot,pri:bot,cor1:bot,cor2:bot,cor3:bot,sec1:bot,sec2:bot,sec3:bot,sec4:bot,elev1:true,elev2:true,shop:bot
+business|out:bot,econ:bot,pri:true,cor1:bot,cor2:bot,cor3:bot,sec1:bot,sec2:bot,sec3:bot,sec4:bot,elev1:bot,elev2:bot,shop:bot

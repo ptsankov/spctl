@@ -1,0 +1,5 @@
+role:enum:staff,passenger
+boardingpass:enum:priority,economy,bot
+badge:bool
+time:numeric
+breach:bool

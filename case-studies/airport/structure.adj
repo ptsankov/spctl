@@ -1,0 +1,13 @@
+out econ pri
+econ out cor1
+pri out cor2
+cor1 econ cor2
+cor2 pri cor1 sec1 sec2 sec3 sec4
+cor3 sec1 sec2 sec3 sec4 shop elev1
+sec1 cor2 cor3
+sec2 cor2 cor3
+sec3 cor2 cor2
+sec4 cor2 cor2
+elev1 cor3
+elev2 shop
+shop cor3 elev2
