@@ -7,7 +7,15 @@
 3. /running-example
   - the running example
 
-# Encoding synthesis problems
+# Running the policy synthesizer
+
+```
+python synth.py <synthesis configuration file>
+```
+
+# Synthesis configuration files
+
+A synthesis configuration file encodes a synthesis problem.
 
 # Software dependencies
 
