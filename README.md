@@ -29,7 +29,7 @@ The policy synthesizer is executed as follows:
 python synth.py <synthesis configuration file>
 ```
 
-Here **synthesis configuration file** defines a policy synthesis problem. The structure of this file is described below.
+Here `synthesis configuration file` defines a policy synthesis problem. The structure of this file is described below.
 
 # Synthesis configuration files
 
