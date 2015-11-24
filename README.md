@@ -50,7 +50,7 @@ NUMBER_OF_NUMERIC=1
 NUMBER_OF_DISJUNCTIONS=2
 ```
 
-The section <b> SYNTHESIS </b> defines the following attributes:
+The section *SYNTHESIS* defines the following attributes:
 
 1. STRUCTURE: A file that defines a resource structure (in adjecency list format)
 2. REQUIREMENTS: A file with global requirements expressed in the SpCTL language
@@ -60,7 +60,25 @@ The section <b> SYNTHESIS </b> defines the following attributes:
 
 For examples of the above files see our running example.
 
-The section <b> GRAMMAR </b> defines the configuration tempalte which is used when the FIXED\_GRAMMAR attribute is set to **TRUE**. It defines three attributes:
+## Example file that defines subject attributes:
+
+```
+role:enum:visitor,employee
+validPin:bool
+time:numeric
+```
+
+Here *role* is an enumerated attribute with domain {visitor, employee}, *validPin* is a boolean attribute, and *time* is a numeric attribute.
+
+## Example file that defines resource attributes:
+
+```
+zone|room1:public,room2:presecured,room3:presecured,room4:secured
+```
+
+Here *zone* is a resource attribute with domain {public, presecured, secured}. There are four resource identifiers room1-4. The labeling of room1, for example, assigns public to the attribute zone.
+
+The section *GRAMMAR* defines the configuration tempalte which is used when the FIXED\_GRAMMAR attribute is set to *TRUE*. It defines three attributes:
 
 1. The number of enumerated attributes that the local policies contain
 2. The number of numeric attributes that the local policies contain
