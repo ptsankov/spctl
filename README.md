@@ -1,11 +1,11 @@
 # Folder structure
 
-1. /case-studies 
-  * the three case studies
-2. /polisy           
-  * the python implementation of the policy synthesizer
-3. /running-example 
-  * the running example
+1. /case-studies
+  - the three case studies
+2. /polisy
+  - the python implementation of the policy synthesizer
+3. /running-example
+  - the running example
 
 # Encoding synthesis problems
 
