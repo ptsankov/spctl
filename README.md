@@ -51,6 +51,7 @@ NUMBER_OF_DISJUNCTIONS=2
 ```
 
 The section <b> SYNTHESIS </b> defines the following attributes:
+
 1. STRUCTURE: A file that defines a resource structure (in adjecency list format)
 2. REQUIREMENTS: A file with global requirements expressed in the SpCTL language
 3. SUBJECT\_ATTRIBUTES: A file that defines all subject attributes and their domains
@@ -60,6 +61,7 @@ The section <b> SYNTHESIS </b> defines the following attributes:
 For examples of the above files see our running example.
 
 The section <b> GRAMMAR </b> defines the configuration tempalte which is used when the FIXED\_GRAMMAR attribute is set to **TRUE**. It defines three attributes:
+
 1. The number of enumerated attributes that the local policies contain
 2. The number of numeric attributes that the local policies contain
 3. The number of conjunctions
@@ -68,6 +70,7 @@ The section <b> GRAMMAR </b> defines the configuration tempalte which is used wh
 
 The synthesizer outputs the local policy for each edge. The output for our running example is:
 
+```
 ============ SYNTHESIZED POLICY ============
 FROM        TO    LOCAL POLICY
 ------  --  ----  --------------------------
@@ -76,7 +79,8 @@ cor     ->  bur   (not (= role visitor)
 cor     ->  mr    true
 out     ->  lob   true
 out     ->  cor   (not (= role visitor))
+```
 
-lob -> cor defines the policy to be deployed at the main entrance PEP.
+`lob -> cor` defines the policy to be deployed at the main entrance PEP.
 
 The local policies are encoded using the standard SMT-LIB format.
