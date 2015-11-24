@@ -58,7 +58,33 @@ The section *SYNTHESIS* defines the following attributes:
 4. RESOURCE\_ATTRIBUTES: A fie that defines all resource attributes and their domains
 5. FIXED\_GRAMMAR: A boolean flag that indicates whether the synthesizer checks for a solution from a fixed configuration template or not. When the FIXED\_GRAMMAR attribute is set to **FALSE**, the synthesizer begins with the smallest policy configuration template and increases the policy configuration template until a solution is found.
 
+The section *GRAMMAR* defines the configuration tempalte which is used when the FIXED\_GRAMMAR attribute is set to *TRUE*. It defines three attributes:
+
+1. The number of enumerated attributes that the local policies contain
+2. The number of numeric attributes that the local policies contain
+3. The number of conjunctions
+
 For examples of the above files see our running example.
+
+## Example file that defines a resource structure:
+
+The structure of the running example is as follows:
+
+```
+out out lob cor
+lob lob out cor
+cor cor lob out bur mr
+bur bur cor
+mr mr cor
+```
+
+## Example of a requirements file:
+
+```
+((and (role in {visitor}) (time in [8, 20])), (EF (room_id in {mr})))
+```
+
+Requirements have the form `(T, AP)` where *T* is a target encoded using the SMT-LIB format and *AP* is an access path. The access path is encoded in a format similar to the standard SMT-lib format, extended with the CTL temporal operators such as (EF AP), (EU AP_1 AP_2), and so forth.
 
 ## Example file that defines subject attributes:
 
@@ -78,11 +104,6 @@ zone|room1:public,room2:presecured,room3:presecured,room4:secured
 
 Here *zone* is a resource attribute with domain {public, presecured, secured}. There are four resource identifiers room1-4. The labeling of room1, for example, assigns public to the attribute zone.
 
-The section *GRAMMAR* defines the configuration tempalte which is used when the FIXED\_GRAMMAR attribute is set to *TRUE*. It defines three attributes:
-
-1. The number of enumerated attributes that the local policies contain
-2. The number of numeric attributes that the local policies contain
-3. The number of conjunctions
 
 # Output
 
