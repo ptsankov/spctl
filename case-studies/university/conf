@@ -1,5 +1,6 @@
 [SYNTHESIS]
 STRUCTURE=structure.adj
+PEPS=any
 SUBJECT_ATTRIBUTES=subject.attrs
 RESOURCE_ATTRIBUTES=resource.attrs
 REQUIREMENTS=requirements.ctl

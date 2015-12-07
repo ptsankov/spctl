@@ -88,15 +88,19 @@ if __name__ == '__main__':
     subjAttrs = [a.strip() for a in subjAttrs]
     log('Attributes: ' + ', '.join(subjAttrs))
     
-    with open(pepsFilename) as f:
-        pepStrs = f.readlines()
-    conf.PEPS = [(x.split(' ')[0].strip(), (x.split(' ')[1].strip())) for x in pepStrs]
+    if os.path.isfile(pepsFilename):
+        with open(pepsFilename) as f:
+            pepStrs = f.readlines()
+        conf.PEPS = [(x.split(' ')[0].strip(), (x.split(' ')[1].strip())) for x in pepStrs]
+    else:
+        conf.PEPS = resStructure.edges()
     
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
     reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]
-                
+        
+        
     if isGrammarFixed:
         num_ors = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS)
         num_enum = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES)
@@ -120,7 +124,7 @@ if __name__ == '__main__':
     
     log('DATA| Number of requirements: ' + str(len(reqs)))
     log('DATA| Number of resources: ' + str(len(resStructure.nodes())))
-    log('DATA| Number of enforcement points: ' + str(len(resStructure.edges())))
+    log('DATA| Number of enforcement points: ' + str(len(conf.PEPS)))
 
     
     closeLogFile()
