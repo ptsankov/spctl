@@ -17,10 +17,12 @@ from static import OPTION_STRUCTURE, OPTION_SUBJECT_ATTRIBUTES,\
     OPTION_RESOURCE_ATTRIBUTES, SECTION_SYNTHESIS, OPTION_REQUIREMENTS,\
     OPTION_OUTPUT, OPTION_FIXED_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS,\
     SECTION_GRAMMAR, OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES,\
-    OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES
+    OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES, OPTION_PEPS
 from utils.helperMethods import log, setLogFile, closeLogFile
 from algorithms.smt import synthFixedGrammar, synth
 from core import requirments_grammar
+import conf
+
 
 def getResourceStructure(graphFilename, resourceAttributesFilename):
     resourceStructure = networkx.read_adjlist(graphFilename, create_using = networkx.DiGraph())    
@@ -64,6 +66,7 @@ if __name__ == '__main__':
     subjectAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES))
     resourceAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_RESOURCE_ATTRIBUTES))
     reqsFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_REQUIREMENTS))
+    pepsFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_PEPS))
     outputFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_OUTPUT))
     isGrammarFixed = config.getboolean(SECTION_SYNTHESIS, OPTION_FIXED_GRAMMAR)
 
@@ -85,6 +88,10 @@ if __name__ == '__main__':
     subjAttrs = [a.strip() for a in subjAttrs]
     log('Attributes: ' + ', '.join(subjAttrs))
     
+    with open(pepsFilename) as f:
+        pepStrs = f.readlines()
+    conf.PEPS = [(x.split(' ')[0].strip(), (x.split(' ')[1].strip())) for x in pepStrs]
+    
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
@@ -104,9 +111,9 @@ if __name__ == '__main__':
     else:
         print '============ SYNTHESIZED POLICY ============'
         policyTable = []
-        for enforcementPoint in resStructure.edges():
-            if enforcementPoint[0] == enforcementPoint[1]:
-                continue
+        for enforcementPoint in conf.PEPS:
+#            if enforcementPoint[0] == enforcementPoint[1]:
+#                continue
             check = policy[enforcementPoint] if type(policy[enforcementPoint]) == bool else policy[enforcementPoint].sexpr()
             policyTable.append([enforcementPoint[0], '->', enforcementPoint[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])

@@ -9,6 +9,7 @@ from utils.helperMethods import INIT_RESOURCE, nodePathToEdgePath
 from core.solver import encodeFormula
 from utils.helperMethods import log
 import time
+import conf
 
 TEMPLATE_ENUM_VARS = {}
 TEMPLATE_NUMERIC_VARS = {}
@@ -103,6 +104,8 @@ def numTemplate(minVar, maxVar):
     return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)
 
 def policyTemplateForEdge(enforcementPoint):
+    if enforcementPoint not in conf.PEPS:
+        return True
     if enforcementPoint[0] == enforcementPoint[1]:
         return True    
     disjunctions = []    
