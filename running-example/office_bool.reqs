@@ -1,8 +1,0 @@
-((and visitor (time in [8, 20])), (EF mr))
-(visitor, (not (EU (not lob) mr)))
-((and employee (time in [8, 20])), (EF bur))
-((and employee validPin), (EF bur))
-((not employee), (not (EF bur)))
-(true, (AG (EF out)))
-((and (and (not validPin) (time in [0, 7])) employee), (not (EF bur)))
-((and (and (not validPin) (time in [21, 24])) employee), (not (EF bur)))
