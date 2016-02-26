@@ -1,4 +1,3 @@
-import os
 INIT_RESOURCE = 'out'
 
 def setLogFile(filename):

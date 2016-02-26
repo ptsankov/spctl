@@ -6,7 +6,7 @@ Created on Aug 11, 2015
 from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify,\
     Bool, EnumSort, Const
 from utils.helperMethods import INIT_RESOURCE, nodePathToEdgePath
-from core.solver import encodeFormula
+from core.solver import encode
 from utils.helperMethods import log
 import time
 import conf
@@ -220,7 +220,7 @@ def solve(resStructure, reqs):
         log('Translating requirement: ' + str(req))
         reqProp = req[0]
        
-        formula = encodeFormula(resStructure, req, INIT_RESOURCE, pathCondition)      
+        formula = encode(resStructure, req, INIT_RESOURCE, pathCondition)      
 #        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
         s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 

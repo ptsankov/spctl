@@ -36,7 +36,7 @@ def evalResourceConstraint(graph, resource, constraint):
         attrVal = graph.node[resource][attrName]
         return any(attrVal == x for x in attrVals)        
 
-def encodeFormula(graph, req, resource, pathConditionFunction):
+def encode(graph, req, resource, pathConditionFunction):
     reqProp = req[0]
     reqCTL = req[1]
     if reqCTL in graph.nodes():
@@ -49,11 +49,11 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
     elif reqCTL[0] == 'false':
         return False
     elif reqCTL[0] == 'not':
-        subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
+        subFormula = encode(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
         return Not(subFormula)
     elif any(reqCTL[0] == x for x in ['and', 'or', '=>']):
-        subFormulaLeft = encodeFormula(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
-        subFormulaRight = encodeFormula(graph, [reqProp, reqCTL[2]], resource, pathConditionFunction)
+        subFormulaLeft = encode(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
+        subFormulaRight = encode(graph, [reqProp, reqCTL[2]], resource, pathConditionFunction)
         if reqCTL[0] == 'and':
             return And(subFormulaLeft, subFormulaRight)
         elif reqCTL[0] == 'or':
@@ -84,9 +84,9 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
                     subpath = path[0:i+1]
                     pathCondition = pathConditionFunction(graph, subpath, req)           
                     conjuncts.append(pathCondition)
-                    conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
+                    conjuncts.append(encode(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
                     for j in range(0, i):
-                        conjuncts.append(encodeFormula(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
+                        conjuncts.append(encode(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
                     s = Solver()
                     s.add(And(conjuncts))
                     # add only if the condition is feasible
@@ -99,7 +99,7 @@ def encodeFormula(graph, req, resource, pathConditionFunction):
             if reqCTL[1][0] == '=>' and isConstraint(reqCTL[1][1]):               
                 if not evalResourceConstraint(graph, targetResource, reqCTL[1][1]):
                     continue            
-            subFormula = encodeFormula(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
+            subFormula = encode(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
             if targetResource == resource:
                 conjuncts.append(subFormula)
             else:
