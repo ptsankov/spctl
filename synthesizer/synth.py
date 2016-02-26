@@ -5,6 +5,7 @@ Created on May 17, 2015
 
 @author: ptsankov
 '''
+
 from z3 import unsat
 from tabulate import tabulate
 
@@ -13,19 +14,15 @@ import sys
 import os
 import ConfigParser
 from networkx.classes.function import set_node_attributes
-from static import OPTION_STRUCTURE, OPTION_SUBJECT_ATTRIBUTES,\
-    OPTION_RESOURCE_ATTRIBUTES, SECTION_SYNTHESIS, OPTION_REQUIREMENTS,\
-    OPTION_OUTPUT, OPTION_FIXED_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS,\
-    SECTION_GRAMMAR, OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES,\
-    OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES, OPTION_PEPS
+import static
 from utils.helperMethods import log, setLogFile, closeLogFile
-from algorithms.smt import synthFixedGrammar, synth
-from core import requirments_grammar
 import conf
+from utils import requirments_grammar
+from solver import template, smt
 
 
-def getResourceStructure(graphFilename, resourceAttributesFilename):
-    resourceStructure = networkx.read_adjlist(graphFilename, create_using = networkx.DiGraph())    
+def getResourceStructure(structureFilename, resourceAttributesFilename):
+    resourceStructure = networkx.read_adjlist(structureFilename, create_using = networkx.DiGraph())    
     log('Resources: ' + ', '.join(resourceStructure.nodes()))
     
     with open(resourceAttributesFilename) as f:
@@ -48,10 +45,8 @@ def getResourceStructure(graphFilename, resourceAttributesFilename):
     return resourceStructure
     
 if __name__ == '__main__':
-    global outputFile
-    
+  
     if len(sys.argv) != 2:
-        # <graph file> <attributes file> <resources file> <requirements> [<num ors> <# enums> <# numeric>]
         print 'Usage: {} <configuration file>'.format(sys.argv[0])
         sys.exit(-1)
                
@@ -62,68 +57,81 @@ if __name__ == '__main__':
     
     pathToFiles = os.path.dirname(os.path.realpath(configFilename))
         
-    graphFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_STRUCTURE))
-    subjectAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_SUBJECT_ATTRIBUTES))
-    resourceAttributesFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_RESOURCE_ATTRIBUTES))
-    reqsFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_REQUIREMENTS))
-    pepsFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_PEPS))
-    outputFilename = os.path.join(pathToFiles, config.get(SECTION_SYNTHESIS, OPTION_OUTPUT))
-    isGrammarFixed = config.getboolean(SECTION_SYNTHESIS, OPTION_FIXED_GRAMMAR)
+    structureFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_STRUCTURE))
+    subjectAttributesFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_SUBJECT_ATTRIBUTES))
+    resourceAttributesFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_RESOURCE_ATTRIBUTES))
+    reqsFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_REQUIREMENTS))
+    pepsFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_PEPS))
+    outputFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_OUTPUT))
+    isGrammarFixed = config.getboolean(static.SECTION_SYNTHESIS, static.OPTION_FIXED_GRAMMAR)
 
     setLogFile(outputFilename)
 
-    log('Resource structure filename: ' + graphFilename)
+    log('Resource structure filename: ' + structureFilename)
     log('Subject attributes filename: ' + subjectAttributesFilename)
     log('Resource attributes filename: ' + resourceAttributesFilename)
     log('Requirements filename: ' + reqsFilename)
+    log('PEPs filename: ' + pepsFilename)
     log('Output file: ' + outputFilename)
 
-    assert os.path.isfile(graphFilename)
+    assert os.path.isfile(structureFilename)
     assert os.path.isfile(resourceAttributesFilename)    
-    resStructure = getResourceStructure(graphFilename, resourceAttributesFilename)
+    conf.resourceStructure = getResourceStructure(structureFilename, resourceAttributesFilename)
     
     assert os.path.isfile(subjectAttributesFilename)
     with open(subjectAttributesFilename) as f:
         subjAttrs = f.readlines()
-    subjAttrs = [a.strip() for a in subjAttrs]
-    log('Attributes: ' + ', '.join(subjAttrs))
+    conf.subjAttrs = [a.strip() for a in subjAttrs]
+    log('Attributes: ' + ', '.join(conf.subjAttrs))
+    template.declareAttrVars()
     
-    if os.path.isfile(pepsFilename):
-        with open(pepsFilename) as f:
-            pepStrs = f.readlines()
-        conf.PEPS = [(x.split(' ')[0].strip(), (x.split(' ')[1].strip())) for x in pepStrs]
-    else:
-        conf.PEPS = resStructure.edges()
+    assert os.path.isfile(pepsFilename)    
+    with open(pepsFilename) as f:
+        pepStrs = f.readlines()
+    conf.PEPS = [(x.split(' ')[0].strip(), (x.split(' ')[1].strip())) for x in pepStrs]
     
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
-    reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]
-        
+    conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]
+    
         
     if isGrammarFixed:
-        num_ors = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_DISJUNCTIONS)
-        num_enum = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES)
-        num_numeric = config.getint(SECTION_GRAMMAR, OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES)
-        policy = synthFixedGrammar(resStructure, reqs, subjAttrs, num_ors, num_enum, num_numeric) 
-    else:        
-        
-        policy = synth(resStructure, reqs, subjAttrs)        
+        numOrs = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_DISJUNCTIONS)
+        numEnums = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES)
+        numNumeric = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES)
+                
+        template.createTemplate(numOrs, numEnums, numNumeric)        
+        policy = smt.solve() 
+    else:
+        policy = unsat
+        numOrs = 1
+        numEnums = 1
+        numNumeric = 1
+        while policy == unsat:
+            template.createTemplate(numOrs, numEnums, numNumeric)
+            min_size = min(numOrs, numEnums, numNumeric)
+            if numEnums == min_size:
+                numEnums += 1
+            else:
+                if numNumeric == min_size:
+                    numNumeric += 1
+                else:
+                    numOrs += 1
+            policy = smt.solve()                               
                                        
     if policy == unsat:
         print 'No solution was found'
     else:
         print '============ SYNTHESIZED POLICY ============'
         policyTable = []
-        for enforcementPoint in conf.PEPS:
-#            if enforcementPoint[0] == enforcementPoint[1]:
-#                continue
-            check = policy[enforcementPoint] if type(policy[enforcementPoint]) == bool else policy[enforcementPoint].sexpr()
-            policyTable.append([enforcementPoint[0], '->', enforcementPoint[1], check])
+        for PEP in conf.PEPS:
+            check = policy[PEP] if type(policy[PEP]) == bool else policy[PEP].sexpr()
+            policyTable.append([PEP[0], '->', PEP[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])
     
     log('DATA| Number of requirements: ' + str(len(reqs)))
-    log('DATA| Number of resources: ' + str(len(resStructure.nodes())))
+    log('DATA| Number of resources: ' + str(len(conf.resourceStructure.nodes())))
     log('DATA| Number of enforcement points: ' + str(len(conf.PEPS)))
 
     

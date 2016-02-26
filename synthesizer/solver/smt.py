@@ -1,246 +1,40 @@
 '''
-Created on Aug 11, 2015
+Created on Aug 12, 2015
 
 @author: ptsankov
 '''
-from z3 import unsat, Int, If, Not, Or, And, Implies, Solver, ForAll, sat,simplify,\
-    Bool, EnumSort, Const
-from utils.helperMethods import INIT_RESOURCE, nodePathToEdgePath
-from core.solver import encode
-from utils.helperMethods import log
+from z3 import Solver, Not, And, Or, Implies, sat, unsat
+import networkx as nx
 import time
 import conf
+import template
+from utils.helperMethods import log
 
-TEMPLATE_ENUM_VARS = {}
-TEMPLATE_NUMERIC_VARS = {}
-
-ENUM_INDEX = {}
-NUM_VAR = Int('time')
-
-BOOL_VARS = {}
-ENUM_VARS = {}
-ENUM_VALUES = {}
-NUMERIC_VARS = {}
-
-NUM_ORS = 0
-NUM_ENUMS = 0
-NUM_NUMERIC = 0
-SUBJ_ATTRS = []
-
-def declareAttrVars(subjAttrs):
-    global SUBJ_ATTRS
-    SUBJ_ATTRS = subjAttrs
-    for attr in SUBJ_ATTRS:
-        attrName = attr.split(':')[0].strip()
-        attrType = attr.split(':')[1].strip()
-        if attrType == 'bool':
-            BOOL_VARS[attrName] = Bool(attrName)
-        elif attrType == 'enum':            
-            values = attr.split(':')[2].strip().split(',')
-            newEnumSort = EnumSort(attrName, values)
-            ENUM_VARS[attrName] = Const(attrName, newEnumSort[0])
-            ENUM_VALUES[attrName] = {}
-            for enumVal in newEnumSort[1]:                  
-                ENUM_VALUES[attrName][str(enumVal)] = enumVal                
-        elif attrType == 'numeric':
-            NUMERIC_VARS[attrName] = Int(attrName)
-        else:
-            raise NameError('unknown attribute type: '+ attrType)
-
-def declareTemplateVars(resStructure):
-    for enforcementPoint in resStructure.edges():
-        if enforcementPoint[0] == enforcementPoint[1]:
-            continue
-        if enforcementPoint not in TEMPLATE_ENUM_VARS.keys():
-            TEMPLATE_ENUM_VARS[enforcementPoint] = {}
-        if enforcementPoint not in TEMPLATE_NUMERIC_VARS.keys():
-            TEMPLATE_NUMERIC_VARS[enforcementPoint] = {}        
-        for or_id in range(NUM_ORS):
-            if or_id not in TEMPLATE_ENUM_VARS[enforcementPoint].keys():
-                TEMPLATE_ENUM_VARS[enforcementPoint][or_id] = {}
-            if or_id not in TEMPLATE_NUMERIC_VARS[enforcementPoint].keys():
-                TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id] = {}
-            for enum_id in range(NUM_ENUMS):
-                if enum_id not in TEMPLATE_ENUM_VARS[enforcementPoint][or_id].keys(): 
-                    TEMPLATE_ENUM_VARS[enforcementPoint][or_id][enum_id] = Int(enforcementPoint[0] + '_' + enforcementPoint[1] + '_or' + str(or_id) + '_enum' + str(enum_id))
-            for num_id in range(NUM_NUMERIC):
-                if num_id not in TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id].keys(): 
-                    TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id] = {}
-                    TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['min'] = Int(enforcementPoint[0] + '_' + enforcementPoint[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_min')
-                    TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['max'] = Int(enforcementPoint[0] + '_' + enforcementPoint[1] + '_or' + str(or_id) + '_num' + str(num_id) + '_max')
-                
-    index = 0
-    for boolVarName in BOOL_VARS.keys():
-        ENUM_INDEX[index] = BOOL_VARS[boolVarName]                
-        index += 1
-    for enumVarName in ENUM_VARS.keys():
-        enumVar = ENUM_VARS[enumVarName]
-        for valName in ENUM_VALUES[enumVarName].keys():
-            val = ENUM_VALUES[enumVarName][valName]
-            ENUM_INDEX[index] = [enumVar, val]
-            index += 1
-
-def enumTemplate(enumTempVar, index):
-    if index < len(ENUM_INDEX.keys()):
-        if not isinstance(ENUM_INDEX[index], list):
-            boolVar = ENUM_INDEX[index]
-            return If(enumTempVar == index, boolVar, enumTemplate(enumTempVar, index+1))
-        else:
-            [enumVar, val] = ENUM_INDEX[index]
-            return If(enumTempVar == index, enumVar == val, enumTemplate(enumTempVar, index+1))
-    elif index >= len(ENUM_INDEX.keys()) and index < 2*len(ENUM_INDEX.keys()):
-        if not isinstance(ENUM_INDEX[index - len(ENUM_INDEX)], list):
-            boolVar = ENUM_INDEX[index - len(ENUM_INDEX)]
-            return If(enumTempVar == index, Not(boolVar), enumTemplate(enumTempVar, index+1))
-        else:
-            [enumVar, val] = ENUM_INDEX[index - len(ENUM_INDEX)]
-            return If(enumTempVar == index, enumVar != val, enumTemplate(enumTempVar, index+1))
-    elif index == 2 * len(ENUM_INDEX.keys()):
-        return If(enumTempVar == index, True, False)
-    else:
-        raise NameError('not reachable')
-
-def numTemplate(minVar, maxVar):
-    return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)
-
-def policyTemplateForEdge(enforcementPoint):
-    if enforcementPoint not in conf.PEPS:
-        return True
-    if enforcementPoint[0] == enforcementPoint[1]:
-        return True    
-    disjunctions = []    
-    for or_id in range(NUM_ORS):
-        conjunctions = []        
-        for enum_id in range(NUM_ENUMS):                        
-            conjunctions.append(enumTemplate(TEMPLATE_ENUM_VARS[enforcementPoint][or_id][enum_id], 0))
-        for num_id in range(NUM_NUMERIC):
-            # hardcoding one numeric variable for now!
-            minVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['min']
-            maxVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['max']
-            conjunctions.append(NUM_VAR >= minVar)
-            conjunctions.append(NUM_VAR <= maxVar)                                 
-        disjunctions.append(And(conjunctions))
-    return Or(disjunctions)
-
-def instantiatePolicyTemplateForEdge(enforcementPoint, model):
-    disjunctions = []
-    for or_id in range(NUM_ORS):
-        conjunctions = []
-        for enum_id in range(NUM_ENUMS):
-            enumVar = TEMPLATE_ENUM_VARS[enforcementPoint][or_id][enum_id]
-            if model[enumVar] is not None:
-                synthVal = model[enumVar].as_long()
-            else:
-                synthVal = -1
-            if synthVal >= 0 and synthVal < len(ENUM_INDEX.keys()):                
-                if not isinstance(ENUM_INDEX[synthVal], list):
-                    boolVar = ENUM_INDEX[synthVal]
-                    conjunctions.append(boolVar)
-                else:
-                    [enumVar, val] = ENUM_INDEX[synthVal]
-                    conjunctions.append(enumVar == val)
-            elif synthVal >= len(ENUM_INDEX.keys()) and synthVal < 2 * len(ENUM_INDEX.keys()):                
-                if not isinstance(ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())], list):
-                    boolVar = ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())]
-                    conjunctions.append(Not(boolVar))
-                else:
-                    [enumVar, val] = ENUM_INDEX[synthVal - len(ENUM_INDEX.keys())]
-                    conjunctions.append(enumVar != val)
-            elif synthVal == 2 * len(ENUM_INDEX.keys()):
-                conjunctions.append(True)
-            else:
-                conjunctions.append(False)
-        for num_id in range(NUM_NUMERIC):
-            minVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['min']
-            if model[minVar] is not None:
-                conjunctions.append(NUM_VAR >= model[minVar].as_long())            
-            maxVar = TEMPLATE_NUMERIC_VARS[enforcementPoint][or_id][num_id]['max']
-            if model[maxVar] is not None:
-                conjunctions.append(NUM_VAR <= model[maxVar].as_long())
-        disjunctions.append(simplify(And(conjunctions)))
-    return simplify(Or(disjunctions))
-            
-def pathCondition(resStructure, path, req):
-    if len(path) < 2:
-        return True
-    if path[0] == path[-1]:
-        return True
-    reqProp = req[0]
-    edgePath = nodePathToEdgePath(resStructure, path)
-    edgeTemplates = [policyTemplateForEdge(e) for e in edgePath]   
-    cond = Implies(strToZ3(reqProp), And(edgeTemplates))
-    return cond
-
-def synth(resStructure, reqs, subjAttrs):
-    global SUBJ_ATTRS
-    SUBJ_ATTRS = subjAttrs
-        
-    policy = unsat
-    NUM_ORS = 1
-    NUM_ENUMS = 0
-    NUM_NUMERIC = 0
-    
-    declareAttrVars(subjAttrs)
-    
-    while policy == unsat:
-        declareTemplateVars(resStructure)
-        min_size = min(NUM_ORS, NUM_ENUMS, NUM_NUMERIC)
-        isIncremented = False
-        if not isIncremented and NUM_ORS == min_size:
-            NUM_ORS += 1
-            isIncremented = True
-        if not isIncremented and NUM_ENUMS == min_size:
-            NUM_ENUMS += 1
-            isIncremented = True
-        if not isIncremented and NUM_NUMERIC == min_size:
-            NUM_NUMERIC += 1
-            isIncremented = True
-        policy = solve(resStructure, reqs)
-                    
-    return policy
-
-def synthFixedGrammar(resStructure, reqs, subjAttrs, numOrs, numEnums, numNumeric):
-    global NUM_ORS, NUM_ENUMS, NUM_NUMERIC, SUBJ_ATTRS
-    NUM_ORS = numOrs
-    NUM_ENUMS = numEnums
-    NUM_NUMERIC = numNumeric
-    SUBJ_ATTRS = subjAttrs
-    
-    declareAttrVars(subjAttrs)
-    declareTemplateVars(resStructure)
-    return solve(resStructure, reqs)    
-
-def solve(resStructure, reqs):
-    log('Translating requirements to SMT')      
-        
+def solve():        
     start = time.time()
     s = Solver()
-    for req in reqs:
+    for req in conf.reqs:
         print req
         log('Translating requirement: ' + str(req))
         reqProp = req[0]
        
-        formula = encode(resStructure, req, INIT_RESOURCE, pathCondition)      
-#        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
+        formula = encode(conf.resourceStructure, req, conf.entryResource)      
         s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
 
     timeToTranslate = time.time() - start    
     log('DATA| Translation time: ' + str(timeToTranslate))
-    
-    policy = {}
+        
     
     log('SMT Solving')
     
     start = time.time()
-    if s.check() == sat:        
-        m = s.model()
+    if s.check() == sat:
+        policy = {}        
+        model = s.model()        
         timeToSolve = time.time() - start
         log('DATA| SMT time: ' + str(timeToSolve))
-        for enforcementPoint in resStructure.edges():
-            if enforcementPoint[0] == enforcementPoint[1]:
-                policy[enforcementPoint] = True
-                continue            
-            policy[enforcementPoint] = instantiatePolicyTemplateForEdge(enforcementPoint, m) 
+        for PEP in conf.PEPS:           
+            policy[PEP] = template.PEPPolicy(PEP, model) 
         return policy
     else:    
         return unsat
@@ -293,3 +87,118 @@ def Z3toStr(z3Formula):
         return ['false']
     else:
         raise NameError('could not convert Z3 formula to string')
+
+
+def isConstraint(formula):
+    if formula[0] == 'not':
+        return isConstraint(formula[1])
+    elif formula[0] == 'and':
+        return isConstraint(formula[1]) and isConstraint(formula[2])
+    elif formula[0] == '=>':
+        return (not isConstraint(formula[1])) and isConstraint(formula[2])
+    elif formula[0] == 'or':
+        return (isConstraint(formula[1])) or isConstraint(formula[2])
+    else:
+        if len(formula) == 3 and formula[1] == 'in':
+            return True
+        return False
+
+def evalResourceConstraint(graph, resource, constraint):
+    if constraint[0] == 'not':
+        return not evalResourceConstraint(graph, resource, constraint[1])
+    elif constraint[0] == 'and':
+        return evalResourceConstraint(graph, resource, constraint[1]) and evalResourceConstraint(graph, resource, constraint[2])
+    elif constraint[0] == '=>':
+        return (not evalResourceConstraint(graph, resource, constraint[1])) and evalResourceConstraint(graph, resource, constraint[2])
+    elif constraint[0] == 'or':
+        return evalResourceConstraint(graph, resource, constraint[1]) or evalResourceConstraint(graph, resource, constraint[2])
+    else:
+        assert isConstraint(constraint)
+        attrName = constraint[0]
+        attrVals = constraint[2]
+        attrVal = graph.node[resource][attrName]
+        return any(attrVal == x for x in attrVals)        
+
+def encode(graph, req, resource, pathConditionFunction):
+    reqProp = req[0]
+    reqCTL = req[1]
+    if reqCTL in graph.nodes():
+        if reqCTL == resource:
+            return True
+        else:
+            return False  
+    elif reqCTL[0] == 'true':
+        return True
+    elif reqCTL[0] == 'false':
+        return False
+    elif reqCTL[0] == 'not':
+        subFormula = encode(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
+        return Not(subFormula)
+    elif any(reqCTL[0] == x for x in ['and', 'or', '=>']):
+        subFormulaLeft = encode(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
+        subFormulaRight = encode(graph, [reqProp, reqCTL[2]], resource, pathConditionFunction)
+        if reqCTL[0] == 'and':
+            return And(subFormulaLeft, subFormulaRight)
+        elif reqCTL[0] == 'or':
+            return Or(subFormulaLeft, subFormulaRight)
+        elif reqCTL[0] == '=>':
+            return Implies(subFormulaLeft, subFormulaRight)
+    elif reqCTL[0] == 'EF':                            
+        if isConstraint(reqCTL[1]):    
+            pathDisjuncts = []
+            for targetResource in graph.nodes():
+                if evalResourceConstraint(graph, targetResource, reqCTL[1]) == False:
+                    continue
+                for path in nx.all_simple_paths(graph, resource, targetResource):
+                    pathCondition = pathConditionFunction(graph, path, req)
+                    pathDisjuncts.append(pathCondition)
+            return Or(pathDisjuncts)
+        else:
+            raise NameError('TODO: Add support for path quantifiers in EF')
+    elif reqCTL[0] == 'EU':
+        targetResources = graph.nodes()
+        if reqCTL[2] in graph.nodes():
+            targetResources = [reqCTL[2]]
+        disjuncts = []
+        for targetResource in targetResources:
+            for path in nx.all_simple_paths(graph, resource, targetResource):
+                for i in range(len(path)):
+                    conjuncts = []                    
+                    subpath = path[0:i+1]
+                    pathCondition = pathConditionFunction(graph, subpath, req)           
+                    conjuncts.append(pathCondition)
+                    conjuncts.append(encode(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
+                    for j in range(0, i):
+                        conjuncts.append(encode(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
+                    s = Solver()
+                    s.add(And(conjuncts))
+                    # add only if the condition is feasible
+                    if s.check() == sat:                                        
+                        disjuncts.append(And(conjuncts))
+        return Or(disjuncts)
+    elif reqCTL[0] == 'AG':
+        conjuncts = []        
+        for targetResource in graph.nodes():
+            if reqCTL[1][0] == '=>' and isConstraint(reqCTL[1][1]):               
+                if not evalResourceConstraint(graph, targetResource, reqCTL[1][1]):
+                    continue            
+            subFormula = encode(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
+            if targetResource == resource:
+                conjuncts.append(subFormula)
+            else:
+                edgePathConditions = []
+                for path in nx.all_simple_paths(graph, resource, targetResource):                    
+                    pathCondition = pathConditionFunction(graph, path, req)
+                    edgePathConditions.append(pathCondition)                    
+                pathExists = Or(edgePathConditions)                  
+                conjuncts.append(Implies(pathExists, subFormula))
+        return And(conjuncts)
+    else:
+        # it must be an atomic constraint
+        #print reqCTL
+        assert isConstraint(reqCTL)
+        attrName = reqCTL[0]
+        attrVals = reqCTL[2]
+        attrVal = graph.node[resource][attrName]
+        return any(attrVal == x for x in attrVals)
+

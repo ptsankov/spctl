@@ -1,5 +1,4 @@
-from pyparsing import Word, Literal, srange, Forward, Group, Or, OneOrMore,\
-    ParseException
+from pyparsing import Word, Literal, srange, Forward, Group, Or, OneOrMore
 
 class CTLGrammar:
     left = Literal('(').suppress()
@@ -56,4 +55,3 @@ def parseConstraint(string):
 
 def parseCTLFormula(string):
     return CTLGrammar.ctlFormula.parseString(string, parseAll = True)[0]
-
