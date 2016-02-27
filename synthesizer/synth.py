@@ -69,31 +69,24 @@ if __name__ == '__main__':
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
-    conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]
-    
+    conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]    
         
     if isGrammarFixed:
         numOrs = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_DISJUNCTIONS)
         numEnums = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES)
         numNumeric = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES)
-                
+        
         template.createTemplate(numOrs, numEnums, numNumeric)        
         policy = smt.solve() 
     else:
         policy = unsat
-        numOrs = 1
-        numEnums = 1
-        numNumeric = 1
+        template_size = [1, 1, 1]
         while policy == unsat:
-            template.createTemplate(numOrs, numEnums, numNumeric)
-            min_size = min(numOrs, numEnums, numNumeric)
-            if numEnums == min_size:
-                numEnums += 1
-            else:
-                if numNumeric == min_size:
-                    numNumeric += 1
-                else:
-                    numOrs += 1
+            template.createTemplate(template_size[2], template_size[0], template_size[1])
+            for i in range(len(template_size)):
+                if template_size[i] == min(template_size):
+                    template_size[i] += 1
+                    break            
             policy = smt.solve()                               
                                        
     if policy == unsat:
@@ -106,7 +99,7 @@ if __name__ == '__main__':
             policyTable.append([PEP[0], '->', PEP[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])
     
-    log('DATA| Number of requirements: ' + str(len(reqs)))
+    log('DATA| Number of requirements: ' + str(len(conf.reqs)))
     log('DATA| Number of resources: ' + str(len(conf.resourceStructure.nodes())))
     log('DATA| Number of enforcement points: ' + str(len(conf.PEPS)))
 

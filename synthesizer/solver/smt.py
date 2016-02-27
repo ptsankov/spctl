@@ -3,7 +3,7 @@ Created on Aug 12, 2015
 
 @author: ptsankov
 '''
-from z3 import Solver, Not, And, Or, Implies, sat, unsat
+from z3 import Solver, Not, And, Or, Implies, sat, unsat, ForAll
 import networkx as nx
 import time
 import conf
@@ -17,9 +17,9 @@ def solve():
         print req
         log('Translating requirement: ' + str(req))
         reqProp = req[0]
-       
-        formula = encode(conf.resourceStructure, req, conf.entryResource)      
-        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), formula)))
+               
+        constraint = encode(req[1], conf.entryResource)      
+        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), constraint)))
 
     timeToTranslate = time.time() - start    
     log('DATA| Translation time: ' + str(timeToTranslate))
@@ -119,30 +119,23 @@ def evalResourceConstraint(graph, resource, constraint):
         attrVal = graph.node[resource][attrName]
         return any(attrVal == x for x in attrVals)        
 
-def encode(graph, req, resource, pathConditionFunction):
-    reqProp = req[0]
-    reqCTL = req[1]
-    if reqCTL in graph.nodes():
-        if reqCTL == resource:
-            return True
-        else:
-            return False  
-    elif reqCTL[0] == 'true':
+def encode(accessConstraint, resource): 
+    if accessConstraint == 'true':
         return True
-    elif reqCTL[0] == 'false':
+    elif accessConstraint == 'false':
         return False
-    elif reqCTL[0] == 'not':
-        subFormula = encode(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
-        return Not(subFormula)
-    elif any(reqCTL[0] == x for x in ['and', 'or', '=>']):
-        subFormulaLeft = encode(graph, [reqProp, reqCTL[1]], resource, pathConditionFunction)
-        subFormulaRight = encode(graph, [reqProp, reqCTL[2]], resource, pathConditionFunction)
-        if reqCTL[0] == 'and':
-            return And(subFormulaLeft, subFormulaRight)
-        elif reqCTL[0] == 'or':
-            return Or(subFormulaLeft, subFormulaRight)
-        elif reqCTL[0] == '=>':
-            return Implies(subFormulaLeft, subFormulaRight)
+    elif accessConstraint[0] == 'not':
+        constraint = encode(accessConstraint[1], resource)
+        return Not(constraint)
+    elif any(accessConstraint[0] == x for x in ['and', 'or', '=>']):
+        constraintLeft = encode(accessConstraint[1], resource)
+        constraintRight = encode(accessConstraint[2], resource)
+        if accessConstraint[0] == 'and':
+            return And(constraintLeft, constraintRight)
+        elif accessConstraint[0] == 'or':
+            return Or(constraintLeft, constraintRight)
+        elif accessConstraint[0] == '=>':
+            return Implies(constraintLeft, constraintRight)
     elif reqCTL[0] == 'EF':                            
         if isConstraint(reqCTL[1]):    
             pathDisjuncts = []
