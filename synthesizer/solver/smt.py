@@ -119,14 +119,31 @@ def evalResourceConstraint(graph, resource, constraint):
         attrVal = graph.node[resource][attrName]
         return any(attrVal == x for x in attrVals)        
 
-def encode(accessConstraint, resource): 
+def encode(accessConstraint, resource):
+    ###
+    ### TRUE/FALSE
+    ### 
     if accessConstraint == 'true':
         return True
     elif accessConstraint == 'false':
         return False
+    ###
+    ### ATTRIBUTE CONSTRAINT
+    ###
+    elif len(accessConstraint) == 3 and accessConstraint[1] == 'in':
+        attrName = accessConstraint[0]
+        attrVals = accessConstraint[2]
+        attrVal = conf.resourceStructure.node[resource][attrName]
+        return any(attrVal == x for x in attrVals)
+    ###
+    ### UNARY: NOT
+    ###
     elif accessConstraint[0] == 'not':
         constraint = encode(accessConstraint[1], resource)
         return Not(constraint)
+    ###
+    ### BINARY: =>, AND, OR
+    ###    
     elif any(accessConstraint[0] == x for x in ['and', 'or', '=>']):
         constraintLeft = encode(accessConstraint[1], resource)
         constraintRight = encode(accessConstraint[2], resource)
@@ -136,62 +153,36 @@ def encode(accessConstraint, resource):
             return Or(constraintLeft, constraintRight)
         elif accessConstraint[0] == '=>':
             return Implies(constraintLeft, constraintRight)
-    elif reqCTL[0] == 'EF':                            
-        if isConstraint(reqCTL[1]):    
-            pathDisjuncts = []
-            for targetResource in graph.nodes():
-                if evalResourceConstraint(graph, targetResource, reqCTL[1]) == False:
-                    continue
-                for path in nx.all_simple_paths(graph, resource, targetResource):
-                    pathCondition = pathConditionFunction(graph, path, req)
-                    pathDisjuncts.append(pathCondition)
-            return Or(pathDisjuncts)
-        else:
-            raise NameError('TODO: Add support for path quantifiers in EF')
-    elif reqCTL[0] == 'EU':
-        targetResources = graph.nodes()
-        if reqCTL[2] in graph.nodes():
-            targetResources = [reqCTL[2]]
-        disjuncts = []
-        for targetResource in targetResources:
-            for path in nx.all_simple_paths(graph, resource, targetResource):
-                for i in range(len(path)):
-                    conjuncts = []                    
-                    subpath = path[0:i+1]
-                    pathCondition = pathConditionFunction(graph, subpath, req)           
-                    conjuncts.append(pathCondition)
-                    conjuncts.append(encode(graph, [reqProp, reqCTL[2]], path[i], pathConditionFunction))
-                    for j in range(0, i):
-                        conjuncts.append(encode(graph, [reqProp, reqCTL[1]], path[j], pathConditionFunction))                                        
-                    s = Solver()
-                    s.add(And(conjuncts))
-                    # add only if the condition is feasible
-                    if s.check() == sat:                                        
-                        disjuncts.append(And(conjuncts))
-        return Or(disjuncts)
-    elif reqCTL[0] == 'AG':
-        conjuncts = []        
-        for targetResource in graph.nodes():
-            if reqCTL[1][0] == '=>' and isConstraint(reqCTL[1][1]):               
-                if not evalResourceConstraint(graph, targetResource, reqCTL[1][1]):
-                    continue            
-            subFormula = encode(graph, [reqProp, reqCTL[1]], targetResource, pathConditionFunction)
-            if targetResource == resource:
-                conjuncts.append(subFormula)
-            else:
-                edgePathConditions = []
-                for path in nx.all_simple_paths(graph, resource, targetResource):                    
-                    pathCondition = pathConditionFunction(graph, path, req)
-                    edgePathConditions.append(pathCondition)                    
-                pathExists = Or(edgePathConditions)                  
-                conjuncts.append(Implies(pathExists, subFormula))
-        return And(conjuncts)
+    ###
+    ### EX
+    ###
+    elif accessConstraint[0] == 'EX':
+        raise NameError('todo')
+    ###
+    ### AX
+    ###
+    elif accessConstraint[0] == 'AX':
+        raise NameError('todo')
+    ###
+    ### EU
+    ###
+    elif accessConstraint[0] == 'EU':
+        raise NameError('todo')
+    ###
+    ### AU
+    ###
+    elif accessConstraint[0] == 'AU':
+        raise NameError('todo')
+    ###
+    ### SYNTACTIC SHORTHANDS
+    ###
+    elif accessConstraint[0] == 'AR':
+        return encode(['not', ['EU', ['not', accessConstraint[1]], ['not', accessConstraint[2]]]], resource)
+    elif accessConstraint[0] == 'AG':
+        return encode(['not', ['EU', 'true', ['not', accessConstraint[1]]]], resource)
+    elif accessConstraint[0] == 'EF':                            
+        return encode(['EU', 'true', accessConstraint[1]], resource)
+    elif accessConstraint[0] == 'AF':
+        return encode(['AU', 'true', accessConstraint[1]], resource)
     else:
-        # it must be an atomic constraint
-        #print reqCTL
-        assert isConstraint(reqCTL)
-        attrName = reqCTL[0]
-        attrVals = reqCTL[2]
-        attrVal = graph.node[resource][attrName]
-        return any(attrVal == x for x in attrVals)
-
+        raise NameError('Could not encode access constraint: ' + str(accessConstraint))
