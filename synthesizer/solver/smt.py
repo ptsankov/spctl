@@ -8,6 +8,7 @@ import time
 import conf
 import template
 from utils.helperMethods import log
+import networkx
 
 def solve():        
     start = time.time()
@@ -16,14 +17,13 @@ def solve():
         print req
         log('Translating requirement: ' + str(req))
         target = req[0]
-               
-        constraint = encode(req[1], conf.entryResource)      
-        s.add(ForAll(template.getAttributeVars(), Implies(template.encodeTarget(target), constraint)))
+        accessConstraint = req[1]
+             
+        requirementEncoding = encodeRequirement(target, accessConstraint)  
+        s.add(ForAll(template.getAttributeVars(), requirementEncoding))         
 
     timeToTranslate = time.time() - start    
-    log('DATA| Translation time: ' + str(timeToTranslate))
-        
-    
+    log('DATA| Translation time: ' + str(timeToTranslate))            
     log('SMT Solving')
     
     start = time.time()
@@ -38,6 +38,10 @@ def solve():
     else:    
         return unsat
 
+def encodeRequirement(target, accessConstraint):
+    targetEncoding = template.encodeTarget(target)
+    accessConstraintEncoding = encode(accessConstraint, conf.entryResource)
+    return Implies(targetEncoding, accessConstraintEncoding)      
 
 
 def isConstraint(formula):
@@ -92,12 +96,22 @@ def encode(accessConstraint, resource):
     ### EX
     ###
     elif accessConstraint[0] == 'EX':
-        raise NameError('todo')
+        successorConstraints = []
+        for PEP in networkx.edges_iter(conf.resourceStructure, resource):
+            successor = PEP[1]
+            constraint = encode(accessConstraint, successor)
+            successorConstraints.append(And(template.PEPTemplate(PEP), constraint))
+        return Or(successorConstraints)
     ###
     ### AX
     ###
     elif accessConstraint[0] == 'AX':
-        raise NameError('todo')
+        successorConstraints = []
+        for PEP in networkx.edges_iter(conf.resourceStructure, resource):
+            successor = PEP[1]
+            constraint = encode(accessConstraint, successor)
+            successorConstraints.append(Implies(template.PEPTemplate(PEP), constraint))
+        return And(successorConstraints)
     ###
     ### EU
     ###

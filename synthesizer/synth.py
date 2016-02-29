@@ -102,6 +102,5 @@ if __name__ == '__main__':
     log('DATA| Number of requirements: ' + str(len(conf.reqs)))
     log('DATA| Number of resources: ' + str(len(conf.resourceStructure.nodes())))
     log('DATA| Number of enforcement points: ' + str(len(conf.PEPS)))
-
     
     closeLogFile()

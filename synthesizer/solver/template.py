@@ -24,6 +24,7 @@ NUM_NUMERIC = -1
 
 NUM_VAR = Int('time')
 
+
 def declareAttrVars():
     for attr in conf.subjAttrs:
         attrName = attr.split(':')[0].strip()
@@ -162,8 +163,6 @@ def getAttributeVars():
     numericVars = [NUM_VAR]
     return boolVars + enumVars + numericVars
 
-
-
 def encodeTarget(target):
     if target in BOOL_VARS.keys():
         return BOOL_VARS[target]
@@ -192,22 +191,3 @@ def encodeTarget(target):
         return False
     else:
         raise NameError('could not convert propositional formula to the Z3 format')
-
-def Z3toStr(z3Formula):
-    raise NameError('fix the Z3toStr method')
-    if z3Formula.decl().name() in BOOL_VARS.keys():
-        return z3Formula.decl().name()    
-    elif z3Formula.decl().name() == 'not':
-        return ['not', Z3toStr(z3Formula.arg(0))]
-    elif z3Formula.decl().name() == 'and':
-        return ['and'] + [Z3toStr(child) for child in z3Formula.children()]
-    elif z3Formula.decl().name() == 'or':
-        return ['or'] + [Z3toStr(child) for child in z3Formula.children()]
-    elif z3Formula.decl().name() == '=>':
-        return ['=>'] + [Z3toStr(child) for child in z3Formula.children()]
-    elif z3Formula == True:
-        return ['true']
-    elif z3Formula == False:
-        return ['false']
-    else:
-        raise NameError('could not convert Z3 formula to string')
