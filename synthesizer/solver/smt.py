@@ -4,7 +4,6 @@ Created on Aug 12, 2015
 @author: ptsankov
 '''
 from z3 import Solver, Not, And, Or, Implies, sat, unsat, ForAll
-import networkx as nx
 import time
 import conf
 import template
@@ -16,10 +15,10 @@ def solve():
     for req in conf.reqs:
         print req
         log('Translating requirement: ' + str(req))
-        reqProp = req[0]
+        target = req[0]
                
         constraint = encode(req[1], conf.entryResource)      
-        s.add(ForAll([BOOL_VARS[varName] for varName in BOOL_VARS.keys()] + [ENUM_VARS[varName] for varName in ENUM_VARS.keys()] + [NUM_VAR], Implies(And([strToZ3(reqProp), NUM_VAR >= 0, NUM_VAR <= 24]), constraint)))
+        s.add(ForAll(template.getAttributeVars(), Implies(template.encodeTarget(target), constraint)))
 
     timeToTranslate = time.time() - start    
     log('DATA| Translation time: ' + str(timeToTranslate))
@@ -40,54 +39,6 @@ def solve():
         return unsat
 
 
-def strToZ3(policy):
-    if policy in BOOL_VARS.keys():
-        return BOOL_VARS[policy]
-    elif policy[0] in ENUM_VARS.keys():
-        var = ENUM_VARS[policy[0]] 
-        disjunctions = []
-        for val in policy[2]:
-            disjunctions.append(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
-        return Or(disjunctions)
-    elif policy[0] in NUMERIC_VARS.keys():
-        var = NUMERIC_VARS[policy[0]]
-        _min = int(policy[2][0])
-        _max = int(policy[2][1] )       
-        return And(var >= _min, var <= _max)
-    elif policy[0] == 'not':
-        return Not(strToZ3(policy[1]))
-    elif policy[0] == 'and':
-        return And([strToZ3(x) for x in policy[1:]])
-    elif policy[0] == 'or':
-        return Or([strToZ3(x) for x in policy[1:]])
-    elif policy[0] == '=>':
-        return Implies(strToZ3(policy[1]), strToZ3(policy[2]))
-    elif policy == 'true':
-        return True
-    elif policy == 'false':
-        return False
-    else:
-        raise NameError('could not convert propositional formula to the Z3 format')
-
-def Z3toStr(z3Formula):
-    raise NameError('fix the Z3toStr method')
-    if z3Formula.decl().name() in BOOL_VARS.keys():
-        return z3Formula.decl().name()    
-    elif z3Formula.decl().name() == 'not':
-        return ['not', Z3toStr(z3Formula.arg(0))]
-    elif z3Formula.decl().name() == 'and':
-        return ['and'] + [Z3toStr(child) for child in z3Formula.children()]
-    elif z3Formula.decl().name() == 'or':
-        return ['or'] + [Z3toStr(child) for child in z3Formula.children()]
-    elif z3Formula.decl().name() == '=>':
-        return ['=>'] + [Z3toStr(child) for child in z3Formula.children()]
-    elif z3Formula == True:
-        return ['true']
-    elif z3Formula == False:
-        return ['false']
-    else:
-        raise NameError('could not convert Z3 formula to string')
-
 
 def isConstraint(formula):
     if formula[0] == 'not':
@@ -101,23 +52,7 @@ def isConstraint(formula):
     else:
         if len(formula) == 3 and formula[1] == 'in':
             return True
-        return False
-
-def evalResourceConstraint(graph, resource, constraint):
-    if constraint[0] == 'not':
-        return not evalResourceConstraint(graph, resource, constraint[1])
-    elif constraint[0] == 'and':
-        return evalResourceConstraint(graph, resource, constraint[1]) and evalResourceConstraint(graph, resource, constraint[2])
-    elif constraint[0] == '=>':
-        return (not evalResourceConstraint(graph, resource, constraint[1])) and evalResourceConstraint(graph, resource, constraint[2])
-    elif constraint[0] == 'or':
-        return evalResourceConstraint(graph, resource, constraint[1]) or evalResourceConstraint(graph, resource, constraint[2])
-    else:
-        assert isConstraint(constraint)
-        attrName = constraint[0]
-        attrVals = constraint[2]
-        attrVal = graph.node[resource][attrName]
-        return any(attrVal == x for x in attrVals)        
+        return False 
 
 def encode(accessConstraint, resource):
     ###

@@ -5,7 +5,7 @@ Created on Feb 26, 2016
 '''
 
 import conf
-from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify
+from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies
 from compiler.ast import Const
 
 BOOL_VARS = {}
@@ -99,9 +99,6 @@ def enumTemplate(enumTempVar, index):
     else:
         raise NameError('not reachable')
 
-def numTemplate(minVar, maxVar):
-    return And(NUM_VAR >= minVar, NUM_VAR <= maxVar)
-
 def PEPTemplate(PEP):
     if PEP not in conf.PEPS:
         return True
@@ -158,3 +155,59 @@ def PEPPolicy(PEP, model):
                 conjunctions.append(NUM_VAR <= model[maxVar].as_long())
         disjunctions.append(simplify(And(conjunctions)))
     return simplify(Or(disjunctions))
+
+def getAttributeVars():
+    boolVars = [BOOL_VARS[varName] for varName in BOOL_VARS.keys()]
+    enumVars = [ENUM_VARS[varName] for varName in ENUM_VARS.keys()]
+    numericVars = [NUM_VAR]
+    return boolVars + enumVars + numericVars
+
+
+
+def encodeTarget(target):
+    if target in BOOL_VARS.keys():
+        return BOOL_VARS[target]
+    elif target[0] in ENUM_VARS.keys():
+        var = ENUM_VARS[target[0]] 
+        disjunctions = []
+        for val in target[2]:
+            disjunctions.append(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
+        return Or(disjunctions)
+    elif target[0] in NUMERIC_VARS.keys():
+        var = NUMERIC_VARS[target[0]]
+        _min = int(target[2][0])
+        _max = int(target[2][1] )       
+        return And(var >= _min, var <= _max)
+    elif target[0] == 'not':
+        return Not(encodeTarget(target[1]))
+    elif target[0] == 'and':
+        return And([encodeTarget(x) for x in target[1:]])
+    elif target[0] == 'or':
+        return Or([encodeTarget(x) for x in target[1:]])
+    elif target[0] == '=>':
+        return Implies(encodeTarget(target[1]), encodeTarget(target[2]))
+    elif target == 'true':
+        return True
+    elif target == 'false':
+        return False
+    else:
+        raise NameError('could not convert propositional formula to the Z3 format')
+
+def Z3toStr(z3Formula):
+    raise NameError('fix the Z3toStr method')
+    if z3Formula.decl().name() in BOOL_VARS.keys():
+        return z3Formula.decl().name()    
+    elif z3Formula.decl().name() == 'not':
+        return ['not', Z3toStr(z3Formula.arg(0))]
+    elif z3Formula.decl().name() == 'and':
+        return ['and'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula.decl().name() == 'or':
+        return ['or'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula.decl().name() == '=>':
+        return ['=>'] + [Z3toStr(child) for child in z3Formula.children()]
+    elif z3Formula == True:
+        return ['true']
+    elif z3Formula == False:
+        return ['false']
+    else:
+        raise NameError('could not convert Z3 formula to string')
