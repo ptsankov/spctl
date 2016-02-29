@@ -146,8 +146,18 @@ def encodeUntilAccessConstraint(accessConstraint, resource, visited):
         accessConstraint1Encoded = encode(accessConstraint1, resource)
         accessConstraint2Encoded = encode(accessConstraint2, resource)                
         
+        successorConstraints = []
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
-            pass
+            if PEP in visited:
+                continue
+            successor = PEP[1]            
+            visitedNodes = set(visited)
+            visitedNodes.add(successor)
+            successorAccessConstraintEncoded = encodeUntilAccessConstraint(accessConstraint, successor, visitedNodes)
+            template = template.PEPTemplate(PEP)
+            successorConstraints.append(And(template, successorAccessConstraintEncoded))
+        Or(accessConstraint2Encoded, And(accessConstraint1Encoded, Or(successorConstraints)))        
+            
     elif accessConstraint[0] == 'AU':
         accessConstraint1 = accessConstraint[1]
         accessConstraint2 = accessConstraint[2]
@@ -155,7 +165,27 @@ def encodeUntilAccessConstraint(accessConstraint, resource, visited):
         accessConstraint1Encoded = encode(accessConstraint1, resource)
         accessConstraint2Encoded = encode(accessConstraint2, resource)
                         
+        successorConstraints = []
+        noBackEdgesConstraints = []
+        existsSuccessorConstraints = []
+        
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
-            pass
+            if PEP in visited:
+                noBackEdgesConstraints.append(Not(template.PEPTemplate(PEP)))
+                continue
+            
+            existsSuccessorConstraints.append(template.PEPTemplate(PEP))
+                        
+            successor = PEP[1]            
+            visitedNodes = set(visited)
+            visitedNodes.add(successor)
+            successorAccessConstraintEncoded = encodeUntilAccessConstraint(accessConstraint, successor, visitedNodes)
+            template = template.PEPTemplate(PEP)
+            successorConstraints.append(Implies(template, successorAccessConstraintEncoded))
+            
+        noBackEdges = And(noBackEdgesConstraints)
+        existsSuccessor = Or(existsSuccessorConstraints)
+            
+        return Or(accessConstraint2Encoded, And(accessConstraint1Encoded, noBackEdges, existsSuccessor, And(successorConstraints)))
     else:
         raise NameError('Not an until access constraint:', accessConstraint)
