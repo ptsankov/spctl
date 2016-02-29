@@ -16,6 +16,7 @@ class CTLGrammar:
     af = Literal('AF')
     ef = Literal('EF')
     ag = Literal('AG')
+    ar = Literal('AR')
     eg = Literal('EG')
     
     conj = Literal('and')    
@@ -33,7 +34,7 @@ class CTLGrammar:
     binaryPropositionalOperator = conj | disj | impl
                        
     unaryCTLOperator = neg | ax | ex | af | ef | ag | eg
-    binaryCTLOperator = conj | disj | impl | au | eu
+    binaryCTLOperator = conj | disj | impl | au | eu | ar
     
     atomic = word | Group(left + word + _in + leftCurly + Group(OneOrMore(word)) + rightCurly + right) | Group(left + word + _in + leftSquare + Group(nums + comma + nums) + rightSquare + right)
     

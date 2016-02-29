@@ -14,14 +14,12 @@ def solve():
     start = time.time()
     s = Solver()
     for req in conf.reqs:
-        print req
-        log('Translating requirement: ' + str(req))
+        #log('Translating requirement: ' + str(req))
         target = req[0]
         accessConstraint = req[1]
              
         requirementEncoding = encodeRequirement(target, accessConstraint)  
-        s.add(ForAll(template.getAttributeVars(), requirementEncoding))         
-
+        s.add(ForAll(template.getAttributeVars(), requirementEncoding))
     timeToTranslate = time.time() - start    
     log('DATA| Translation time: ' + str(timeToTranslate))            
     log('SMT Solving')
@@ -123,7 +121,6 @@ def encodeAccessConstraint(accessConstraint, resource):
 
 
 def encodeUntilAccessConstraint(accessConstraint, resource, visited):
-    print 'encodeUntilAccessConstraint', resource, visited
     if accessConstraint[0] == 'EU':
         accessConstraint1 = accessConstraint[1]
         accessConstraint2 = accessConstraint[2]

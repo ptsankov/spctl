@@ -5,7 +5,8 @@ Created on Feb 26, 2016
 '''
 
 import conf
-from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies, Const
+from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies, Const,\
+    Solver, unsat, sat
 
 BOOL_VARS = {}
 ENUM_VARS = {}
@@ -103,7 +104,7 @@ def PEPTemplate(PEP):
     if PEP not in conf.PEPS:
         return True
     if PEP[0] == PEP[1]:
-        return True    
+        raise NameError('No loops in resource structures!')   
     disjunctions = []    
     for or_id in range(NUM_ORS):
         conjunctions = []        
@@ -113,8 +114,9 @@ def PEPTemplate(PEP):
             # hardcoding one numeric variable for now!
             minVar = TEMPLATE_NUMERIC_VARS[PEP][or_id][num_id]['min']
             maxVar = TEMPLATE_NUMERIC_VARS[PEP][or_id][num_id]['max']
-            conjunctions.append(NUM_VAR >= minVar)
-            conjunctions.append(NUM_VAR <= maxVar)                                 
+            conjunctions.append(If(minVar > maxVar, True, And(NUM_VAR >= minVar, NUM_VAR <= maxVar)))
+            #conjunctions.append(NUM_VAR >= minVar)
+            #conjunctions.append(NUM_VAR <= maxVar)                                 
         disjunctions.append(And(conjunctions))
     return Or(disjunctions)
 
@@ -148,10 +150,16 @@ def PEPPolicy(PEP, model):
                 conjunctions.append(False)
         for num_id in range(NUM_NUMERIC):
             minVar = TEMPLATE_NUMERIC_VARS[PEP][or_id][num_id]['min']
-            if model[minVar] is not None:
-                conjunctions.append(NUM_VAR >= model[minVar].as_long())            
             maxVar = TEMPLATE_NUMERIC_VARS[PEP][or_id][num_id]['max']
-            if model[maxVar] is not None:
+            if model[minVar] is not None and model[maxVar] is not None:
+                crosscheck = Solver()
+                crosscheck.add(model[minVar] <= model[maxVar])
+                if crosscheck.check() == sat:
+                    conjunctions.append(NUM_VAR >= model[minVar].as_long())
+                    conjunctions.append(NUM_VAR <= model[maxVar].as_long())
+            elif model[minVar] is not None:
+                conjunctions.append(NUM_VAR >= model[minVar].as_long())
+            elif model[maxVar] is not None:
                 conjunctions.append(NUM_VAR <= model[maxVar].as_long())
         disjunctions.append(simplify(And(conjunctions)))
     return simplify(Or(disjunctions))
@@ -163,7 +171,6 @@ def getAttributeVars():
     return boolVars + enumVars + numericVars
 
 def encodeTarget(target):
-    print str(target)
     if target in BOOL_VARS.keys():
         return BOOL_VARS[target]
     elif target[0] in ENUM_VARS.keys():
