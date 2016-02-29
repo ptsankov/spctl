@@ -5,8 +5,7 @@ Created on Feb 26, 2016
 '''
 
 import conf
-from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies
-from compiler.ast import Const
+from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies, Const
 
 BOOL_VARS = {}
 ENUM_VARS = {}
@@ -36,8 +35,8 @@ def declareAttrVars():
             newEnumSort = EnumSort(attrName, values)
             ENUM_VARS[attrName] = Const(attrName, newEnumSort[0])
             ENUM_VALUES[attrName] = {}
-            for enumVal in newEnumSort[1]:                  
-                ENUM_VALUES[attrName][str(enumVal)] = enumVal                
+            for enumVal in newEnumSort[1]:
+                ENUM_VALUES[attrName][str(enumVal)] = enumVal
         elif attrType == 'numeric':
             NUMERIC_VARS[attrName] = Int(attrName)
         else:
@@ -164,13 +163,16 @@ def getAttributeVars():
     return boolVars + enumVars + numericVars
 
 def encodeTarget(target):
+    print str(target)
     if target in BOOL_VARS.keys():
         return BOOL_VARS[target]
     elif target[0] in ENUM_VARS.keys():
-        var = ENUM_VARS[target[0]] 
+        attrName = target[0]
+        var = ENUM_VARS[attrName]        
+        values = target[2]        
         disjunctions = []
-        for val in target[2]:
-            disjunctions.append(Or(ENUM_VARS[str(var)] == ENUM_VALUES[str(var)][val]))
+        for val in values:
+            disjunctions.append(ENUM_VARS[attrName] == ENUM_VALUES[attrName][val])
         return Or(disjunctions)
     elif target[0] in NUMERIC_VARS.keys():
         var = NUMERIC_VARS[target[0]]

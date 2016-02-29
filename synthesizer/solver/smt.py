@@ -40,25 +40,10 @@ def solve():
 
 def encodeRequirement(target, accessConstraint):
     targetEncoding = template.encodeTarget(target)
-    accessConstraintEncoding = encode(accessConstraint, conf.entryResource)
+    accessConstraintEncoding = encodeAccessConstraint(accessConstraint, conf.entryResource)
     return Implies(targetEncoding, accessConstraintEncoding)      
 
-
-def isConstraint(formula):
-    if formula[0] == 'not':
-        return isConstraint(formula[1])
-    elif formula[0] == 'and':
-        return isConstraint(formula[1]) and isConstraint(formula[2])
-    elif formula[0] == '=>':
-        return (not isConstraint(formula[1])) and isConstraint(formula[2])
-    elif formula[0] == 'or':
-        return (isConstraint(formula[1])) or isConstraint(formula[2])
-    else:
-        if len(formula) == 3 and formula[1] == 'in':
-            return True
-        return False 
-
-def encode(accessConstraint, resource):
+def encodeAccessConstraint(accessConstraint, resource):
     ###
     ### TRUE/FALSE
     ### 
@@ -78,14 +63,14 @@ def encode(accessConstraint, resource):
     ### UNARY: NOT
     ###
     elif accessConstraint[0] == 'not':
-        constraint = encode(accessConstraint[1], resource)
+        constraint = encodeAccessConstraint(accessConstraint[1], resource)
         return Not(constraint)
     ###
     ### BINARY: =>, AND, OR
     ###    
     elif any(accessConstraint[0] == x for x in ['and', 'or', '=>']):
-        constraintLeft = encode(accessConstraint[1], resource)
-        constraintRight = encode(accessConstraint[2], resource)
+        constraintLeft = encodeAccessConstraint(accessConstraint[1], resource)
+        constraintRight = encodeAccessConstraint(accessConstraint[2], resource)
         if accessConstraint[0] == 'and':
             return And(constraintLeft, constraintRight)
         elif accessConstraint[0] == 'or':
@@ -99,7 +84,7 @@ def encode(accessConstraint, resource):
         successorConstraints = []
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
             successor = PEP[1]
-            constraint = encode(accessConstraint, successor)
+            constraint = encodeAccessConstraint(accessConstraint, successor)
             successorConstraints.append(And(template.PEPTemplate(PEP), constraint))
         return Or(successorConstraints)
     ###
@@ -109,7 +94,7 @@ def encode(accessConstraint, resource):
         successorConstraints = []
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
             successor = PEP[1]
-            constraint = encode(accessConstraint, successor)
+            constraint = encodeAccessConstraint(accessConstraint, successor)
             successorConstraints.append(Implies(template.PEPTemplate(PEP), constraint))
         return And(successorConstraints)
     ###
@@ -126,61 +111,62 @@ def encode(accessConstraint, resource):
     ### SYNTACTIC SHORTHANDS
     ###
     elif accessConstraint[0] == 'AR':
-        return encode(['not', ['EU', ['not', accessConstraint[1]], ['not', accessConstraint[2]]]], resource)
+        return encodeAccessConstraint(['not', ['EU', ['not', accessConstraint[1]], ['not', accessConstraint[2]]]], resource)
     elif accessConstraint[0] == 'AG':
-        return encode(['not', ['EU', 'true', ['not', accessConstraint[1]]]], resource)
+        return encodeAccessConstraint(['not', ['EU', 'true', ['not', accessConstraint[1]]]], resource)
     elif accessConstraint[0] == 'EF':                            
-        return encode(['EU', 'true', accessConstraint[1]], resource)
+        return encodeAccessConstraint(['EU', 'true', accessConstraint[1]], resource)
     elif accessConstraint[0] == 'AF':
-        return encode(['AU', 'true', accessConstraint[1]], resource)
+        return encodeAccessConstraint(['AU', 'true', accessConstraint[1]], resource)
     else:
-        raise NameError('Could not encode access constraint: ' + str(accessConstraint))
+        raise NameError('Could not encodeAccessConstraint access constraint: ' + str(accessConstraint))
 
 
 def encodeUntilAccessConstraint(accessConstraint, resource, visited):
+    print 'encodeUntilAccessConstraint', resource, visited
     if accessConstraint[0] == 'EU':
         accessConstraint1 = accessConstraint[1]
         accessConstraint2 = accessConstraint[2]
         
-        accessConstraint1Encoded = encode(accessConstraint1, resource)
-        accessConstraint2Encoded = encode(accessConstraint2, resource)                
+        accessConstraint1Encoded = encodeAccessConstraint(accessConstraint1, resource)
+        accessConstraint2Encoded = encodeAccessConstraint(accessConstraint2, resource)                
         
         successorConstraints = []
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
-            if PEP in visited:
-                continue
             successor = PEP[1]            
-            visitedNodes = set(visited)
-            visitedNodes.add(successor)
-            successorAccessConstraintEncoded = encodeUntilAccessConstraint(accessConstraint, successor, visitedNodes)
-            template = template.PEPTemplate(PEP)
-            successorConstraints.append(And(template, successorAccessConstraintEncoded))
-        Or(accessConstraint2Encoded, And(accessConstraint1Encoded, Or(successorConstraints)))        
+            if successor in visited:
+                continue
+            succVisited = set(visited)
+            succVisited.add(resource)
+            successorAccessConstraintEncoded = encodeUntilAccessConstraint(accessConstraint, successor, succVisited)
+            pepTemplate = template.PEPTemplate(PEP)
+            successorConstraints.append(And(pepTemplate, successorAccessConstraintEncoded))
+        return Or(accessConstraint2Encoded, And(accessConstraint1Encoded, Or(successorConstraints)))        
             
     elif accessConstraint[0] == 'AU':
         accessConstraint1 = accessConstraint[1]
         accessConstraint2 = accessConstraint[2]
         
-        accessConstraint1Encoded = encode(accessConstraint1, resource)
-        accessConstraint2Encoded = encode(accessConstraint2, resource)
+        accessConstraint1Encoded = encodeAccessConstraint(accessConstraint1, resource)
+        accessConstraint2Encoded = encodeAccessConstraint(accessConstraint2, resource)
                         
         successorConstraints = []
         noBackEdgesConstraints = []
         existsSuccessorConstraints = []
         
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
-            if PEP in visited:
+            successor = PEP[1]            
+            if successor in visited:
                 noBackEdgesConstraints.append(Not(template.PEPTemplate(PEP)))
                 continue
             
             existsSuccessorConstraints.append(template.PEPTemplate(PEP))
-                        
-            successor = PEP[1]            
-            visitedNodes = set(visited)
-            visitedNodes.add(successor)
-            successorAccessConstraintEncoded = encodeUntilAccessConstraint(accessConstraint, successor, visitedNodes)
-            template = template.PEPTemplate(PEP)
-            successorConstraints.append(Implies(template, successorAccessConstraintEncoded))
+                                    
+            succVisited = set(visited)
+            succVisited.add(resource)
+            successorAccessConstraintEncoded = encodeUntilAccessConstraint(accessConstraint, successor, succVisited)
+            pepTemplate = template.PEPTemplate(PEP)
+            successorConstraints.append(Implies(pepTemplate, successorAccessConstraintEncoded))
             
         noBackEdges = And(noBackEdgesConstraints)
         existsSuccessor = Or(existsSuccessorConstraints)
