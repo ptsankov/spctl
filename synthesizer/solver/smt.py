@@ -9,7 +9,6 @@ import conf
 import template
 from utils.helperMethods import log
 import networkx
-from xcb.xproto import AccessControl
 
 def solve():        
     start = time.time()
