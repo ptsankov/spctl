@@ -9,6 +9,7 @@ import conf
 import template
 from utils.helperMethods import log
 import networkx
+from xcb.xproto import AccessControl
 
 def solve():        
     start = time.time()
@@ -116,12 +117,12 @@ def encode(accessConstraint, resource):
     ### EU
     ###
     elif accessConstraint[0] == 'EU':
-        raise NameError('todo')
+        return encodeUntilAccessConstraint(accessConstraint, resource, set())        
     ###
     ### AU
     ###
     elif accessConstraint[0] == 'AU':
-        raise NameError('todo')
+        return encodeUntilAccessConstraint(accessConstraint, resource, set())
     ###
     ### SYNTACTIC SHORTHANDS
     ###
@@ -135,3 +136,26 @@ def encode(accessConstraint, resource):
         return encode(['AU', 'true', accessConstraint[1]], resource)
     else:
         raise NameError('Could not encode access constraint: ' + str(accessConstraint))
+
+
+def encodeUntilAccessConstraint(accessConstraint, resource, visited):
+    if accessConstraint[0] == 'EU':
+        accessConstraint1 = accessConstraint[1]
+        accessConstraint2 = accessConstraint[2]
+        
+        accessConstraint1Encoded = encode(accessConstraint1, resource)
+        accessConstraint2Encoded = encode(accessConstraint2, resource)                
+        
+        for PEP in networkx.edges_iter(conf.resourceStructure, resource):
+            pass
+    elif accessConstraint[0] == 'AU':
+        accessConstraint1 = accessConstraint[1]
+        accessConstraint2 = accessConstraint[2]
+        
+        accessConstraint1Encoded = encode(accessConstraint1, resource)
+        accessConstraint2Encoded = encode(accessConstraint2, resource)
+                        
+        for PEP in networkx.edges_iter(conf.resourceStructure, resource):
+            pass
+    else:
+        raise NameError('Not an until access constraint:', accessConstraint)
