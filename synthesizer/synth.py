@@ -82,6 +82,7 @@ if __name__ == '__main__':
         policy = unsat
         template_size = [1, 1, 1]
         while policy == unsat:
+            print 'UNSAT for size', template_size
             template.createTemplate(template_size[2], template_size[0], template_size[1])
             for i in range(len(template_size)):
                 if template_size[i] == min(template_size):
