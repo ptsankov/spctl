@@ -33,7 +33,7 @@ def solve():
         for PEP in conf.PEPS:           
             policy[PEP] = template.PEPPolicy(PEP, model) 
         return policy
-    else:    
+    else:
         return unsat
 
 def encodeRequirement(target, accessConstraint):
@@ -125,8 +125,8 @@ def encodeUntilAccessConstraint(accessConstraint, resource, visited):
         accessConstraint1 = accessConstraint[1]
         accessConstraint2 = accessConstraint[2]
         
+        accessConstraint2Encoded = encodeAccessConstraint(accessConstraint2, resource)
         accessConstraint1Encoded = encodeAccessConstraint(accessConstraint1, resource)
-        accessConstraint2Encoded = encodeAccessConstraint(accessConstraint2, resource)                
         
         successorConstraints = []
         for PEP in networkx.edges_iter(conf.resourceStructure, resource):
@@ -144,8 +144,8 @@ def encodeUntilAccessConstraint(accessConstraint, resource, visited):
         accessConstraint1 = accessConstraint[1]
         accessConstraint2 = accessConstraint[2]
         
-        accessConstraint1Encoded = encodeAccessConstraint(accessConstraint1, resource)
         accessConstraint2Encoded = encodeAccessConstraint(accessConstraint2, resource)
+        accessConstraint1Encoded = encodeAccessConstraint(accessConstraint1, resource)
                         
         successorConstraints = []
         noBackEdgesConstraints = []

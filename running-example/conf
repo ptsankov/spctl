@@ -3,7 +3,7 @@ STRUCTURE=structure.adj
 SUBJECT_ATTRIBUTES=subject.attrs
 PEPS=peps.adj
 RESOURCE_ATTRIBUTES=resource.attrs
-REQUIREMENTS=req.ctl
+REQUIREMENTS=requirements.ctl
 FIXED_GRAMMAR=false
 OUTPUT=output.log
 

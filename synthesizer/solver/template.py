@@ -5,8 +5,7 @@ Created on Feb 26, 2016
 '''
 
 import conf
-from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies, Const,\
-    Solver, unsat, sat
+from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies, Const, Solver, sat
 
 BOOL_VARS = {}
 ENUM_VARS = {}
@@ -45,7 +44,7 @@ def declareAttrVars():
 
 def createTemplate(numOrs, numEnums, numNumeric):
     global NUM_ORS, NUM_ENUMS, NUM_NUMERIC
-    
+        
     NUM_ORS = numOrs
     NUM_ENUMS = numEnums
     NUM_NUMERIC = numNumeric
@@ -100,7 +99,7 @@ def enumTemplate(enumTempVar, index):
     else:
         raise NameError('not reachable')
 
-def PEPTemplate(PEP):
+def PEPTemplate(PEP):   
     if PEP not in conf.PEPS:
         return True
     if PEP[0] == PEP[1]:
