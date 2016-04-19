@@ -2,8 +2,8 @@
 
 1. /case-studies
   - the three case studies
-2. /polisy
-  - the python implementation of the policy synthesizer
+2. /synthesizer
+  - the python implementation of the SpCTL synthesizer
 3. /running-example
   - the running example
 
