@@ -1,0 +1,18 @@
+Resource structure filename: /home/ptsankov/spctl.git/casestudies/airport/structure.adj
+Subject attributes filename: /home/ptsankov/spctl.git/casestudies/airport/subject.attrs
+Resource attributes filename: /home/ptsankov/spctl.git/casestudies/airport/resource.attrs
+Requirements filename: /home/ptsankov/spctl.git/casestudies/airport/requirements.ctl
+PEPs filename: /home/ptsankov/spctl.git/casestudies/airport/peps.adj
+Output file: /home/ptsankov/spctl.git/casestudies/airport/output.log
+Resources: shop, elev2, elev1, sec4, econ, pri, sec1, sec3, sec2, cor1, cor2, cor3, out
+Attributes: role:enum:staff,passenger, boardingpass:enum:priority,economy,bot, badge:bool, time:numeric, breach:bool
+PEPs: [('out', 'econ'), ('out', 'pri'), ('econ', 'out'), ('econ', 'cor1'), ('pri', 'out'), ('pri', 'cor2'), ('cor1', 'econ'), ('cor1', 'cor2'), ('cor2', 'pri'), ('cor2', 'cor1'), ('cor2', 'sec1'), ('cor2', 'sec2'), ('cor2', 'sec3'), ('cor2', 'sec4'), ('cor3', 'sec1'), ('cor3', 'sec2'), ('cor3', 'sec3'), ('cor3', 'sec4'), ('cor3', 'shop'), ('cor3', 'elev1'), ('sec1', 'cor2'), ('sec1', 'cor3'), ('sec2', 'cor2'), ('sec2', 'cor3'), ('sec3', 'cor2'), ('sec3', 'cor2'), ('sec4', 'cor2'), ('sec4', 'cor2'), ('elev1', 'cor3'), ('elev2', 'shop'), ('shop', 'cor3'), ('shop', 'elev2')]
+Number of requirements: 15
+Number of resources: 13
+Number of PEPs: 32
+Starting synthesis...
+Solve policy synthesis instance for template of size 1
+Solution found for template 1
+Time spend encoding SMT constraints: 1.88036990166
+Time spend solving constraints: 0.040186882019
+Total synthesis time: 1.92055678368

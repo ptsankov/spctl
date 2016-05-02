@@ -1,0 +1,19 @@
+Resource structure filename: /home/ptsankov/spctl.git/casestudies/university/structure.adj
+Subject attributes filename: /home/ptsankov/spctl.git/casestudies/university/subject.attrs
+Resource attributes filename: /home/ptsankov/spctl.git/casestudies/university/resource.attrs
+Requirements filename: /home/ptsankov/spctl.git/casestudies/university/requirements.ctl
+PEPs filename: /home/ptsankov/spctl.git/casestudies/university/peps.adj
+Output file: /home/ptsankov/spctl.git/casestudies/university/output.log
+Resources: cor2, r56, r42, r45, r44, r47, r46, r41, cor1, r29, r28, r27, r26, r25, r24, r23, r22, r21, r20, r52, r51, r57, cor_main, r49, r53, r48, r50, r54, r55, r16, r17, r14, r15, r12, r13, r10, r11, r43, r18, r19, r58, r59, r38, r39, r34, r35, r36, r37, r30, r31, r32, r33, r4, r5, r6, r7, r0, r1, r2, r3, r8, r9, r61, r60, out, r40
+Attributes: role:enum:faculty,phd,maintenance,bot, time:numeric, admin:bool, student:bool, affiliation:enum:group1,group2,bot
+PEPs: [('r0', 'cor1'), ('r1', 'cor1'), ('r2', 'cor1'), ('r3', 'cor1'), ('r4', 'cor1'), ('r5', 'cor1'), ('r6', 'cor1'), ('r7', 'cor1'), ('r8', 'cor1'), ('r9', 'cor_main'), ('r10', 'cor_main'), ('r11', 'cor_main'), ('r12', 'cor_main'), ('r13', 'cor_main'), ('r14', 'cor_main'), ('r15', 'cor_main'), ('r16', 'cor_main'), ('r17', 'cor_main'), ('r18', 'cor_main'), ('r19', 'cor_main'), ('r20', 'cor_main'), ('r21', 'cor_main'), ('r22', 'cor_main'), ('r23', 'cor_main'), ('r24', 'cor_main'), ('r25', 'cor_main'), ('r26', 'cor_main'), ('r27', 'cor_main'), ('r28', 'cor_main'), ('r29', 'cor_main'), ('r30', 'cor_main'), ('r31', 'cor_main'), ('r32', 'cor_main'), ('r33', 'cor_main'), ('r34', 'cor2'), ('r35', 'cor2'), ('r36', 'cor2'), ('r37', 'cor2'), ('r38', 'cor2'), ('r39', 'cor_main'), ('r40', 'cor_main'), ('r41', 'cor2'), ('r42', 'cor2'), ('r43', 'cor2'), ('r44', 'cor2'), ('r45', 'cor2'), ('r46', 'cor2'), ('r47', 'cor_main'), ('r48', 'cor_main'), ('r49', 'r48'), ('r50', 'r48'), ('r51', 'r48'), ('r52', 'cor_main'), ('r53', 'cor_main'), ('r54', 'cor_main'), ('r55', 'cor_main'), ('r56', 'cor_main'), ('r57', 'cor_main'), ('r58', 'cor_main'), ('r59', 'cor_main'), ('r60', 'cor_main'), ('r61', 'cor_main'), ('cor1', 'out'), ('cor1', 'r0'), ('cor1', 'r1'), ('cor1', 'r2'), ('cor1', 'r3'), ('cor1', 'r4'), ('cor1', 'r5'), ('cor1', 'r6'), ('cor1', 'r7'), ('cor1', 'r8'), ('cor2', 'out'), ('cor2', 'r34'), ('cor2', 'r35'), ('cor2', 'r36'), ('cor2', 'r37'), ('cor2', 'r38'), ('cor2', 'r41'), ('cor2', 'r42'), ('cor2', 'r43'), ('cor2', 'r44'), ('cor2', 'r45'), ('cor2', 'r46'), ('cor_main', 'out'), ('cor_main', 'r9'), ('cor_main', 'r10'), ('cor_main', 'r11'), ('cor_main', 'r12'), ('cor_main', 'r13'), ('cor_main', 'r14'), ('cor_main', 'r15'), ('cor_main', 'r16'), ('cor_main', 'r17'), ('cor_main', 'r18'), ('cor_main', 'r19'), ('cor_main', 'r20'), ('cor_main', 'r21'), ('cor_main', 'r22'), ('cor_main', 'r23'), ('cor_main', 'r24'), ('cor_main', 'r25'), ('cor_main', 'r26'), ('cor_main', 'r27'), ('cor_main', 'r28'), ('cor_main', 'r29'), ('cor_main', 'r30'), ('cor_main', 'r31'), ('cor_main', 'r32'), ('cor_main', 'r33'), ('cor_main', 'r39'), ('cor_main', 'r40'), ('cor_main', 'r47'), ('cor_main', 'r48'), ('cor_main', 'r52'), ('cor_main', 'r53'), ('cor_main', 'r54'), ('cor_main', 'r55'), ('cor_main', 'r56'), ('cor_main', 'r57'), ('cor_main', 'r58'), ('cor_main', 'r59'), ('cor_main', 'r60'), ('cor_main', 'r61'), ('out', 'cor1'), ('out', 'cor2'), ('out', 'cor_main')]
+Number of requirements: 14
+Number of resources: 66
+Number of PEPs: 127
+Starting synthesis...
+Solve policy synthesis instance for template of size 1
+Solve policy synthesis instance for template of size 2
+Solution found for template 2
+Time spend encoding SMT constraints: 9.79612708092
+Time spend solving constraints: 0.568119049072
+Total synthesis time: 10.36424613

@@ -1,0 +1,19 @@
+Resource structure filename: /home/ptsankov/spctl.git/casestudies/office/structure.adj
+Subject attributes filename: /home/ptsankov/spctl.git/casestudies/office/subject.attrs
+Resource attributes filename: /home/ptsankov/spctl.git/casestudies/office/resource.attrs
+Requirements filename: /home/ptsankov/spctl.git/casestudies/office/requirements.ctl
+PEPs filename: /home/ptsankov/spctl.git/casestudies/office/peps.adj
+Output file: /home/ptsankov/spctl.git/casestudies/office/output.log
+Resources: lob, wc1, wc2, bur3, serv, bur_staff, bur2, mr1, mr2, mr3, bur5, bur4, bur7, elev, bur1, cor1, cor2, cor3, post, out
+Attributes: role:enum:visitor,hr,researcher,it,postman, pin:bool, time:numeric
+PEPs: [('out', 'lob'), ('out', 'cor2'), ('out', 'cor3'), ('lob', 'mr1'), ('lob', 'mr2'), ('lob', 'mr3'), ('lob', 'cor1'), ('cor1', 'out'), ('cor1', 'cor3'), ('cor1', 'lob'), ('cor1', 'bur1'), ('cor1', 'bur2'), ('cor1', 'bur3'), ('cor1', 'bur4'), ('cor1', 'bur5'), ('cor1', 'bur_staff'), ('cor1', 'bur7'), ('cor1', 'post'), ('cor1', 'wc1'), ('cor1', 'wc2'), ('cor2', 'out'), ('cor2', 'serv'), ('cor2', 'elev'), ('cor2', 'post'), ('cor3', 'out'), ('cor3', 'cor1'), ('post', 'cor1'), ('post', 'cor2'), ('serv', 'cor2'), ('bur1', 'cor1'), ('bur2', 'cor1'), ('bur3', 'cor1'), ('bur4', 'cor1'), ('bur5', 'cor1'), ('bur_staff', 'cor1'), ('bur7', 'cor1'), ('mr1', 'lob'), ('mr2', 'lob'), ('mr3', 'lob'), ('wc1', 'cor1'), ('wc2', 'cor1')]
+Number of requirements: 10
+Number of resources: 20
+Number of PEPs: 41
+Starting synthesis...
+Solve policy synthesis instance for template of size 1
+Solve policy synthesis instance for template of size 2
+Solution found for template 2
+Time spend encoding SMT constraints: 24.7344870567
+Time spend solving constraints: 0.684839010239
+Total synthesis time: 25.419326067
