@@ -11,7 +11,7 @@ from synthesizer.utils import stats
 import statistics
 
 LOG_DIR = os.path.abspath('casestudies/logs')
-NUM_RUNS = 10
+NUM_RUNS = 2
 
 def measurePerformance():
     
