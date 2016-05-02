@@ -6,10 +6,9 @@ Created on May 17, 2015
 @author: ptsankov
 '''
 
-from z3 import unsat, sat
+from z3 import unsat
 from tabulate import tabulate
 
-import sys
 import os
 import ConfigParser
 import static

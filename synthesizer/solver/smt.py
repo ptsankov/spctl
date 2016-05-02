@@ -7,7 +7,6 @@ from z3 import Solver, Not, And, Or, Implies, sat, unsat, ForAll
 import time
 from synthesizer import conf
 import template
-from synthesizer.utils.helperMethods import log
 from synthesizer.utils import measurements
 import networkx
 

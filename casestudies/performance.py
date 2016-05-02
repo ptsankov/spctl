@@ -27,7 +27,7 @@ def measurePerformance():
     
     data = {}
     
-    for case_study in configs.keys():
+    for case_study in ['Airport']:#configs.keys():
         data[case_study] = {}
         data[case_study][stats.SYNTHESIS_TIME] = []
         for i in range(NUM_RUNS):
