@@ -31,9 +31,7 @@ def synth(configFilename):
     assert os.path.isfile(configFilename)         
     config = ConfigParser.ConfigParser()
     config.read(configFilename)
-    
-    stats = {}
-    
+        
     pathToFiles = os.path.dirname(os.path.realpath(configFilename))
         
     structureFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_STRUCTURE))
@@ -115,4 +113,5 @@ def synth(configFilename):
     stats_map[stats.NUMBER_OF_REQUIREMENTS] = len(conf.reqs)
     stats_map[stats.NUMBER_OF_RESOURCES] = len(conf.resourceStructure.nodes())
     stats_map[stats.NUMBER_OF_PEPS] = len(conf.PEPS)
+    stats_map[stats.LOG_FILE] = outputFilename
     return stats_map
