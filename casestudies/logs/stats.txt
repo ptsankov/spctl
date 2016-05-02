@@ -1,0 +1,8 @@
+Metric                      Airport    University     Office
+----------------------  -----------  ------------  ---------
+Number of requirements  15              14         10
+Number of PEPs          32             127         41
+Number of subspaces     13              66         20
+Template size            1               2          2
+Synthesis time (mean)    1.91977        10.3219    25.2996
+Synthesis time (stdev)   0.00152331      0.041924   0.146933
