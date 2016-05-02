@@ -1,18 +1,16 @@
 import networkx
 from networkx.classes.function import set_node_attributes
-
-
+from synthesizer import conf
 
 def setLogFile(filename):
-    global outputFile
-    outputFile = open(filename, 'w')
+    conf.outputFile = open(filename, 'w')
 
 def closeLogFile():
-    outputFile.close()
+    conf.outputFile.close()
 
 def log(msg):
     print msg
-    outputFile.write(msg + '\n')
+    conf.outputFile.write(msg + '\n')
 
 def nodePathToEdgePath(graph, nodePath):
     edgePath = []

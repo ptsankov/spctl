@@ -5,23 +5,26 @@ Created on Aug 12, 2015
 '''
 from z3 import Solver, Not, And, Or, Implies, sat, unsat, ForAll
 import time
-import conf
+from synthesizer import conf
 import template
-from utils.helperMethods import log
+from synthesizer.utils.helperMethods import log
+from synthesizer.utils import measurements
 import networkx
 
 def solve():        
     start = time.time()
     s = Solver()
     for req in conf.reqs:
-        #log('Translating requirement: ' + str(req))
         target = req[0]
         accessConstraint = req[1]
              
         requirementEncoding = encodeRequirement(target, accessConstraint)  
         s.add(ForAll(template.getAttributeVars(), requirementEncoding))
-    timeToTranslate = time.time() - start    
-    log('DATA| Translation time: ' + str(timeToTranslate))            
+    timeToTranslate = time.time() - start
+    
+    measurements.addToSMTTime(timeToTranslate)
+        
+    log('Translation time: ' + str(timeToTranslate))            
     log('SMT Solving')
     
     start = time.time()
@@ -29,7 +32,8 @@ def solve():
         policy = {}        
         model = s.model()        
         timeToSolve = time.time() - start
-        log('DATA| SMT time: ' + str(timeToSolve))
+        measurements.addToSMTTime(timeToSolve)
+        log('SMT time: ' + str(timeToSolve))
         for PEP in conf.PEPS:           
             policy[PEP] = template.PEPPolicy(PEP, model) 
         return policy

@@ -6,7 +6,7 @@ Created on May 17, 2015
 @author: ptsankov
 '''
 
-from z3 import unsat
+from z3 import unsat, sat
 from tabulate import tabulate
 
 import sys
@@ -14,7 +14,7 @@ import os
 import ConfigParser
 import static
 from utils.helperMethods import log, setLogFile, closeLogFile, readResourceStructure
-import conf
+from synthesizer import conf
 from utils import requirments_grammar
 from solver import template, smt
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print 'Usage: {} <configuration file>'.format(sys.argv[0])
         sys.exit(-1)
-               
+        
     configFilename = sys.argv[1]
     assert os.path.isfile(configFilename)         
     config = ConfigParser.ConfigParser()
@@ -55,8 +55,8 @@ if __name__ == '__main__':
     
     assert os.path.isfile(subjectAttributesFilename)
     with open(subjectAttributesFilename) as f:
-        subjAttrs = f.readlines()
-    conf.subjAttrs = [a.strip() for a in subjAttrs]
+        subjAttrsStrs = f.readlines()
+    conf.subjAttrs = [a.strip() for a in subjAttrsStrs]
     log('Attributes: ' + ', '.join(conf.subjAttrs))
     template.declareAttrVars()
     
@@ -64,22 +64,27 @@ if __name__ == '__main__':
     with open(pepsFilename) as f:
         pepStrs = f.readlines()
     conf.PEPS = [(x.split(' ')[0].strip(), (x.split(' ')[1].strip())) for x in pepStrs]
+    log('PEPs: {}'.format(conf.PEPS))
     
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
+        print reqsStr
     conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]    
 
     policy = unsat
     template_size = [1, 1, 1]
     while policy == unsat:
-        print 'UNSAT for size', template_size
+        log('Solve policy synthesis instance for template {}'.format(str(template_size)))
         template.createTemplate(template_size[2], template_size[0], template_size[1])
-        for i in range(len(template_size)):
-            if template_size[i] == min(template_size):
-                template_size[i] += 1
-                break            
-        policy = smt.solve()                               
+        policy = smt.solve()
+        if policy == unsat:
+            # No solution has been found, increase the template and try again
+            for i in range(len(template_size)):
+                if template_size[i] == min(template_size):
+                    template_size[i] += 1
+                    break         
+    log('Solution found for template ' + str(template_size))                           
                                        
     if policy == unsat:
         print 'No solution was found'
@@ -93,6 +98,6 @@ if __name__ == '__main__':
     
     log('DATA| Number of requirements: ' + str(len(conf.reqs)))
     log('DATA| Number of resources: ' + str(len(conf.resourceStructure.nodes())))
-    log('DATA| Number of enforcement points: ' + str(len(conf.PEPS)))
+    log('DATA| Number of PEPs: ' + str(len(conf.PEPS)))
     
     closeLogFile()

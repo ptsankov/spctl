@@ -47,11 +47,9 @@ class CTLGrammar:
     req = Group(left + constranit + comma + ctlFormula + right)
         
 def parseRequirement(string):
-    print string
     return CTLGrammar.req.parseString(string, parseAll = True)[0]
 
 def parseConstraint(string):
-    print string
     return CTLGrammar.constranit.parseString(string, parseAll = True)[0]
 
 def parseCTLFormula(string):

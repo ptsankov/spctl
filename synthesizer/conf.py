@@ -1,6 +1,6 @@
 PEPS = []
 reqs = None
-outputFile = 'out.log'
+outputFile = None
 resourceStructure = None
 subjAttrs = None
 entryResource = 'out'

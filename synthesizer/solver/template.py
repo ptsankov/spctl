@@ -4,7 +4,7 @@ Created on Feb 26, 2016
 @author: ptsankov
 '''
 
-import conf
+from synthesizer import conf
 from z3 import Bool, EnumSort, Int, And, If, Not, Or, simplify, Implies, Const, Solver, sat
 
 BOOL_VARS = {}
