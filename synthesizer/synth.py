@@ -18,6 +18,7 @@ from synthesizer import conf
 from utils import requirments_grammar
 from solver import template, smt
 from synthesizer.utils import measurements
+import math
 
 
 
@@ -80,17 +81,16 @@ if __name__ == '__main__':
     log('Starting synthesis...')
 
     policy = unsat
-    template_size = [1, 1, 1]
+    template_size = 1
     while policy == unsat:
-        log('Solve policy synthesis instance for template {}'.format(str(template_size)))
-        template.createTemplate(template_size[2], template_size[0], template_size[1])
+        log('Solve policy synthesis instance for template of size'.format(template_size))
+        log('Number of ors {}'.format(template_size))
+        log('Number of enumerated attributes: {}'.format(int(math.ceil(float(template_size)/2))))
+        log('Number of numeric attributes: {}'.format(int(math.floor(float(template_size)/2))))
+        template.createTemplate(numOrs=template_size, numEnums=int(math.ceil(float(template_size)/2)), numNumeric=int(math.floor(float(template_size)/2)))
         policy = smt.solve()
         if policy == unsat:
-            # No solution has been found, increase the template and try again
-            for i in range(len(template_size)):
-                if template_size[i] == min(template_size):
-                    template_size[i] += 1
-                    break
+            template_size += 1
                          
     log('Solution found for template ' + str(template_size))                           
                                        

@@ -44,10 +44,16 @@ def declareAttrVars():
 
 def createTemplate(numOrs, numEnums, numNumeric):
     global NUM_ORS, NUM_ENUMS, NUM_NUMERIC
-        
+    
+    
     NUM_ORS = numOrs
     NUM_ENUMS = numEnums
     NUM_NUMERIC = numNumeric
+    
+    
+    print 'ors', NUM_ORS
+    print 'enums', NUM_ENUMS
+    print 'numeric', NUM_NUMERIC
     
     for PEP in conf.PEPS:
         if PEP not in TEMPLATE_ENUM_VARS.keys():
