@@ -47,6 +47,7 @@ def measurePerformance():
     table.append(['Number of requirements'] + [data[case_study][stats.NUMBER_OF_REQUIREMENTS] for case_study in case_studies])
     table.append(['Number of PEPs'] + [data[case_study][stats.NUMBER_OF_PEPS] for case_study in case_studies])
     table.append(['Number of subspaces'] + [data[case_study][stats.NUMBER_OF_RESOURCES] for case_study in case_studies])
+    table.append(['Template size'] + [data[case_study][stats.TEMPLATE_SIZE] for case_study in case_studies])
     table.append(['Synthesis time (mean)'] + [statistics.mean(data[case_study][stats.SYNTHESIS_TIME]) for case_study in case_studies])
     table.append(['Synthesis time (stdev)'] + [statistics.stdev(data[case_study][stats.SYNTHESIS_TIME]) for case_study in case_studies])
     
