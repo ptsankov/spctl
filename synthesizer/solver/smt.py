@@ -10,7 +10,7 @@ import template
 from synthesizer.utils import measurements
 import networkx
 
-def solve():        
+def solve():    
     start = time.time()
     s = Solver()
     for req in conf.reqs:

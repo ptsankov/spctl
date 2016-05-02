@@ -7,10 +7,10 @@ import sys
 import os
 import shutil
 from synthesizer import synth
-from synthesizer.utils import stats
+from synthesizer.utils import stats, measurements
 
 LOG_DIR = os.path.abspath('casestudies/logs')
-NUM_RUNS = 2
+NUM_RUNS = 4
 
 def measurePerformance():
     

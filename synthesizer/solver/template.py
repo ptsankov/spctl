@@ -23,7 +23,6 @@ NUM_NUMERIC = -1
 
 NUM_VAR = Int('time')
 
-
 def declareAttrVars():
     for attr in conf.subjAttrs:
         attrName = attr.split(':')[0].strip()

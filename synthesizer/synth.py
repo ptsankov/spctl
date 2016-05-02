@@ -80,6 +80,7 @@ def synth(configFilename):
 
     policy = unsat
     template_size = 1
+    measurements.resetTimers()
     while policy == unsat:
         log('Solve policy synthesis instance for template of size {}'.format(template_size))
         template.createTemplate(numOrs=template_size, numEnums=int(math.ceil(float(template_size)/2)), numNumeric=int(math.floor(float(template_size)/2)))
