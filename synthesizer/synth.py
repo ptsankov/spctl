@@ -15,7 +15,7 @@ import ConfigParser
 import static
 from utils.helperMethods import log, setLogFile, closeLogFile, readResourceStructure
 from synthesizer import conf
-from utils import requirments_grammar
+from utils import requirments_grammar, stats
 from solver import template, smt
 from synthesizer.utils import measurements
 import math
@@ -31,6 +31,8 @@ def synth(configFilename):
     assert os.path.isfile(configFilename)         
     config = ConfigParser.ConfigParser()
     config.read(configFilename)
+    
+    stats = {}
     
     pathToFiles = os.path.dirname(os.path.realpath(configFilename))
         
@@ -102,6 +104,15 @@ def synth(configFilename):
     
     log('Time spend encoding SMT constraints: {}'.format(measurements.translation_time))
     log('Time spend solving constraints: {}'.format(measurements.smt_time))
-    log('Total synthesis time: {}'.format(measurements.smt_time + measurements.translation_time))
+    synthesis_time = measurements.smt_time + measurements.translation_time
+    log('Total synthesis time: {}'.format(synthesis_time))
     
     closeLogFile()
+    
+    stats_map = {}
+    stats_map[stats.TEMPLATE_SIZE] = template_size
+    stats_map[stats.SYNTHESIS_TIME] = synthesis_time
+    stats_map[stats.NUMBER_OF_REQUIREMENTS] = len(conf.reqs)
+    stats_map[stats.NUMBER_OF_RESOURCES] = len(conf.resourceStructure.nodes())
+    stats_map[stats.NUMBER_OF_PEPS] = len(conf.PEPS)
+    return stats_map
