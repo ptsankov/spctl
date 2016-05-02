@@ -37,6 +37,7 @@ def measurePerformance():
             data[case_study][stats.NUMBER_OF_PEPS] = stats_map[stats.NUMBER_OF_PEPS]
             data[case_study][stats.NUMBER_OF_REQUIREMENTS] = stats_map[stats.NUMBER_OF_REQUIREMENTS]
             data[case_study][stats.NUMBER_OF_RESOURCES] = stats_map[stats.NUMBER_OF_RESOURCES]
+            data[case_study][stats.TEMPLATE_SIZE] = stats_map[stats.TEMPLATE_SIZE]
             dst_log_file = os.path.join(LOG_DIR, '{}_run{}.log'.format(case_study, i))
             shutil.copyfile(stats_map[stats.LOG_FILE], dst_log_file)
     
