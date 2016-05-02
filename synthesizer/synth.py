@@ -17,6 +17,7 @@ from utils.helperMethods import log, setLogFile, closeLogFile, readResourceStruc
 from synthesizer import conf
 from utils import requirments_grammar
 from solver import template, smt
+from synthesizer.utils import measurements
 
 
 
@@ -72,6 +73,12 @@ if __name__ == '__main__':
         print reqsStr
     conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]    
 
+    log('Number of requirements: ' + str(len(conf.reqs)))
+    log('Number of resources: ' + str(len(conf.resourceStructure.nodes())))
+    log('Number of PEPs: ' + str(len(conf.PEPS)))
+
+    log('Starting synthesis...')
+
     policy = unsat
     template_size = [1, 1, 1]
     while policy == unsat:
@@ -83,7 +90,8 @@ if __name__ == '__main__':
             for i in range(len(template_size)):
                 if template_size[i] == min(template_size):
                     template_size[i] += 1
-                    break         
+                    break
+                         
     log('Solution found for template ' + str(template_size))                           
                                        
     if policy == unsat:
@@ -96,8 +104,8 @@ if __name__ == '__main__':
             policyTable.append([PEP[0], '->', PEP[1], check])
         print tabulate(policyTable, headers = ['FROM', '', 'TO', 'LOCAL POLICY'])
     
-    log('DATA| Number of requirements: ' + str(len(conf.reqs)))
-    log('DATA| Number of resources: ' + str(len(conf.resourceStructure.nodes())))
-    log('DATA| Number of PEPs: ' + str(len(conf.PEPS)))
+    log('Time spend encoding SMT constraints: {}'.format(measurements.translation_time))
+    log('Time spend solving constraints: {}'.format(measurements.smt_time))
+    log('Total synthesis time: {}'.format(measurements.smt_time + measurements.translation_time))
     
     closeLogFile()

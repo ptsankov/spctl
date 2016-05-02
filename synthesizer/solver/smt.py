@@ -22,23 +22,20 @@ def solve():
         s.add(ForAll(template.getAttributeVars(), requirementEncoding))
     timeToTranslate = time.time() - start
     
-    measurements.addToSMTTime(timeToTranslate)
+    measurements.addToTranslationTime(timeToTranslate)
         
-    log('Translation time: ' + str(timeToTranslate))            
-    log('SMT Solving')
-    
     start = time.time()
+    solution = None
     if s.check() == sat:
-        policy = {}        
+        solution = {}        
         model = s.model()        
-        timeToSolve = time.time() - start
-        measurements.addToSMTTime(timeToSolve)
-        log('SMT time: ' + str(timeToSolve))
         for PEP in conf.PEPS:           
-            policy[PEP] = template.PEPPolicy(PEP, model) 
-        return policy
+            solution[PEP] = template.PEPPolicy(PEP, model) 
     else:
-        return unsat
+        solution = unsat
+    timeToSolve = time.time() - start
+    measurements.addToSMTTime(timeToSolve)
+    return solution
 
 def encodeRequirement(target, accessConstraint):
     targetEncoding = template.encodeTarget(target)
