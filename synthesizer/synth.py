@@ -39,7 +39,6 @@ if __name__ == '__main__':
     reqsFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_REQUIREMENTS))
     pepsFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_PEPS))
     outputFilename = os.path.join(pathToFiles, config.get(static.SECTION_SYNTHESIS, static.OPTION_OUTPUT))
-    isGrammarFixed = config.getboolean(static.SECTION_SYNTHESIS, static.OPTION_FIXED_GRAMMAR)
 
     setLogFile(outputFilename)
 
@@ -70,25 +69,17 @@ if __name__ == '__main__':
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
     conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]    
-        
-    if isGrammarFixed:
-        numOrs = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_DISJUNCTIONS)
-        numEnums = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_ENUMERATED_ATTRIBUTES)
-        numNumeric = config.getint(static.SECTION_GRAMMAR, static.OPTION_NUMBER_OF_NUMERIC_ATTRIBUTES)
-        
-        template.createTemplate(numOrs, numEnums, numNumeric)        
-        policy = smt.solve() 
-    else:
-        policy = unsat
-        template_size = [1, 1, 1]
-        while policy == unsat:
-            print 'UNSAT for size', template_size
-            template.createTemplate(template_size[2], template_size[0], template_size[1])
-            for i in range(len(template_size)):
-                if template_size[i] == min(template_size):
-                    template_size[i] += 1
-                    break            
-            policy = smt.solve()                               
+
+    policy = unsat
+    template_size = [1, 1, 1]
+    while policy == unsat:
+        print 'UNSAT for size', template_size
+        template.createTemplate(template_size[2], template_size[0], template_size[1])
+        for i in range(len(template_size)):
+            if template_size[i] == min(template_size):
+                template_size[i] += 1
+                break            
+        policy = smt.solve()                               
                                        
     if policy == unsat:
         print 'No solution was found'
