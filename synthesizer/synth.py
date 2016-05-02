@@ -22,13 +22,12 @@ import math
 
 
 
-if __name__ == '__main__':
-  
-    if len(sys.argv) != 2:
-        print 'Usage: {} <configuration file>'.format(sys.argv[0])
-        sys.exit(-1)
+def synth(configFilename): 
+    #if len(sys.argv) != 2:
+    #    print 'Usage: {} <configuration file>'.format(sys.argv[0])
+    #    sys.exit(-1)
         
-    configFilename = sys.argv[1]
+    #configFilename = sys.argv[1]
     assert os.path.isfile(configFilename)         
     config = ConfigParser.ConfigParser()
     config.read(configFilename)
@@ -83,10 +82,7 @@ if __name__ == '__main__':
     policy = unsat
     template_size = 1
     while policy == unsat:
-        log('Solve policy synthesis instance for template of size'.format(template_size))
-        log('Number of ors {}'.format(template_size))
-        log('Number of enumerated attributes: {}'.format(int(math.ceil(float(template_size)/2))))
-        log('Number of numeric attributes: {}'.format(int(math.floor(float(template_size)/2))))
+        log('Solve policy synthesis instance for template of size {}'.format(template_size))
         template.createTemplate(numOrs=template_size, numEnums=int(math.ceil(float(template_size)/2)), numNumeric=int(math.floor(float(template_size)/2)))
         policy = smt.solve()
         if policy == unsat:

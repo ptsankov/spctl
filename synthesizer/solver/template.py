@@ -50,11 +50,6 @@ def createTemplate(numOrs, numEnums, numNumeric):
     NUM_ENUMS = numEnums
     NUM_NUMERIC = numNumeric
     
-    
-    print 'ors', NUM_ORS
-    print 'enums', NUM_ENUMS
-    print 'numeric', NUM_NUMERIC
-    
     for PEP in conf.PEPS:
         if PEP not in TEMPLATE_ENUM_VARS.keys():
             TEMPLATE_ENUM_VARS[PEP] = {}
