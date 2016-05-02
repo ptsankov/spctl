@@ -23,7 +23,18 @@ NUM_NUMERIC = -1
 
 NUM_VAR = Int('time')
 
+def resetVariables():
+    global BOOL_VARS, ENUM_VARS, ENUM_VALUES, NUMERIC_VARS, TEMPLATE_ENUM_VARS, TEMPLATE_NUMERIC_VARS, ENUM_INDEX
+    BOOL_VARS = {}
+    ENUM_VARS = {}
+    ENUM_VALUES = {}
+    NUMERIC_VARS = {}    
+    ENUM_INDEX = {}
+    TEMPLATE_ENUM_VARS = {}
+    TEMPLATE_NUMERIC_VARS = {}
+
 def declareAttrVars():
+    resetVariables()
     for attr in conf.subjAttrs:
         attrName = attr.split(':')[0].strip()
         attrType = attr.split(':')[1].strip()

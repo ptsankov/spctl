@@ -13,6 +13,7 @@ import networkx
 def solve():    
     start = time.time()
     s = Solver()
+    s.reset()
     for req in conf.reqs:
         target = req[0]
         accessConstraint = req[1]
