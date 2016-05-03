@@ -3,7 +3,8 @@ Created on May 2, 2016
 
 @author: ptsankov
 '''
-from casestudies import performance
+from experiments.casestudies import performance
+from experiments.scalability import scalability
 from synthesizer import synth
 import sys
 
