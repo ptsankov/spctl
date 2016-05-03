@@ -24,8 +24,6 @@ R8: Non employees cannot access any office
 
 R9: Non-HR employees cannot access the staff management office (bur_staff)
 ((not (role in {hr})), (not (EF (room_id in {bur_staff}))))
-HR employees can access the staff management office during (time in [8,20])
-((and (time in [8,20]) (role in {hr})), (EF (room_id in {bur_staff})))
 
 R10: The postman and the HR can access the post office during workhours
 ((and (role in {postman hr}) (time in [8,20])), (EF (zone in {post})))
