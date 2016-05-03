@@ -1,0 +1,7 @@
+[SYNTHESIS]
+STRUCTURE=structure_24.adj
+SUBJECT_ATTRIBUTES=subject.attrs
+RESOURCE_ATTRIBUTES=resource_24.attrs
+REQUIREMENTS=requirements.ctl
+PEPS=peps_24.adj
+OUTPUT=output.log

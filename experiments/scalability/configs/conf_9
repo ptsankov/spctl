@@ -1,0 +1,7 @@
+[SYNTHESIS]
+STRUCTURE=structure_9.adj
+SUBJECT_ATTRIBUTES=subject.attrs
+RESOURCE_ATTRIBUTES=resource_9.attrs
+REQUIREMENTS=requirements.ctl
+PEPS=peps_9.adj
+OUTPUT=output.log

@@ -1,0 +1,20 @@
+out lob_0 cor2_0 cor3_0
+lob_0 mr1_0 mr2_0 mr3_0 cor1_0
+cor1_0 out cor3_0 lob_0 bur1_0 bur2_0 bur3_0 bur4_0 bur5_0 bur_staff_0 bur7_0 post_0 wc1_0 wc2_0 elev
+cor2_0 out serv_0 elev post_0
+cor3_0 out cor1_0
+post_0 cor1_0 cor2_0
+serv_0 cor2_0
+bur1_0 cor1_0
+bur2_0 cor1_0
+bur3_0 cor1_0
+bur4_0 cor1_0
+bur5_0 cor1_0
+bur_staff_0 cor1_0
+bur7_0 cor1_0
+mr1_0 lob_0
+mr2_0 lob_0
+mr3_0 lob_0
+wc1_0 cor1_0
+wc2_0 cor1_0
+elev cor1_0
