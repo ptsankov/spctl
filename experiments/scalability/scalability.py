@@ -23,7 +23,7 @@ def measure_scalability():
     os.mkdir(LOG_DIR)
     
     for size in range(MIN_SIZE, MAX_SIZE+1):
-        config_file = os.path.abspath('experiments/scalability/conf_{}'.format(size))
+        config_file = os.path.abspath('experiments/scalability/configs/conf_{}'.format(size))
         print config_file
         data = {}
         data[size] = {}
