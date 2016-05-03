@@ -23,12 +23,13 @@ def measure_scalability():
     os.mkdir(LOG_DIR)
     
     for size in range(MIN_SIZE, MAX_SIZE+1):
-        print size        
+        config_file = os.path.abspath('experiments/scalability/conf_{}'.format(size))
+        print config_file
         data = {}
         data[size] = {}
         data[size][stats.SYNTHESIS_TIME] = []
         for i in range(START_RUN, START_RUN + NUM_RUNS):
-            stats_map = synth.synth(os.path.abspath('experiments/scalability/conf_{}'.format(size)))
+            stats_map = synth.synth(config_file)
             data[size][stats.SYNTHESIS_TIME].append(stats_map[stats.SYNTHESIS_TIME])
             data[size][stats.NUMBER_OF_PEPS] = stats_map[stats.NUMBER_OF_PEPS]
             data[size][stats.NUMBER_OF_REQUIREMENTS] = stats_map[stats.NUMBER_OF_REQUIREMENTS]
