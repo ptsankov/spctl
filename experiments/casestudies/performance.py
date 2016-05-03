@@ -10,16 +10,16 @@ from synthesizer import synth
 from synthesizer.utils import stats
 import statistics
 
-LOG_DIR = os.path.abspath('casestudies/logs')
+LOG_DIR = os.path.abspath('experiments/casestudies/logs')
 NUM_RUNS = 10
 
 def measurePerformance():
     
     configs = {}
     
-    configs['Airport'] = os.path.abspath('casestudies/airport/conf')
-    configs['Office'] = os.path.abspath('casestudies/office/conf')
-    configs['University'] = os.path.abspath('casestudies/university/conf')
+    configs['Airport'] = os.path.abspath('experiments/casestudies/airport/conf')
+    configs['Office'] = os.path.abspath('experiments/casestudies/office/conf')
+    configs['University'] = os.path.abspath('experiments/casestudies/university/conf')
     
     if os.path.exists(LOG_DIR):
         shutil.rmtree(LOG_DIR)

@@ -69,7 +69,7 @@ def synth(configFilename):
     assert os.path.isfile(reqsFilename)
     with open(reqsFilename) as f:
         reqsStr = [x.strip() for x in f.readlines()]
-        print reqsStr
+        print '\n'.join(reqsStr)
     conf.reqs = [requirments_grammar.parseRequirement(x) for x in reqsStr if x.startswith('(')]    
 
     log('Number of requirements: ' + str(len(conf.reqs)))
