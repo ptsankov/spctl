@@ -15,8 +15,12 @@ LOG_DIR = os.path.abspath('experiments/scalability/logs')
 START_RUN = 1
 NUM_RUNS = 1
 
-def measure_scalability():
-    
+def measure_scalability(argv):
+    global LOG_DIR
+    if len(argv) > 0:
+        LOG_DIR = os.path.abspath(argv[0])
+    print 'LOG_DIR =', LOG_DIR 
+        
     if os.path.exists(LOG_DIR):
         shutil.rmtree(LOG_DIR)
     

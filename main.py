@@ -24,7 +24,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == '-measure-performance':
         performance.measurePerformance()
     elif sys.argv[1] == '-measure-scalability':
-        scalability.measure_scalability()
+        scalability.measure_scalability(sys.argv[2:])
     else:
         printUsage()
         sys.exit(-1)
