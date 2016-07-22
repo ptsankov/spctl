@@ -26,7 +26,7 @@ To check whether Z3Py is properly installed test the following code in your Pyth
 The policy synthesizer is executed as follows:
 
 ```
-python synth.py <synthesis configuration file>
+python main.py -synth <synthesis configuration file>
 ```
 
 Here `synthesis configuration file` defines a policy synthesis problem. The structure of this file is described below.

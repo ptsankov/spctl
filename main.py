@@ -9,7 +9,7 @@ from synthesizer import synth
 import sys
 
 def printUsage():
-    print 'Usage'
+    print 'Usage -synth <config file>'
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
