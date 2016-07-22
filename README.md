@@ -71,10 +71,10 @@ For examples of the above files see our running example.
 The structure of the running example is as follows:
 
 ```
-out out lob cor
-lob lob out cor
-cor cor lob out bur mr
-bur bur cor
+out lob cor
+lob out cor
+cor lob out bur mr
+bur cor
 mr mr cor
 ```
 
