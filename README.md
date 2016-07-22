@@ -75,7 +75,7 @@ out lob cor
 lob out cor
 cor lob out bur mr
 bur cor
-mr mr cor
+mr cor
 ```
 
 ## Example of a requirements file:
