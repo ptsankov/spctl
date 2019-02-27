@@ -11,7 +11,7 @@
 
 1. Python interpreter
 2. The pyparsing python package
-333. Z3 SMT solver with python packages (Z3Py)
+3. Z3 SMT solver with python packages (Z3Py)
 
 To check whether Z3Py is properly installed test the following code in your Python interpreter:
 
